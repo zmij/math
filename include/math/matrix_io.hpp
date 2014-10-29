@@ -5,8 +5,8 @@
  *      Author: zmij
  */
 
-#ifndef OPENGAMES_MATH_MATRIX_IO_HPP_
-#define OPENGAMES_MATH_MATRIX_IO_HPP_
+#ifndef ZMIJ_MATH_MATRIX_IO_HPP_
+#define ZMIJ_MATH_MATRIX_IO_HPP_
 
 #include "math/matrix.hpp"
 #include "math/vector_io.hpp"
@@ -59,4 +59,4 @@ operator << (std::ostream& out, matrix< T, RC, CC> const& m)
 
 } // namespace math
 
-#endif /* OPENGAMES_MATH_MATRIX_IO_HPP_ */
+#endif /* ZMIJ_MATH_MATRIX_IO_HPP_ */
