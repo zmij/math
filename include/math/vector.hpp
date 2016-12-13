@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <assert.h>
+#include <cmath>
 
 #include <math/detail/vector_detail.hpp>
 
@@ -104,7 +105,7 @@ struct vector : detail::vector_builder<
     value_type
     magnitude() const
     {
-        return sqrt(magnitude_square());
+        return ::std::sqrt(magnitude_square());
     }
 
     bool

@@ -319,7 +319,7 @@ TEST(Matrix, VectorMultiply)
         { 21, 22, 23 },
         { 31, 32, 33 }
     };
-    vector3d expected{0, 0, 0};
+    vector3d expected{ 74, 134, 194 };
     vector3d vec{1, 2, 3};
     EXPECT_EQ(expected, initial * vec);
 }
@@ -332,9 +332,9 @@ TEST(Matrix, MatrixMultiply)
         { 31, 32, 33 }
     };
     matrix3x3 expected{
-        { 22, 24, 26 },
-        { 42, 44, 46 },
-        { 62, 64, 66 }
+        {  776,  812,  848 },
+        { 1406, 1472, 1538 },
+        { 2036, 2132, 2228 }
     };
     vector3d vec{1, 2, 3};
     EXPECT_EQ(expected, initial * initial);
