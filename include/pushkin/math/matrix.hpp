@@ -8,8 +8,7 @@
 #ifndef PUSHKIN_MATH_MATRIX_HPP_
 #define PUSHKIN_MATH_MATRIX_HPP_
 
-#include "math/detail/matrix_detail.hpp"
-#include <array>
+#include <pushkin/math/detail/matrix_detail.hpp>
 
 namespace psst {
 namespace math {

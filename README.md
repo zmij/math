@@ -10,14 +10,14 @@ Library provides easy syntax for declaring, assigning vectors and matrices and m
 
 ```C++
 // Vector
-#include <math/vector.hpp>
+#include <pushkin/math/vector.hpp>
 
 using vector3d = ::psst::math::vector<float, 3>;
 
 vector3d p1{1, 2, 1.5}, p2{2, 3, 5.4};
 
 // Matrix
-#include <math/matrix.hpp>
+#include <pushkin/math/matrix.hpp>
 
 using matrix3x3 = ::psst::math::matrix<float, 3, 3>;
 
@@ -114,8 +114,8 @@ vector3d v5 = v1 * m1; // vector by matrix multiplication (vector is considered 
 
 ```C++
 #include <iostream>
-#include <math/vector_io.hpp>
-#include <math/matrix_io.hpp>
+#include <pushkin/math/vector_io.hpp>
+#include <pushkin/math/matrix_io.hpp>
 
 std::cout << v1 << std::endl;
 // output {1, 2, 1.5}

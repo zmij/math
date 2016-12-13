@@ -5,11 +5,11 @@
  *      Author: zmij
  */
 
-#include <math/vector.hpp>
-#include <math/matrix.hpp>
+#include <pushkin/math/vector.hpp>
+#include <pushkin/math/matrix.hpp>
 
-#include <math/vector_io.hpp>
-#include <math/matrix_io.hpp>
+#include <pushkin/math/vector_io.hpp>
+#include <pushkin/math/matrix_io.hpp>
 
 #include <iostream>
 

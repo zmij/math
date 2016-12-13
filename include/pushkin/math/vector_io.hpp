@@ -8,7 +8,7 @@
 #ifndef PUSHKIN_MATH_VECTOR_IO_HPP_
 #define PUSHKIN_MATH_VECTOR_IO_HPP_
 
-#include <math/vector.hpp>
+#include <pushkin/math/vector.hpp>
 #include <iostream>
 
 namespace psst {

@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <cmath>
 
-#include <math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/vector_detail.hpp>
 
 namespace psst {
 namespace math {
