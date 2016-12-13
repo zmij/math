@@ -4,8 +4,37 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(math)
-add_definitions("-std=c++11")
+# Set library name here
+set(lib_name psst-math)
+string(TOUPPER ${lib_name} LIB_NAME)
 
+set(_pname ${lib_name})
+if (PROJECT_VERSION)
+    set(_pversion ${PROJECT_VERSION})
+else()
+    set(_pversion 0.1.0)
+endif()
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.0")
+    cmake_policy(SET CMP0048 NEW)
+    project(${_pname} VERSION ${_pversion})
+else()
+    project(${_pname})
+    set(PROJECT_VERSION ${_pversion})
+endif()
+
+option(BUILD_TESTS "Build tests for ${lib_name} library" ON)
+option(BUILD_BENCHMARKS "Build benchmarks for ${lib_name} library" ON)
+
+add_definitions("-std=c++11")
+add_definitions(-Wall -Werror -pedantic)
 add_subdirectory(include)
-add_subdirectory(t)
+
+if (BUILD_TESTS)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+if (BUILD_BENCHMARKS)
+endif()
