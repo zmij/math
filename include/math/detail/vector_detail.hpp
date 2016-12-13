@@ -154,6 +154,25 @@ struct __coord_access<3, Builder, T> : __coord_access<2, Builder, T> {
         return base_type::rebind().template at<2>();
     }
 };
+template < typename Builder, typename T >
+struct __coord_access<4, Builder, T> : __coord_access<3, Builder, T> {
+    using value_type            = typename ::std::decay<T>::type;
+    using lvalue_reference      = typename ::std::add_lvalue_reference<value_type>::type;
+    using const_reference       = typename ::std::add_lvalue_reference<
+                                    typename ::std::add_const<value_type>::type>::type;
+    using base_type             = __base_coord_access<Builder>;
+
+    lvalue_reference
+    w()
+    {
+        return base_type::rebind().template at<3>();
+    }
+    const_reference
+    w() const
+    {
+        return base_type::rebind().template at<3>();
+    }
+};
 
 template < typename IndexTuple, typename T >
 struct vector_builder;
