@@ -1,4 +1,4 @@
-math
+pushkin-math
 ====
 
 Small C++11 library for vector and matrix computations.
@@ -34,10 +34,10 @@ rotate_x( float a )
 {
     return
     {
-        {    1,        0,                      0,                          0    },
-        {    0,        (float)cos(a),    (float)-sin(a),        0    },
+        {    1,        0,                0,                    0    },
+        {    0,        (float)cos(a),    (float)-sin(a),       0    },
         {    0,        (float)sin(a),    (float)cos(a),        0    },
-        {    0,        0,                      0,                          1    }
+        {    0,        0,                0,                    1    }
     };
 }
 ```
@@ -99,9 +99,9 @@ matrix4x3 r1 {
   { 1,  2,  3 }
 };
 matrix3x4 r2 {
-  { 1, 2, 3, 4},
-  { 1, 2, 3, 4},
-  { 1, 2, 3, 4}
+  { 1, 2, 3, 4 },
+  { 1, 2, 3, 4 },
+  { 1, 2, 3, 4 }
 };
 
 matrix3x4 t = r1.transpose(); // matrix transposition
@@ -118,11 +118,14 @@ vector3d v5 = v1 * m1; // vector by matrix multiplication (vector is considered 
 #include <pushkin/math/matrix_io.hpp>
 
 std::cout << v1 << std::endl;
-// output {1, 2, 1.5}
+// output {1,2,1.5}
 std::cout << m1 << std::endl;
-// output {
-//    {1,2,3},
-//    {4,5,6},
-//    {7,8,9}
-//}
+// output {{1,2,3},{4,5,6},{7,8,9}}
+std::cout << ::psst::math::io::vector_pretty << m1 << std::endl;
+// output
+// {
+//      { 1, 2, 3 },
+//      { 4, 5, 6 },
+//      { 7, 8, 9 }
+// }
 ```
