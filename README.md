@@ -34,10 +34,10 @@ rotate_x( float a )
 {
     return
     {
-        {    1,        0,                0,                    0    },
-        {    0,        (float)cos(a),    (float)-sin(a),       0    },
-        {    0,        (float)sin(a),    (float)cos(a),        0    },
-        {    0,        0,                0,                    1    }
+        {    1,        0,           0,              0    },
+        {    0,        std::cos(a), -std::sin(a),   0    },
+        {    0,        std::sin(a), std::cos(a),    0    },
+        {    0,        0,           0,              1    }
     };
 }
 ```
@@ -58,7 +58,7 @@ auto s = v3.magnitude_square(); // vector magnitude squared
 s = v3.magnitude()      // vector magnitude
 
 auto p = v1 | v2; // dot product
-v3 =v1 ^ v2;     // cross product. Defined for 3D and 3D homogenous (having 4 elements) vectors only
+v3 = v1 ^ v2;     // cross product. Defined for 3D and 3D homogenous (having 4 elements) vectors only
 
 v3 = projection( v1, v2 ); // projection of vector v2 onto vector v1
 v3 = perpendicular( v1, v2 ); // vector that is perpendicular to v1, such as v3 + projection( v1 , v2 ) == v2
