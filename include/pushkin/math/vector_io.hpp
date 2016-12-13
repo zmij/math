@@ -119,13 +119,40 @@ add_facet(::std::basic_ostream<CharT>& os, vector_facet<CharT>* fct)
     os.imbue(::std::locale(loc, fct));
 }
 
+/**
+ * Iostream manipulator to turn pretty-printing on
+ * @code
+ * ::std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
+ * @endcode
+ * @param os
+ * @return
+ */
 template < typename CharT >
 ::std::basic_ostream<CharT>&
-vector_pretty(::std::basic_ostream<CharT>& os)
+pretty(::std::basic_ostream<CharT>& os)
 {
     auto const& fct = get_facet(os);
     if (!fct.pretty()) {
         add_facet(os, fct.make_pretty(true));
+    }
+    return os;
+}
+
+/**
+ * Iostream manipulator to turn pretty-printing off
+ * @code
+ * ::std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
+ * @endcode
+ * @param os
+ * @return
+ */
+template < typename CharT >
+::std::basic_ostream<CharT>&
+ugly(::std::basic_ostream<CharT>& os)
+{
+    auto const& fct = get_facet(os);
+    if (fct.pretty()) {
+        add_facet(os, fct.make_pretty(false));
     }
     return os;
 }

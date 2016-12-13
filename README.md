@@ -117,11 +117,13 @@ vector3d v5 = v1 * m1; // vector by matrix multiplication (vector is considered 
 #include <pushkin/math/vector_io.hpp>
 #include <pushkin/math/matrix_io.hpp>
 
-std::cout << v1 << std::endl;
+namespace io = ::psst::math::io;
+
+std::cout << v1 << "\n";
 // output {1,2,1.5}
-std::cout << m1 << std::endl;
+std::cout << m1 << "\n";
 // output {{1,2,3},{4,5,6},{7,8,9}}
-std::cout << ::psst::math::io::vector_pretty << m1 << std::endl;
+std::cout << io::pretty << m1 << io::ugly << "\n";
 // output
 // {
 //      { 1, 2, 3 },

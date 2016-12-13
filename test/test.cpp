@@ -22,14 +22,14 @@ template <typename T, ::std::size_t N>
 void
 PrintTo(vector<T, N> const& vec, ::std::ostream* os)
 {
-    *os << io::vector_pretty << vec;
+    *os << io::pretty << vec << io::ugly;
 }
 
 template < typename T, ::std::size_t RC, ::std::size_t CC >
 void
 PrintTo(matrix<T, RC, CC> const& mtx, ::std::ostream* os)
 {
-    *os << "\n" << io::vector_pretty << mtx;
+    *os << "\n" << io::pretty << mtx << io::ugly;
 }
 
 namespace test {
@@ -141,7 +141,7 @@ TEST(Vector, Multiply)
 {
     vector3d initial{1,2,3}, expected{5, 10, 15};
     auto v1 = initial * 5;
-    ::std::cerr << sizeof(v1) << " " << io::vector_pretty << v1 << "\n";
+    ::std::cerr << sizeof(v1) << " " << io::pretty << v1 << "\n";
     EXPECT_EQ(expected, v1);
     v1 = expected / 5;
     EXPECT_EQ(initial, v1);
@@ -204,7 +204,7 @@ TEST(Matrix, Construction)
        };
 
        ::std::cerr << m1 << "\n"
-            << io::vector_pretty << m1 << "\n";
+            << io::pretty << m1 << "\n";
 
        EXPECT_EQ(11, m1[0][0]);
        EXPECT_EQ(12, m1[0][1]);
