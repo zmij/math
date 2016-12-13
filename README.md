@@ -1,8 +1,9 @@
 pushkin-math
 ====
 
-Small C++11 library for vector and matrix computations.
-Library provides easy syntax for declaring, assigning vectors and matrices and making calculations.
+Small C++11 template library for vector and matrix computations.
+
+Library provides easy syntax for declaring, assigning vectors and matrices and making calculations. The `vector` and `matrix` classes are designed to have a memory layout as C++ arrays of respective elements, and can be passed to rendering libraries where pointers to floats (for example) are required.
 
 #### Usage Synopsis
 
@@ -41,6 +42,45 @@ rotate_x( float a )
     };
 }
 ```
+
+##### Element access
+
+`vector` class provides access to all elements by indexes (subscript operator) and template function `at<N>()`. First four elements of vector are accessible by named functions `x()`, `y()`, `z()` and `w()` respectively. Those functions are defined only where the size of vector allows it, e.g. for a three-element vector there will be no `w()` function. Vectors elements can be iterated with a C++11 range loop or using iterators.
+
+`matrix` class provides subscript operator and template function `at<N>()` to access rows that are represented by vectors. Iterators to rows are provided by `row_begin()`/`row_end()` function pairs. `begin()`/`end()` pairs will provide iterators over all matrix elements, in the order a C++ two-dimensional array would be layed out.
+
+```C++
+
+using vector4 = ::psst::math::vector<float, 4>;
+vector4 v1{1, 2, 3, 4};
+
+auto x = v1[0];
+x = v1.at<0>();
+x = v1.x();
+auto y = v1[1];
+y = v1.y();
+auto z = v1[2];
+z = v1.z();
+auto w = v1[3];
+w = v1.w();
+
+v1.x() = x;
+v1.at<0>() = x;
+v1[0] = x;
+v1.y() = y;
+v1.z() = z;
+v1.w() = w;
+
+matrix3x3 m1 {
+  { 1,  2,  3 },
+  { 4,  5,  6 },
+  { 7,  8,  9 }
+};
+m1[0][0] = 5;
+auto a = m1[2].z();
+m1[1].y() = 8;
+```
+
 
 ##### Operations
 ```C++
