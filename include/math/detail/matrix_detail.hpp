@@ -14,46 +14,72 @@ namespace math {
 
 namespace detail {
 
-template < typename RowIndexTuple, size_t ColCount, typename T >
+template < typename RowIndexTuple, ::std::size_t ColCount, typename T >
 struct matrix_builder;
 
-template < size_t ... RowIndexes, size_t CC, typename T >
+template < size_t ... RowIndexes, ::std::size_t CC, typename T >
 struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
-    detail::data_holder< RowIndexes, vector< T, CC > > ... {
+        data_holder< RowIndexes, vector< T, CC > > ... {
 
     using row_index_tuple       = detail::indexes_tuple< RowIndexes ... >;
+    using row_type              = vector< T, CC >;
+
+    static constexpr ::std::size_t row_count    = row_index_tuple::size;
+    static constexpr ::std::size_t col_count    = row_type::size;
+    static constexpr ::std::size_t size         = row_count * col_count;
+
     using this_type             = matrix_builder < row_index_tuple, CC, T >;
 
     using col_index_tuple       = typename detail::index_builder< CC >::type;
     using transposed_type       = matrix_builder< col_index_tuple, row_index_tuple::size, T >;
 
-    using row_type              = vector< T, CC >;
 
-    using iterator              = row_type*;
-    using const_iterator        = row_type const*;
+    using row_iterator          = row_type*;
+    using const_row_iterator    = row_type const*;
 
     using element_type          = typename row_type::element_type;
     using value_type            = typename row_type::value_type;
     using lvalue_reference      = typename row_type::lvalue_reference;
     using const_reference       = typename row_type::const_reference;
+    using pointer               = typename row_type::pointer;
+    using const_pointer         = typename row_type::const_pointer;
+    using iterator              = typename row_type::iterator;
+    using const_iterator        = typename row_type::const_iterator;
+
+    using row_pointer           = value_type[col_count];
+    using const_row_pointer     = value_type const[col_count];
+    using md_pointer            = row_pointer*;
+    using const_md_pointer      = const_row_pointer const*;
 
     using lvalue_row_reference  = typename ::std::add_lvalue_reference< row_type >::type;
     using const_row_reference   = typename ::std::add_lvalue_reference<
                                     typename ::std::add_const<row_type>::type>::type;
 
-    matrix_builder() :
-        detail::data_holder< RowIndexes, row_type >() ...
-    {
-    }
+    matrix_builder() = default;
 
     template < typename ... E >
-    matrix_builder( vector<E, CC> const& ... args ) :
-        detail::data_holder< RowIndexes, row_type >(args) ...
+    matrix_builder( vector<E, CC> const& ... args )
+        : data_holder< RowIndexes, row_type >(args) ...
     {
     }
 
-    matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args) :
-        detail::data_holder< RowIndexes, row_type >( row_type(*(args.begin() + RowIndexes)) ) ...
+    matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args)
+        : data_holder< RowIndexes, row_type >( row_type(*(args.begin() + RowIndexes)) ) ...
+    {
+    }
+
+    /**
+     * Construct from value_type[] array, expects size elements in the array.
+     * Values must be in rows
+     * @param p
+     */
+    matrix_builder(const_pointer p)
+        : data_holder< RowIndexes, row_type >( p + RowIndexes * col_count ) ...
+    {
+    }
+
+    matrix_builder(const_md_pointer p)
+        : data_holder< RowIndexes, row_type >( p[RowIndexes] ) ...
     {
     }
 
@@ -74,39 +100,71 @@ struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
     iterator
     begin()
     {
-        return &this->detail::data_holder< 0, row_type >::value;
+        return this->template at<0>().begin();
     }
-
     const_iterator
     begin() const
     {
-        return &this->detail::data_holder< 0, row_type >::value;
+        return cbegin();
+    }
+    const_iterator
+    cbegin() const
+    {
+        return this->template at<0>().begin();
     }
 
     iterator
     end()
     {
-        return begin() + row_index_tuple::size;
+        return this->template at< row_count - 1 >().end();
     }
-
     const_iterator
     end() const
     {
-        return begin() + row_index_tuple::size;
+        return cend();
+    }
+    const_iterator
+    cend() const
+    {
+        return this->template at< row_count - 1 >().cend();
+    }
+
+    row_iterator
+    row_begin()
+    {
+        return &this->detail::data_holder< 0, row_type >::value;
+    }
+
+    const_row_iterator
+    row_begin() const
+    {
+        return &this->detail::data_holder< 0, row_type >::value;
+    }
+
+    row_iterator
+    row_end()
+    {
+        return row_begin() + row_count;
+    }
+
+    const_row_iterator
+    row_end() const
+    {
+        return row_begin() + row_count;
     }
 
     lvalue_row_reference
     operator[] (size_t idx)
     {
-        assert(idx < row_index_tuple::size);
-        return begin()[idx];
+        assert(idx < row_count);
+        return row_begin()[idx];
     }
 
     const_row_reference
     operator[] (size_t idx) const
     {
-        assert(idx < row_index_tuple::size);
-        return begin()[idx];
+        assert(idx < row_count);
+        return row_begin()[idx];
     }
 };
 
@@ -161,7 +219,7 @@ struct matrix_scalar_division< N, matrix< T, RC, CC > > {
     operator()( matrix_type& m, U s )
     {
         matrix_scalar_division< N - 1, matrix_type >()(m, s);
-        m.template at<N>() *= s;
+        m.template at<N>() /= s;
     }
 };
 
@@ -172,7 +230,7 @@ struct matrix_scalar_division< 0, matrix< T, RC, CC > > {
     void
     operator()( matrix_type& m, U s )
     {
-        m.template at<0>() *= s;
+        m.template at<0>() /= s;
     }
 };
 
@@ -188,7 +246,7 @@ struct matrix_addition< N, matrix < T, RC, CC > > {
     void
     operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
     {
-        matrix_addition< N - 1, matrix< T, RC, CC > >()(lhs, rhs);
+        matrix_addition< N - 1, matrix< T, RC, CC > >{}(lhs, rhs);
         lhs.template at<N>() += rhs.template at<N>();
     }
 };
@@ -200,6 +258,32 @@ struct matrix_addition< 0, matrix < T, RC, CC > > {
     operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
     {
         lhs.template at<0>() += rhs.template at<0>();
+    }
+};
+
+/**
+ * Matrix subtraction metafunction
+ */
+template < ::std::size_t N, typename T >
+struct matrix_subtraction;
+
+template < ::std::size_t N, typename T, size_t RC, size_t CC >
+struct matrix_subtraction<N, matrix<T, RC, CC>> {
+    template < typename U >
+    void
+    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    {
+        matrix_subtraction< N - 1, matrix< T, RC, CC > >{}(lhs, rhs);
+        lhs.template at<N>() -= rhs.template at<N>();
+    }
+};
+template < typename T, size_t RC, size_t CC >
+struct matrix_subtraction< 0, matrix < T, RC, CC > > {
+    template < typename U >
+    void
+    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    {
+        lhs.template at<0>() -= rhs.template at<0>();
     }
 };
 
@@ -287,7 +371,7 @@ struct matrix_vector_multiply< C, matrix< T, RC, CC >, vector< U, CC > > {
     operator()(result_type& res, matrix_type const& m, vector_type const& v)
     {
         matrix_vector_multiply< C - 1, matrix_type, vector_type >()(res, m, v);
-        res.template at<C>() = v * m.template at<C>();
+        res.template at<C>() = v | m.template at<C>();
     }
 };
 
@@ -300,7 +384,7 @@ struct matrix_vector_multiply< 0, matrix< T, RC, CC >, vector< U, CC > > {
     void
     operator()(result_type& res, matrix_type const& m, vector_type const& v)
     {
-        res.template at<0>() = v * m.template at<0>();
+        res.template at<0>() = v | m.template at<0>();
     }
 };
 
@@ -325,7 +409,7 @@ struct matrix_cell_multiply< R, C, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
     operator()(result_type& res, left_side_row const& lhs, right_side_transposed const& rhs)
     {
         matrix_cell_multiply< R, C - 1, left_side_type, right_side_type >()(res, lhs, rhs);
-        res.template at<R>().template at<C>() = lhs * rhs.template at<C>();
+        res.template at<R>().template at<C>() = lhs | rhs.template at<C>();
     }
 };
 
@@ -342,7 +426,7 @@ struct matrix_cell_multiply< R, 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
     void
     operator()(result_type& res, left_side_row const& lhs, right_side_transposed const& rhs)
     {
-        res.template at<R>().template at<0>() = lhs * rhs.template at<0>();
+        res.template at<R>().template at<0>() = lhs | rhs.template at<0>();
     }
 };
 
@@ -354,9 +438,9 @@ struct matrix_row_multiply;
 
 template < size_t R, typename T, typename U, size_t R1, size_t C1, size_t C2 >
 struct matrix_row_multiply< R, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
-    using left_side_type = matrix< T, R1, C1 >;
-    using right_side_type = matrix< U, C1, C2 >;
-    using result_type = matrix< T, R1, C2 >;
+    using left_side_type    = matrix< T, R1, C1 >;
+    using right_side_type   = matrix< U, C1, C2 >;
+    using result_type       = matrix< T, R1, C2 >;
 
     using right_side_transposed = typename right_side_type::transposed_type;
 
@@ -391,7 +475,7 @@ struct matrix_row_multiply< 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
  */
 template < size_t R, size_t C >
 struct cofactor_sign {
-    static const int value = ((R + C) % 2) ? -1 : 1;
+    static constexpr int value = ((R + C) % 2) ? -1 : 1;
 };
 
 /**
@@ -430,50 +514,50 @@ template < size_t N, typename T >
  * Top specialization
  */
 template < size_t N, typename T>
-    struct identity_matrix< N, matrix< T, N + 1, N + 1> > {
-        using matrix_type = matrix<T, N + 1, N + 1>;
+struct identity_matrix< N, matrix< T, N + 1, N + 1> > {
+    using matrix_type = matrix<T, N + 1, N + 1>;
 
-        static void
-        fill_matrix(matrix_type& m)
-        {
-            m.template at<N>().zero();
-            m.template at<N>().template at<N>() = 1;
-            identity_matrix< N -1, matrix_type >::fill_matrix(m);
-        }
+    static void
+    fill_matrix(matrix_type& m)
+    {
+        m.template at<N>().zero();
+        m.template at<N>().template at<N>() = 1;
+        identity_matrix< N -1, matrix_type >::fill_matrix(m);
+    }
 
-        static matrix_type
-        build_matrix()
-        {
-            matrix_type m;
-            fill_matrix(m);
-            return m;
-        }
-    };
+    static matrix_type
+    build_matrix()
+    {
+        matrix_type m;
+        fill_matrix(m);
+        return m;
+    }
+};
 
 template < size_t N, typename T, size_t Size >
-    struct identity_matrix< N, matrix< T, Size, Size > > {
-        using matrix_type = matrix<T, Size, Size>;
+struct identity_matrix< N, matrix< T, Size, Size > > {
+    using matrix_type = matrix<T, Size, Size>;
 
-        static void
-        fill_matrix(matrix_type& m)
-        {
-            m.template at<N>().zero();
-            m.template at<N>().template at<N>() = 1;
-            identity_matrix< N -1, matrix_type >::fill_matrix(m);
-        }
-    };
+    static void
+    fill_matrix(matrix_type& m)
+    {
+        m.template at<N>().zero();
+        m.template at<N>().template at<N>() = 1;
+        identity_matrix< N -1, matrix_type >::fill_matrix(m);
+    }
+};
 
 template < typename T, size_t Size >
-    struct identity_matrix< 0, matrix< T, Size, Size > > {
-        using matrix_type = matrix<T, Size, Size>;
+struct identity_matrix< 0, matrix< T, Size, Size > > {
+    using matrix_type = matrix<T, Size, Size>;
 
-        static void
-        fill_matrix(matrix_type& m)
-        {
-            m.template at<0>().zero();
-            m.template at<0>().template at<0>() = 1;
-        }
-    };
+    static void
+    fill_matrix(matrix_type& m)
+    {
+        m.template at<0>().zero();
+        m.template at<0>().template at<0>() = 1;
+    }
+};
 
 } // namespace detail
 

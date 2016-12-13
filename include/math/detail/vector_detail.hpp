@@ -15,28 +15,29 @@ namespace math {
 namespace detail {
 /** Variadic template arguments unwrapping */
 
-template< size_t Index, typename T >
+template< ::std::size_t Index, typename T >
 struct data_holder {
-    enum {
-        index = Index
-    };
+    static constexpr ::std::size_t index = Index;
     using type = T;
 
     type value;
 
-    data_holder() :
-            value()
-    {
-    }
+    data_holder() = default;
+    data_holder(data_holder const&) = default;
+    data_holder(data_holder&&) = default;
+    data_holder&
+    operator = (data_holder const&) = default;
+    data_holder&
+    operator = (data_holder&&) = default;
 
-    data_holder(type const& value) :
-            value(value)
+    data_holder(type const& value)
+        : value(value)
     {
     }
 
     template< typename Y >
-    data_holder(Y const& value) :
-            value(value)
+    data_holder(Y const& value)
+        : value(value)
     {
     }
 
@@ -56,36 +57,114 @@ struct data_holder {
     }
 };
 
-template< size_t ... Indexes >
+template< ::std::size_t ... Indexes >
 struct indexes_tuple {
-    enum {
-        size = sizeof ... (Indexes)
-    };
+    static constexpr ::std::size_t size = sizeof ... (Indexes);
 };
 
-template< size_t num, typename tp = indexes_tuple< > >
+template< ::std::size_t num, typename tp = indexes_tuple< > >
 struct index_builder;
 
-template< size_t num, size_t ... Indexes >
+template< ::std::size_t num, size_t ... Indexes >
 struct index_builder< num, indexes_tuple< Indexes ... > > : index_builder<
         num - 1, indexes_tuple< Indexes ..., sizeof ... (Indexes) > > {
 };
 
-template< size_t ... Indexes >
+template< ::std::size_t ... Indexes >
 struct index_builder< 0, indexes_tuple< Indexes ... > > {
     using type = indexes_tuple< Indexes ... >;
-    enum {
-        size = sizeof ... (Indexes)
-    };
+    static constexpr ::std::size_t size = sizeof ... (Indexes);
+};
+
+template < typename Builder >
+struct __base_coord_access {
+    using builder_type          = Builder;
+protected:
+    builder_type&
+    rebind()
+    {
+        return static_cast<builder_type&>(*this);
+    }
+    builder_type const&
+    rebind() const
+    {
+        return static_cast<builder_type const&>(*this);
+    }
+};
+
+template < ::std::size_t AxesCount, typename Builder, typename T >
+struct __coord_access : __coord_access< AxesCount - 1, Builder, T >{};
+
+template < typename Builder, typename T >
+struct __coord_access<0, Builder, T> {};
+template < typename Builder, typename T >
+struct __coord_access<1, Builder, T> : __base_coord_access<Builder> {
+    using value_type            = typename ::std::decay<T>::type;
+    using lvalue_reference      = typename ::std::add_lvalue_reference<value_type>::type;
+    using const_reference       = typename ::std::add_lvalue_reference<
+                                    typename ::std::add_const<value_type>::type>::type;
+    using base_type             = __base_coord_access<Builder>;
+
+    lvalue_reference
+    x()
+    {
+        return base_type::rebind().template at<0>();
+    }
+    const_reference
+    x() const
+    {
+        return base_type::rebind().template at<0>();
+    }
+};
+template < typename Builder, typename T >
+struct __coord_access<2, Builder, T> : __coord_access<1, Builder, T> {
+    using value_type            = typename ::std::decay<T>::type;
+    using lvalue_reference      = typename ::std::add_lvalue_reference<value_type>::type;
+    using const_reference       = typename ::std::add_lvalue_reference<
+                                    typename ::std::add_const<value_type>::type>::type;
+    using base_type             = __base_coord_access<Builder>;
+
+    lvalue_reference
+    y()
+    {
+        return base_type::rebind().template at<1>();
+    }
+    const_reference
+    y() const
+    {
+        return base_type::rebind().template at<1>();
+    }
+};
+template < typename Builder, typename T >
+struct __coord_access<3, Builder, T> : __coord_access<2, Builder, T> {
+    using value_type            = typename ::std::decay<T>::type;
+    using lvalue_reference      = typename ::std::add_lvalue_reference<value_type>::type;
+    using const_reference       = typename ::std::add_lvalue_reference<
+                                    typename ::std::add_const<value_type>::type>::type;
+    using base_type             = __base_coord_access<Builder>;
+
+    lvalue_reference
+    z()
+    {
+        return base_type::rebind().template at<2>();
+    }
+    const_reference
+    z() const
+    {
+        return base_type::rebind().template at<2>();
+    }
 };
 
 template < typename IndexTuple, typename T >
 struct vector_builder;
 
-template < size_t ... Indexes, typename T >
+template < ::std::size_t ... Indexes, typename T >
 struct vector_builder< indexes_tuple< Indexes ... >, T > :
-    data_holder< Indexes, T > ... {
+    data_holder< Indexes, T > ...,
+    __coord_access<sizeof ... (Indexes),
+        vector_builder<indexes_tuple< Indexes ... >, T>, T> {
 
+    static constexpr ::std::size_t size = sizeof ... (Indexes);
     using indexes_tuple_type    = indexes_tuple< Indexes ... >;
     using this_type             = vector_builder< indexes_tuple_type, T >;
 
@@ -101,10 +180,7 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
     using iterator              = value_type*;
     using const_iterator        = value_type const*;
 
-    vector_builder() :
-        data_holder< Indexes, T >() ...
-    {
-    }
+    vector_builder() = default;
 
     /**
      * Construct vector from a vector of larger size
@@ -114,32 +190,32 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
     template < size_t ... IndexesR, typename U >
     vector_builder(
             vector_builder< indexes_tuple< IndexesR ... >, U > const& rhs,
-            typename ::std::enable_if< sizeof ... (Indexes) <= sizeof ... (IndexesR) >::type* = 0 ) :
-        data_holder< Indexes, T >( rhs.template at< Indexes >() ) ...
+            typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
+        : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ...
     {
     }
 
     template < typename ... E >
     vector_builder(E const& ... args,
-            typename ::std::enable_if< sizeof ... (Indexes) == sizeof ... (E) >::type* = 0) :
-        data_holder< Indexes, T >(args) ...
+            typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
+        : data_holder< Indexes, T >(args) ...
     {
     }
 
     template < typename ... E >
     vector_builder(E&& ... args,
-            typename ::std::enable_if< sizeof ... (Indexes) == sizeof ... (E) >::type* = 0) :
-        data_holder< Indexes, T >( std::forward<E>(args) ) ...
+            typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
+        : data_holder< Indexes, T >( std::forward<E>(args) ) ...
     {
     }
 
-    vector_builder(::std::initializer_list<value_type> const& args) :
-        data_holder< Indexes, T >(*(args.begin() + Indexes))...
+    vector_builder(::std::initializer_list<value_type> const& args)
+        : data_holder< Indexes, T >(*(args.begin() + Indexes))...
     {
     }
 
-    vector_builder(const_pointer p) :
-        data_holder< Indexes, T >(*(p + Indexes))...
+    vector_builder(const_pointer p)
+        : data_holder< Indexes, T >(*(p + Indexes))...
     {
     }
 
@@ -178,6 +254,11 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
     const_iterator
     begin() const
     {
+        return cbegin();
+    }
+    const_iterator
+    cbegin() const
+    {
         return &this->data_holder< 0, T >::value;
     }
 
@@ -189,6 +270,11 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
 
     const_iterator
     end() const
+    {
+        return cend();
+    }
+    const_iterator
+    cend() const
     {
         return begin() + indexes_tuple_type::size;
     }
@@ -209,15 +295,15 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
 };
 } // namespace detail
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct vector;
 
 namespace detail {
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct dot_product;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct dot_product< N, vector<T, Size> > {
 
     typename vector<T, Size>::value_type
@@ -228,7 +314,7 @@ struct dot_product< N, vector<T, Size> > {
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct dot_product< 0, vector<T, Size> > {
     typename vector<T, Size>::value_type
     operator()(vector<T, Size> const& lhs, vector<T, Size> const& rhs)
@@ -237,21 +323,21 @@ struct dot_product< 0, vector<T, Size> > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct vector_scalar_multiplication;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct vector_scalar_multiplication< N, vector< T, Size > > {
     template < typename U >
     void
     operator()( vector<T, Size>& v, U s )
     {
-        vector_scalar_multiplication< N - 1, vector<T, Size> >()(v, s);
+        vector_scalar_multiplication< N - 1, vector<T, Size> >{}(v, s);
         v.template at<N>() *= s;
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct vector_scalar_multiplication< 0, vector< T, Size > > {
     template < typename U >
     void
@@ -261,21 +347,21 @@ struct vector_scalar_multiplication< 0, vector< T, Size > > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct vector_scalar_division;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct vector_scalar_division< N, vector< T, Size > > {
     template < typename U >
     void
     operator()( vector<T, Size>& v, U s )
     {
-        vector_scalar_division< N - 1, vector<T, Size> >()(v, s);
+        vector_scalar_division< N - 1, vector<T, Size> >{}(v, s);
         v.template at<N>() /= s;
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct vector_scalar_division< 0, vector< T, Size > > {
     template < typename U >
     void
@@ -285,21 +371,21 @@ struct vector_scalar_division< 0, vector< T, Size > > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct vector_addition;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct vector_addition< N, vector< T, Size > > {
     template < typename U >
     void
     operator()( vector<T, Size>& lhs, vector<U, Size> const& rhs)
     {
-        vector_addition<N - 1, vector<T, Size> >()(lhs, rhs);
+        vector_addition<N - 1, vector<T, Size> >{}(lhs, rhs);
         lhs.template at<N>() += rhs.template at<N>();
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct vector_addition< 0, vector< T, Size > > {
     template < typename U >
     void
@@ -309,21 +395,21 @@ struct vector_addition< 0, vector< T, Size > > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct vector_substraction;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct vector_substraction< N, vector< T, Size > > {
     template < typename U >
     void
     operator()( vector<T, Size>& lhs, vector<U, Size> const& rhs)
     {
-        vector_substraction<N - 1, vector<T, Size> >()(lhs, rhs);
+        vector_substraction<N - 1, vector<T, Size> >{}(lhs, rhs);
         lhs.template at<N>() -= rhs.template at<N>();
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct vector_substraction< 0, vector< T, Size > > {
     template < typename U >
     void
@@ -333,21 +419,21 @@ struct vector_substraction< 0, vector< T, Size > > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct set_all_elements;
 
-template < size_t N, typename T, size_t Size >
+template < ::std::size_t N, typename T, ::std::size_t Size >
 struct set_all_elements< N, vector< T, Size > > {
     template < typename U >
     void
     operator()( vector<T, Size>& v, U s )
     {
-        set_all_elements< N - 1, vector< T, Size > >()(v, s);
+        set_all_elements< N - 1, vector< T, Size > >{}(v, s);
         v.template at<N>() = s;
     }
 };
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size >
 struct set_all_elements< 0, vector< T, Size > > {
     template < typename U >
     void

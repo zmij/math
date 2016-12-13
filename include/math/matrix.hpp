@@ -22,37 +22,49 @@ namespace math {
 template < typename T, size_t RC, size_t CC >
 struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::type, CC, T > {
 
-    typedef detail::matrix_builder<
-            typename detail::index_builder< RC >::type, CC, T > super_type;
+    using base_type         = detail::matrix_builder<
+                                typename detail::index_builder< RC >::type, CC, T >;
 
-    typedef matrix< T, RC, CC > this_type;
-    typedef matrix< T, CC, RC > transposed_type;
+    using this_type         = matrix< T, RC, CC >;
+    using transposed_type   = matrix< T, CC, RC >;
 
-    typedef typename super_type::row_type row_type;
+    using row_type          = typename base_type::row_type;
+    using value_type        = typename base_type::value_type;
 
-    typedef typename super_type::value_type value_type;
-
-    matrix() :
-        super_type()
-    {
-    }
+    matrix() = default;
 
     matrix( std::initializer_list< std::initializer_list< value_type > > const& args) :
-        super_type(args)
+        base_type(args)
     {
     }
 
     template < typename ... E >
     matrix(E const& ... args) :
-        super_type(args ... )
+        base_type(args ... )
     {
+    }
+
+    this_type
+    operator - ()
+    {
+        this_type res(*this);
+        res *= -1;
+        return res;
     }
 
     template < typename U >
     this_type&
     operator += (matrix<U, RC, CC> const& rhs)
     {
-        detail::matrix_addition< RC - 1, this_type >()(*this, rhs);
+        detail::matrix_addition< RC - 1, this_type >{}(*this, rhs);
+        return *this;
+    }
+
+    template < typename U >
+    this_type&
+    operator -= (matrix<U, RC, CC> const& rhs)
+    {
+        detail::matrix_subtraction<RC - 1, this_type>{}(*this, rhs);
         return *this;
     }
 
@@ -90,12 +102,35 @@ struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::ty
     }
 };
 
+template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
+bool
+operator == (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
+{
+    return ::std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
+bool
+operator != (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
+{
+    return !(lhs == rhs);
+}
+
 template <typename T, typename U, size_t RC, size_t CC >
 matrix< T, RC, CC >
 operator + (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
 {
     matrix< T, RC, CC > res(lhs);
     res += rhs;
+    return res;
+}
+
+template <typename T, typename U, size_t RC, size_t CC >
+matrix< T, RC, CC >
+operator - (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
+{
+    matrix< T, RC, CC > res(lhs);
+    res -= rhs;
     return res;
 }
 
@@ -142,8 +177,8 @@ template < typename T, typename U, size_t R1, size_t C1, size_t C2 >
 matrix< T, R1, C2 >
 operator * (matrix< T, R1, C1 > const& lhs, matrix< U, C1, C2 > const& rhs )
 {
-    typedef matrix< T, R1, C1 > left_side_type;
-    typedef matrix< U, C1, C2 > right_side_type;
+    using left_side_type = matrix< T, R1, C1 >;
+    using right_side_type = matrix< U, C1, C2 >;
     matrix< T, R1, C2 > res;
 
     detail::matrix_row_multiply< R1 - 1, left_side_type,  right_side_type >()(res, lhs, rhs.transpose());
@@ -159,10 +194,9 @@ template < typename T, typename U, size_t C >
 vector< T, C >
 operator * (matrix< T, C, C > const& m, vector< U, C> const& v)
 {
-    typedef detail::matrix_vector_multiply< C -1, matrix< T, C, C >, vector< U, C > >
-        multiplicator;
-
-    typedef vector< T, C > result_type;
+    using multiplicator = detail::matrix_vector_multiply< C -1,
+                            matrix< T, C, C >, vector< U, C > >;
+    using result_type   = vector< T, C >;
 
     result_type res;
 

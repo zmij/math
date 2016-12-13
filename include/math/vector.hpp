@@ -18,144 +18,141 @@
 namespace math {
 
 template < typename T, size_t Size >
-    struct vector : detail::vector_builder<
-        typename detail::index_builder< Size >::type, T > {
+struct vector : detail::vector_builder<
+    typename detail::index_builder< Size >::type, T > {
 
-        typedef detail::vector_builder<
-                typename detail::index_builder< Size >::type, T > super_type;
-        typedef vector< T, Size > this_type;
+    using base_type         = detail::vector_builder<
+                                typename detail::index_builder< Size >::type, T >;
+    using this_type         = vector< T, Size >;
 
-        typedef typename super_type::value_type value_type;
-        typedef typename super_type::lvalue_reference lvalue_reference;
-        typedef typename super_type::const_reference const_reference;
-        typedef typename super_type::pointer pointer;
-        typedef typename super_type::const_pointer const_pointer;
+    using value_type        = typename base_type::value_type;
+    using lvalue_reference  = typename base_type::lvalue_reference;
+    using const_reference   = typename base_type::const_reference;
+    using pointer           = typename base_type::pointer;
+    using const_pointer     = typename base_type::const_pointer;
 
-        vector() :
-            super_type()
-        {
+    vector() = default;
+
+    template < typename ... E >
+    vector(E const& ... args)
+        : base_type(args ... )
+    {
+    }
+
+    vector(::std::initializer_list< value_type > const& args)
+        : base_type(args)
+    {
+    }
+
+    vector(const_pointer p)
+        : base_type(p)
+    {
+    }
+
+    template < typename U, size_t SizeR >
+    vector( vector<U, SizeR> const& rhs )
+        : base_type(rhs)
+    {
+    }
+
+    this_type
+    operator - ()
+    {
+        this_type res(*this);
+        res *= -1;
+        return res;
+    }
+
+    template < typename U >
+    this_type&
+    operator *= (U val)
+    {
+        detail::vector_scalar_multiplication< Size - 1, this_type >()(*this, val);
+        return *this;
+    }
+
+    template < typename U >
+    this_type&
+    operator /= (U val)
+    {
+        detail::vector_scalar_division< Size - 1, this_type >()(*this, val);
+        return *this;
+    }
+
+    template < typename U >
+    this_type&
+    operator += (vector<U, Size> const& rhs)
+    {
+        detail::vector_addition< Size - 1, this_type >()(*this, rhs);
+        return *this;
+    }
+
+    template < typename U >
+    this_type&
+    operator -= (vector<U, Size> const& rhs)
+    {
+        detail::vector_substraction< Size - 1, this_type >()(*this, rhs);
+        return *this;
+    }
+
+    value_type
+    magnitude_square() const
+    {
+        return detail::dot_product< Size - 1, this_type >()(*this, *this);
+    }
+
+    value_type
+    magnitude() const
+    {
+        return sqrt(magnitude_square());
+    }
+
+    bool
+    is_zero() const
+    {
+        return magnitude_square() == 0;
+    }
+
+    bool
+    is_unit() const
+    {
+        return magnitude_square() == 1;
+    }
+
+    this_type&
+    zero()
+    {
+        detail::set_all_elements< Size - 1, this_type >()(*this, 0);
+        return *this;
+    }
+
+    this_type&
+    normalize()
+    {
+        value_type m = magnitude();
+        if (m != 0) {
+            if (m != 1)
+                (*this) /= m;
+        } else {
+            throw ::std::runtime_error("Cannot normalize a zero vector");
         }
+        return *this;
+    }
 
-        template < typename ... E >
-        vector(E const& ... args) :
-            super_type(args ... )
-        {
-        }
-
-        vector(std::initializer_list< value_type > const& args) :
-            super_type(args)
-        {
-        }
-
-        vector(const_pointer p) :
-            super_type(p)
-        {
-        }
-
-        template < typename U, size_t SizeR >
-        vector( vector<U, SizeR> const& rhs ) :
-            super_type(rhs)
-        {
-        }
-
-        this_type
-        operator - ()
-        {
-            this_type res(*this);
-            res *= -1;
-            return res;
-        }
-
-        template < typename U >
-        this_type&
-        operator *= (U val)
-        {
-            detail::vector_scalar_multiplication< Size - 1, this_type >()(*this, val);
-            return *this;
-        }
-
-        template < typename U >
-        this_type&
-        operator /= (U val)
-        {
-            detail::vector_scalar_division< Size - 1, this_type >()(*this, val);
-            return *this;
-        }
-
-        template < typename U >
-        this_type&
-        operator += (vector<U, Size> const& rhs)
-        {
-            detail::vector_addition< Size - 1, this_type >()(*this, rhs);
-            return *this;
-        }
-
-        template < typename U >
-        this_type&
-        operator -= (vector<U, Size> const& rhs)
-        {
-            detail::vector_substraction< Size - 1, this_type >()(*this, rhs);
-            return *this;
-        }
-
-        value_type
-        magnitude_square() const
-        {
-            return detail::dot_product< Size - 1, this_type >()(*this, *this);
-        }
-
-        value_type
-        magnitude() const
-        {
-            return sqrt(magnitude_square());
-        }
-
-        bool
-        is_zero() const
-        {
-            return magnitude_square() == 0;
-        }
-
-        bool
-        is_unit() const
-        {
-            return magnitude_square() == 1;
-        }
-
-        this_type&
-        zero()
-        {
-            detail::set_all_elements< Size - 1, this_type >()(*this, 0);
-            return *this;
-        }
-
-        this_type&
-        normalize()
-        {
-            value_type m = magnitude();
-            if (m != 0) {
-                if (m != 1)
-                    (*this) /= m;
-            } else {
-                throw std::runtime_error("Cannot normalize a zero vector");
-            }
-            return *this;
-        }
-
-        this_type
-        normalize() const
-        {
-            this_type v(*this);
-            v.normalize();
-            return v;
-        }
-    };
+    this_type
+    normalize() const
+    {
+        this_type v(*this);
+        v.normalize();
+        return v;
+    }
+};
 
 template < typename T, typename U, size_t Size >
 bool
 operator == (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
 {
-    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    return ::std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 template < typename T, typename U, size_t Size >
@@ -169,7 +166,7 @@ template < typename T, typename U, size_t Size >
 bool
 operator < (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
 {
-    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return ::std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 template < typename T, typename U, size_t Size >
@@ -193,9 +190,15 @@ operator >= (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
     return !(lhs < rhs);
 }
 
+/**
+ * Dot product operator
+ * @param lhs
+ * @param rhs
+ * @return
+ */
 template < typename T, size_t Size >
 typename vector< T, Size>::value_type
-operator * (vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
+operator | (vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
 {
     return detail::dot_product< Size - 1, vector<T, Size> >()(lhs, rhs);
 }
@@ -288,14 +291,21 @@ normalize(vector<T, Size> const& v)
  */
 template < typename T, typename U >
 vector< typename vector<T, 3>::value_type, 3 >
-cross(vector<T, 3> const& a, vector<U, 3> const& b)
+cross(vector<T, 3> const& lhs, vector<U, 3> const& rhs)
 {
     vector< T, 3 > res {
-        a.template at<1>() * b.template at<2>() - a.template at<2>() * b.template at<1>(),
-        a.template at<2>() * b.template at<0>() - a.template at<0>() * b.template at<2>(),
-        a.template at<0>() * b.template at<1>() - a.template at<1>() * b.template at<0>()
+        lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
+        lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
+        lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>()
     };
     return res;
+}
+
+template < typename T, typename U >
+vector< typename vector<T, 3>::value_type, 3 >
+operator ^ (vector<T, 3> const& lhs, vector<U, 3> const& rhs)
+{
+    return cross(lhs, rhs);
 }
 
 /**
@@ -306,12 +316,12 @@ cross(vector<T, 3> const& a, vector<U, 3> const& b)
  */
 template < typename T, typename U >
 vector< typename vector<T, 4>::value_type, 4 >
-cross(vector<T, 4> const& a, vector<U, 4> const& b)
+cross(vector<T, 4> const& lhs, vector<U, 4> const& rhs)
 {
     vector< T, 4 > res {
-        a.template at<1>() * b.template at<2>() - a.template at<2>() * b.template at<1>(),
-        a.template at<2>() * b.template at<0>() - a.template at<0>() * b.template at<2>(),
-        a.template at<0>() * b.template at<1>() - a.template at<1>() * b.template at<0>(),
+        lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
+        lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
+        lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>(),
         typename vector<T, 4>::value_type(1)
     };
     return res;
@@ -350,13 +360,13 @@ perpendicular( vector<T, Size> const& n, vector<T, Size> const& v )
  * @return Pair of vectors vǁ, vⱶ. vǁ is parallel to n, vǁ + vⱶ = v
  */
 template < typename T, size_t Size >
-std::pair<
+::std::pair<
     vector< typename vector<T, Size>::value_type, Size >,
     vector< typename vector<T, Size>::value_type, Size > >
 project( vector<T, Size> const& n, vector<T, Size> const& v )
 {
     auto p = projection(n, v);
-    return std::make_pair(p, v - p);
+    return ::std::make_pair(p, v - p);
 }
 
 } // namespace math
