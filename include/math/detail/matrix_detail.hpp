@@ -5,11 +5,12 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_MATRIX_DETAIL_HPP_
-#define ZMIJ_MATRIX_DETAIL_HPP_
+#ifndef PUSHKIN_MATRIX_DETAIL_HPP_
+#define PUSHKIN_MATRIX_DETAIL_HPP_
 
 #include <math/vector.hpp>
 
+namespace psst {
 namespace math {
 
 namespace detail {
@@ -562,5 +563,6 @@ struct identity_matrix< 0, matrix< T, Size, Size > > {
 } // namespace detail
 
 }  // namespace math
+}  /* namespace psst */
 
-#endif /* ZMIJ_MATRIX_DETAIL_HPP_ */
+#endif /* PUSHKIN_MATRIX_DETAIL_HPP_ */

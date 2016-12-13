@@ -5,14 +5,15 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_MATH_MATRIX_IO_HPP_
-#define ZMIJ_MATH_MATRIX_IO_HPP_
+#ifndef PUSHKIN_MATH_MATRIX_IO_HPP_
+#define PUSHKIN_MATH_MATRIX_IO_HPP_
 
 #include <math/matrix.hpp>
 #include <math/vector_io.hpp>
 
 #include <iostream>
 
+namespace psst {
 namespace math {
 
 namespace detail {
@@ -67,5 +68,6 @@ operator << (std::ostream& os, matrix< T, RC, CC> const& m)
 
 
 } // namespace math
+}  /* namespace psst */
 
-#endif /* ZMIJ_MATH_MATRIX_IO_HPP_ */
+#endif /* PUSHKIN_MATH_MATRIX_IO_HPP_ */

@@ -5,12 +5,13 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_MATH_MATRIX_HPP_
-#define ZMIJ_MATH_MATRIX_HPP_
+#ifndef PUSHKIN_MATH_MATRIX_HPP_
+#define PUSHKIN_MATH_MATRIX_HPP_
 
 #include "math/detail/matrix_detail.hpp"
 #include <array>
 
+namespace psst {
 namespace math {
 
 /**
@@ -224,6 +225,7 @@ operator * (vector< U, C> const& v, matrix< T, C, C > const& m)
 // TODO matrix determinant
 
 } // namespace math
+}  /* namespace psst */
 
 //
 //template < typename T, size_t Rows, size_t Cols >
@@ -292,4 +294,4 @@ operator * (vector< U, C> const& v, matrix< T, C, C > const& m)
 //}
 //
 
-#endif /* ZMIJ_MATRIX_HPP_ */
+#endif /* PUSHKIN_MATRIX_HPP_ */

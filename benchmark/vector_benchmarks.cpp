@@ -12,6 +12,7 @@
 #include <math/vector_io.hpp>
 #include <math/matrix_io.hpp>
 
+namespace psst {
 namespace math {
 namespace bench {
 
@@ -263,5 +264,6 @@ BENCHMARK_TEMPLATE(Vector4Norm,         vector<double,  4>);
 
 }  /* namespace bench */
 }  /* namespace math */
+}  /* namespace psst */
 
 BENCHMARK_MAIN()

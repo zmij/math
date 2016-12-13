@@ -5,11 +5,12 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_VECTOR_DETAIL_HPP_
-#define ZMIJ_VECTOR_DETAIL_HPP_
+#ifndef PUSHKIN_VECTOR_DETAIL_HPP_
+#define PUSHKIN_VECTOR_DETAIL_HPP_
 
 #include <type_traits>
 
+namespace psst {
 namespace math {
 
 namespace detail {
@@ -465,7 +466,6 @@ struct set_all_elements< 0, vector< T, Size > > {
 } // namespace detail
 
 }  // namespace math
+}  /* namespace psst */
 
-
-
-#endif /* ZMIJ_VECTOR_DETAIL_HPP_ */
+#endif /* PUSHKIN_VECTOR_DETAIL_HPP_ */

@@ -5,8 +5,8 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_MATH_VECTOR_HPP_
-#define ZMIJ_MATH_VECTOR_HPP_
+#ifndef PUSHKIN_MATH_VECTOR_HPP_
+#define PUSHKIN_MATH_VECTOR_HPP_
 
 #include <array>
 #include <algorithm>
@@ -16,6 +16,7 @@
 
 #include <math/detail/vector_detail.hpp>
 
+namespace psst {
 namespace math {
 
 template < typename T, size_t Size >
@@ -378,5 +379,6 @@ project( vector<T, Size> const& n, vector<T, Size> const& v )
 }
 
 } // namespace math
+}  /* namespace psst */
 
-#endif /* ZMIJ_MATH_VECTOR_HPP_ */
+#endif /* PUSHKIN_MATH_VECTOR_HPP_ */

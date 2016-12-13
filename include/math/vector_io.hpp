@@ -5,12 +5,13 @@
  *      Author: zmij
  */
 
-#ifndef ZMIJ_MATH_VECTOR_IO_HPP_
-#define ZMIJ_MATH_VECTOR_IO_HPP_
+#ifndef PUSHKIN_MATH_VECTOR_IO_HPP_
+#define PUSHKIN_MATH_VECTOR_IO_HPP_
 
 #include <math/vector.hpp>
 #include <iostream>
 
+namespace psst {
 namespace math {
 namespace io {
 
@@ -213,5 +214,6 @@ operator << (std::ostream& os, vector<T, Size> const& v)
 }
 
 } // namespace math
+}  /* namespace psst */
 
-#endif /* ZMIJ_MATH_VECTOR_IO_HPP_ */
+#endif /* PUSHKIN_MATH_VECTOR_IO_HPP_ */

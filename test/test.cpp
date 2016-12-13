@@ -15,6 +15,7 @@
 
 #include <gtest/gtest.h>
 
+namespace psst {
 namespace math {
 
 template <typename T, ::std::size_t N>
@@ -342,6 +343,6 @@ TEST(Matrix, MatrixMultiply)
 
 }  /* namespace test */
 }  /* namespace math */
-
+}  /* namespace psst */
 
 
