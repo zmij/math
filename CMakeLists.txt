@@ -26,15 +26,19 @@ endif()
 option(BUILD_TESTS "Build tests for ${lib_name} library" ON)
 option(BUILD_BENCHMARKS "Build benchmarks for ${lib_name} library" ON)
 
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+
 add_definitions("-std=c++11")
 add_definitions(-Wall -Werror -pedantic)
 add_subdirectory(include)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 if (BUILD_TESTS)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
     enable_testing()
     add_subdirectory(test)
 endif()
 
 if (BUILD_BENCHMARKS)
+    enable_testing()
+    add_subdirectory(benchmark)
 endif()

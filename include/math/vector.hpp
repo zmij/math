@@ -191,6 +191,13 @@ operator >= (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
     return !(lhs < rhs);
 }
 
+template < typename T, size_t Size >
+typename vector< T, Size>::value_type
+dot_product(vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
+{
+    return detail::dot_product< Size - 1, vector<T, Size> >()(lhs, rhs);
+}
+
 /**
  * Dot product operator
  * @param lhs
