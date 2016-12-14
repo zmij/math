@@ -150,44 +150,50 @@ struct vector : detail::vector_builder<
     }
 };
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator == (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator == (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
-    return ::std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    using left_side = vector<T, TSize>;
+    using right_side = vector<U, USize>;
+    using min_type = detail::min<TSize, USize>;
+    return detail::vector_cmp<min_type::value - 1, left_side, right_side>::eq(lhs, rhs);
 }
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator != (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator != (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
     return !(lhs == rhs);
 }
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator < (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator < (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
-    return ::std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    using left_side = vector<T, TSize>;
+    using right_side = vector<U, USize>;
+    using min_type = detail::min<TSize, USize>;
+    return detail::vector_cmp<min_type::value - 1, left_side, right_side>::less(lhs, rhs);
 }
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator > (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator > (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
     return rhs < lhs;
 }
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator <= (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator <= (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
     return !(rhs < lhs);
 }
 
-template < typename T, typename U, size_t Size >
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
 bool
-operator >= (vector< T, Size > const& lhs, vector < U, Size > const& rhs)
+operator >= (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
 {
     return !(lhs < rhs);
 }

@@ -337,8 +337,22 @@ TEST(Matrix, MatrixMultiply)
         { 1406, 1472, 1538 },
         { 2036, 2132, 2228 }
     };
-    vector3d vec{1, 2, 3};
     EXPECT_EQ(expected, initial * initial);
+}
+
+TEST(Matrix, RectMatrixAdd)
+{
+    matrix<float, 3, 4> initial{
+        { 11, 12, 13, 14 },
+        { 21, 22, 23, 24 },
+        { 31, 32, 33, 34 }
+    };
+    matrix<float, 3, 4> expected{
+        { 22, 24, 26, 28 },
+        { 42, 44, 46, 48 },
+        { 62, 64, 66, 68 }
+    };
+    EXPECT_EQ(expected, initial + initial);
 }
 
 }  /* namespace test */

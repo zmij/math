@@ -94,8 +94,9 @@ struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::ty
         return res;
     }
 
-    static this_type const&
-    identity(typename ::std::enable_if< RC == CC >::type* = 0)
+    template < typename U = T >
+    static typename ::std::enable_if< RC == CC, matrix<U, RC, CC> >::type const&
+    identity()
     {
         static this_type _identity(detail::identity_matrix< RC - 1, this_type >::build_matrix());
         return _identity;
@@ -106,7 +107,9 @@ template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
 bool
 operator == (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
 {
-    return ::std::equal(lhs.begin(), lhs.end(), rhs.begin());
+    using left_side     = matrix<T, RC, CC>;
+    using right_side    = matrix<U, RC, CC>;
+    return detail::matrix_cmp<RC - 1, left_side, right_side>::eq(lhs, rhs);
 }
 
 template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
@@ -114,6 +117,15 @@ bool
 operator != (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
 {
     return !(lhs == rhs);
+}
+
+template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
+bool
+operator < (matrix<T, RC, CC> const& lhs, matrix<U, RC, CC> const& rhs)
+{
+    using left_side     = matrix<T, RC, CC>;
+    using right_side    = matrix<U, RC, CC>;
+    return detail::matrix_cmp<RC - 1, left_side, right_side>::less(lhs, rhs);
 }
 
 template <typename T, typename U, size_t RC, size_t CC >
@@ -187,12 +199,12 @@ operator * (matrix< T, R1, C1 > const& lhs, matrix< U, C1, C2 > const& rhs )
 }
 
 /**
- * Multiplication of a matrix and a vector.
+ * Multiplication of a square matrix and a vector.
  * Vector is considered a column matrix.
  */
-template < typename T, typename U, size_t C >
+template < typename T, typename U, ::std::size_t C >
 vector< T, C >
-operator * (matrix< T, C, C > const& m, vector< U, C> const& v)
+operator * (matrix< T, C, C > const& m, vector< U, C > const& v)
 {
     using multiplicator = detail::matrix_vector_multiply< C -1,
                             matrix< T, C, C >, vector< U, C > >;
@@ -212,7 +224,7 @@ operator * (matrix< T, C, C > const& m, vector< U, C> const& v)
  * @param m
  * @return
  */
-template < typename T, typename U, size_t C >
+template < typename T, typename U, ::std::size_t C >
 vector< T, C >
 operator * (vector< U, C> const& v, matrix< T, C, C > const& m)
 {
@@ -222,6 +234,27 @@ operator * (vector< U, C> const& v, matrix< T, C, C > const& m)
 // TODO matrix minor
 // TODO matrix cofactor
 // TODO matrix determinant
+
+template < ::std::size_t R, ::std::size_t C >
+struct matrix_size {
+    static constexpr ::std::size_t rows = R;
+    static constexpr ::std::size_t cols = C;
+    static constexpr ::std::size_t size = rows * cols;
+};
+
+template < typename T >
+struct matrix_traits;
+
+template < typename T, ::std::size_t R, ::std::size_t C >
+struct matrix_traits<matrix<T, R, C>> {
+    using matrix_type                   = matrix<T, R, C>;
+    using value_type                    = typename matrix_type::value_type;
+    using size_type                     = matrix_size<R, C>;
+    static constexpr ::std::size_t rows = size_type::rows;
+    static constexpr ::std::size_t cols = size_type::cols;
+    static constexpr ::std::size_t size = size_type::size;
+};
+
 
 } // namespace math
 }  /* namespace psst */

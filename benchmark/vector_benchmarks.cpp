@@ -12,14 +12,11 @@
 #include <pushkin/math/vector_io.hpp>
 #include <pushkin/math/matrix_io.hpp>
 
+#include "make_test_data.hpp"
+
 namespace psst {
 namespace math {
 namespace bench {
-
-using vector3d = math::vector<double, 3>;
-using vector3f = math::vector<float, 3>;
-using vector4d = math::vector<double, 4>;
-using vector4f = math::vector<float, 3>;
 
 //----------------------------------------------------------------------------
 //  Cmp ops
@@ -34,15 +31,42 @@ Compare(benchmark::State& state)
         benchmark::DoNotOptimize(lhs == rhs);
     }
 }
+
 //----------------------------------------------------------------------------
-//  Vector3
+//  Vector
 //----------------------------------------------------------------------------
 template < typename Vector >
 void
-Vector3Add( benchmark::State& state )
+VectorEq( benchmark::State& state )
 {
-    Vector v1{1, 2, 3};
-    Vector v2{3, 2, 1};
+    while (state.KeepRunning()) {
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        auto v2 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        benchmark::DoNotOptimize(v1 == v2);
+    }
+}
+template < typename Vector >
+void
+VectorCmp( benchmark::State& state )
+{
+    while (state.KeepRunning()) {
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        auto v2 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        benchmark::DoNotOptimize(v1 < v2);
+    }
+}
+template < typename Vector >
+void
+VectorAdd( benchmark::State& state )
+{
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(v2 += v1);
@@ -50,10 +74,12 @@ Vector3Add( benchmark::State& state )
 }
 template < typename Vector >
 void
-Vector3Sub( benchmark::State& state )
+VectorSub( benchmark::State& state )
 {
-    Vector v1{1, 2, 3};
-    Vector v2{3, 2, 1};
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(v2 -= v1);
@@ -61,28 +87,32 @@ Vector3Sub( benchmark::State& state )
 }
 template < typename Vector >
 void
-Vector3ScalarMul( benchmark::State& state )
+VectorScalarMul( benchmark::State& state )
 {
     while (state.KeepRunning()) {
-        Vector v1{1, 2, 3};
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 *= 100500);
     }
 }
 template < typename Vector >
 void
-Vector3ScalarDiv( benchmark::State& state )
+VectorScalarDiv( benchmark::State& state )
 {
     while (state.KeepRunning()) {
-        Vector v1{1, 2, 3};
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 /= 100500);
     }
 }
 template < typename Vector >
 void
-Vector3Dot( benchmark::State& state )
+VectorDot( benchmark::State& state )
 {
-    Vector v1{1, 2, 3};
-    Vector v2{3, 2, 1};
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize( dot_product(v1, v2) );
@@ -90,10 +120,12 @@ Vector3Dot( benchmark::State& state )
 }
 template < typename Vector >
 void
-Vector3Cross( benchmark::State& state )
+VectorCross( benchmark::State& state )
 {
-    Vector v1{1, 2, 3};
-    Vector v2{3, 2, 1};
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize( cross(v1, v2) );
@@ -101,166 +133,95 @@ Vector3Cross( benchmark::State& state )
 }
 template < typename Vector >
 void
-Vector3MagSQ( benchmark::State& state )
+VectorMagSQ( benchmark::State& state )
 {
     while (state.KeepRunning()) {
-        Vector v1{1, 2, 3};
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.magnitude_square());
     }
 }
 template < typename Vector >
 void
-Vector3Mag( benchmark::State& state )
+VectorMag( benchmark::State& state )
 {
     while (state.KeepRunning()) {
-        Vector v1{1, 2, 3};
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.magnitude());
     }
 }
 template < typename Vector >
 void
-Vector3Norm( benchmark::State& state )
+VectorNorm( benchmark::State& state )
 {
     while (state.KeepRunning()) {
-        Vector v1{1, 2, 3};
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.normalize());
     }
 }
 
-
-//----------------------------------------------------------------------------
-//  Vector4
-//----------------------------------------------------------------------------
-template < typename Vector >
-void
-Vector4Add( benchmark::State& state )
-{
-    Vector v1{1, 2, 3, 4};
-    Vector v2{4, 3, 2, 1};
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(v2 += v1);
-    }
-}
-template < typename Vector >
-void
-Vector4Sub( benchmark::State& state )
-{
-    Vector v1{1, 2, 3, 4};
-    Vector v2{4, 3, 2, 1};
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(v2 -= v1);
-    }
-}
-template < typename Vector >
-void
-Vector4ScalarMul( benchmark::State& state )
-{
-    while (state.KeepRunning()) {
-        Vector v1{1, 2, 3, 4};
-        benchmark::DoNotOptimize(v1 *= 100500);
-    }
-}
-template < typename Vector >
-void
-Vector4ScalarDiv( benchmark::State& state )
-{
-    while (state.KeepRunning()) {
-        Vector v1{1, 2, 3, 4};
-        benchmark::DoNotOptimize(v1 /= 100500);
-    }
-}
-template < typename Vector >
-void
-Vector4Dot( benchmark::State& state )
-{
-    Vector v1{1, 2, 3, 4};
-    Vector v2{4, 3, 2, 1};
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize( dot_product(v1, v2) );
-    }
-}
-template < typename Vector >
-void
-Vector4Cross( benchmark::State& state )
-{
-    Vector v1{1, 2, 3, 4};
-    Vector v2{4, 3, 2, 1};
-
-    while (state.KeepRunning()) {
-        benchmark::DoNotOptimize( cross(v1, v2) );
-    }
-}
-template < typename Vector >
-void
-Vector4MagSQ( benchmark::State& state )
-{
-    while (state.KeepRunning()) {
-        Vector v1{1, 2, 3, 4};
-        benchmark::DoNotOptimize(v1.magnitude_square());
-    }
-}
-template < typename Vector >
-void
-Vector4Mag( benchmark::State& state )
-{
-    while (state.KeepRunning()) {
-        Vector v1{1, 2, 3, 4};
-        benchmark::DoNotOptimize(v1.magnitude());
-    }
-}
-template < typename Vector >
-void
-Vector4Norm( benchmark::State& state )
-{
-    while (state.KeepRunning()) {
-        Vector v1{1, 2, 3, 4};
-        benchmark::DoNotOptimize(v1.normalize());
-    }
-}
 //----------------------------------------------------------------------------
 BENCHMARK_TEMPLATE(Compare,             float);
 BENCHMARK_TEMPLATE(Compare,             double);
 
-BENCHMARK_TEMPLATE(Vector3Add,          vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Add,          vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3Sub,          vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Sub,          vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3ScalarMul,    vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3ScalarMul,    vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3ScalarDiv,    vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3ScalarDiv,    vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3Dot,          vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Dot,          vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3Cross,        vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Cross,        vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3MagSQ,        vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3MagSQ,        vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3Mag,          vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Mag,          vector<double,  3>);
-BENCHMARK_TEMPLATE(Vector3Norm,         vector<float,   3>);
-BENCHMARK_TEMPLATE(Vector3Norm,         vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorEq,            vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorEq,            vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorCmp,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorAdd,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorSub,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorSub,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorScalarMul,     vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorDot,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorDot,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorCross,         vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorCross,         vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorMagSQ,         vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorMagSQ,         vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorMag,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorMag,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorNorm,          vector<double,  3>);
 
-BENCHMARK_TEMPLATE(Vector4Add,          vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Add,          vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4Sub,          vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Sub,          vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4ScalarMul,    vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4ScalarMul,    vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4ScalarDiv,    vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4ScalarDiv,    vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4Dot,          vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Dot,          vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4Cross,        vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Cross,        vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4MagSQ,        vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4MagSQ,        vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4Mag,          vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Mag,          vector<double,  4>);
-BENCHMARK_TEMPLATE(Vector4Norm,         vector<float,   4>);
-BENCHMARK_TEMPLATE(Vector4Norm,         vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorEq,            vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorEq,            vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorCmp,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorAdd,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorSub,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorSub,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorScalarMul,     vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorDot,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorDot,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorCross,         vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorCross,         vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorMagSQ,         vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorMagSQ,         vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorMag,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorMag,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorNorm,          vector<double,  4>);
+
+BENCHMARK_TEMPLATE(VectorEq,            vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorSub,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorDot,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorMagSQ,         vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorMag,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   10>);
 
 }  /* namespace bench */
 }  /* namespace math */

@@ -177,6 +177,64 @@ struct matrix;
 
 namespace detail {
 
+template < ::std::size_t N, typename T, typename U >
+struct matrix_cmp;
+
+template < ::std::size_t N, typename T, typename U, ::std::size_t RC, ::std::size_t CC >
+struct matrix_cmp< N, matrix<T, RC, CC>, matrix<U, RC, CC> > {
+    using left_side     = matrix<T, RC, CC>;
+    using right_side    = matrix<U, RC, CC>;
+    using prev_elem     = matrix_cmp<N - 1, left_side, right_side>;
+
+    static bool
+    eq(left_side const& lhs, right_side const& rhs)
+    {
+        return prev_elem::eq(lhs, rhs) &&
+                lhs.template at<N>() == rhs.template at<N>();
+    }
+    static bool
+    less(left_side const& lhs, right_side const& rhs)
+    {
+        auto p = prev_elem::cmp(lhs, rhs);
+        return p < 0 ? true : lhs.template at<N>() < rhs.template at<N>();
+    }
+    static int
+    cmp(left_side const& lhs, right_side const& rhs)
+    {
+        auto p = prev_elem::cmp(lhs, rhs);
+        if (p == 0) {
+            auto l = lhs.template at<0>();
+            auto r = rhs.template at<0>();
+            return l == r ? 0 : l < r ? -1 : 1;
+        }
+        return p;
+    }
+};
+
+template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
+struct matrix_cmp< 0, matrix<T, RC, CC>, matrix<U, RC, CC> > {
+    using left_side     = matrix<T, RC, CC>;
+    using right_side    = matrix<U, RC, CC>;
+
+    static bool
+    eq(left_side const& lhs, right_side const& rhs)
+    {
+        return lhs.template at<0>() == rhs.template at<0>();
+    }
+    static bool
+    less(left_side const& lhs, right_side const& rhs)
+    {
+        return lhs.template at<0>() < rhs.template at<0>();
+    }
+    static int
+    cmp(left_side const& lhs, right_side const& rhs)
+    {
+        auto l = lhs.template at<0>();
+        auto r = rhs.template at<0>();
+        return l == r ? 0 : l < r ? -1 : 1;
+    }
+};
+
 /**
  * Matrix scalar multiplication metafunction
  */

@@ -320,6 +320,74 @@ struct vector;
 
 namespace detail {
 
+template < ::std::size_t L, ::std::size_t R >
+struct min : ::std::conditional<
+        L < R,
+        ::std::integral_constant<::std::size_t, L>,
+        ::std::integral_constant<::std::size_t, R>
+    >::type {};
+
+template < ::std::size_t N, typename T, typename U >
+struct vector_cmp;
+
+template < ::std::size_t N, typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+struct vector_cmp<N, vector<T, TSize>, vector<U, USize>> {
+    using left_side     = vector<T, TSize>;
+    using right_side    = vector<U, USize>;
+    using prev_elem     = vector_cmp<N - 1, left_side, right_side>;
+
+    static bool
+    eq(left_side const& lhs, right_side const& rhs)
+    {
+        return prev_elem::eq(lhs, rhs) &&
+                lhs.template at<N>() == rhs.template at<N>();
+    }
+
+    static bool
+    less(left_side const& lhs, right_side const& rhs)
+    {
+        auto p = prev_elem::cmp(lhs, rhs);
+        return p < 0 ? true : lhs.template at<N>() < rhs.template at<N>();
+    }
+    static int
+    cmp(left_side const& lhs, right_side const& rhs)
+    {
+        auto p = prev_elem::cmp(lhs, rhs);
+        if (p == 0) {
+            auto l = lhs.template at<0>();
+            auto r = rhs.template at<0>();
+            return l == r ? 0 : l < r ? -1 : 1;
+        }
+        return p;
+    }
+};
+
+template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+struct vector_cmp<0, vector<T, TSize>, vector<U, USize>> {
+    using left_side     = vector<T, TSize>;
+    using right_side    = vector<U, USize>;
+
+    static bool
+    eq(left_side const& lhs, right_side const& rhs)
+    {
+        return lhs.template at<0>() == rhs.template at<0>();
+    }
+
+    static bool
+    less(left_side const& lhs, right_side const& rhs)
+    {
+        return lhs.template at<0>() < rhs.template at<0>();
+    }
+
+    static int
+    cmp(left_side const& lhs, right_side const& rhs)
+    {
+        auto l = lhs.template at<0>();
+        auto r = rhs.template at<0>();
+        return l == r ? 0 : l < r ? -1 : 1;
+    }
+};
+
 template < ::std::size_t N, typename T >
 struct dot_product;
 
