@@ -93,7 +93,9 @@ struct axis_access< 3, axes::xyzw, VectorBuilder, T >
 
     //@{
     /** @name Coordinate permutations */
-    PSST_MATH_COORD_PERMUTATIONS3(axes::xyzw, x, y, z);
+    PSST_MATH_COORD_PERMUTATION2(axes::xyzw, x, z)
+    PSST_MATH_COORD_PERM2(axes::xyzw, y, z)
+    PSST_MATH_COORD_PERMUTATIONS3(axes::xyzw, x, y, z)
     //@}
 };
 
@@ -112,7 +114,82 @@ struct axis_access< 4, axes::xyzw, VectorBuilder, T >
 
     //@{
     /** @name Coordinate permutations */
+    PSST_MATH_COORD_PERMUTATION2(axes::xyzw, x, w)
+    PSST_MATH_COORD_PERM2(axes::xyzw, y, w)
+    PSST_MATH_COORD_PERM2(axes::xyzw, z, w)
     PSST_MATH_COORD_PERMUTATIONS4(axes::xyzw, x, y, z, w)
+    //@}
+};
+//@}
+
+//@{
+/** @name wxyz axes names */
+template < typename VectorBuilder, typename T >
+struct axis_access< 1, axes::wxyz, VectorBuilder, T >
+    : basic_axis_access< VectorBuilder, T > {
+
+    using base_type     = basic_axis_access<VectorBuilder, T>;
+    using coord_names   = axes::wxyz;
+
+    PSST_MATH_COORD_ACCESS(w, 0)
+};
+
+template < typename VectorBuilder, typename T >
+struct axis_access< 2, axes::wxyz, VectorBuilder, T >
+    : axis_access< 1, axes::wxyz, VectorBuilder, T > {
+
+    using base_type = axis_access<1, axes::wxyz, VectorBuilder, T>;
+    using value_type = typename base_type::value_type;
+
+    using base_type::w;
+
+    PSST_MATH_COORD_ACCESS(x, 1)
+
+    //@{
+    /** @name Coordinate permutations */
+    PSST_MATH_COORD_PERMUTATION2(axes::wxyz, w, x);
+    //@}
+};
+
+template < typename VectorBuilder, typename T >
+struct axis_access< 3, axes::wxyz, VectorBuilder, T >
+    : axis_access< 2, axes::wxyz, VectorBuilder, T > {
+
+    using base_type = axis_access<2, axes::wxyz, VectorBuilder, T>;
+    using value_type = typename base_type::value_type;
+
+    using base_type::w;
+    using base_type::x;
+
+    PSST_MATH_COORD_ACCESS(y, 2)
+
+    //@{
+    /** @name Coordinate permutations */
+    PSST_MATH_COORD_PERMUTATION2(axes::wxyz, x, y)
+    PSST_MATH_COORD_PERM2(axes::wxyz, w, y)
+    PSST_MATH_COORD_PERMUTATIONS3(axes::wxyz, w, x, y)
+    //@}
+};
+
+template < typename VectorBuilder, typename T >
+struct axis_access< 4, axes::wxyz, VectorBuilder, T >
+    : axis_access< 3, axes::wxyz, VectorBuilder, T > {
+
+    using base_type = axis_access<3, axes::wxyz, VectorBuilder, T>;
+    using value_type = typename base_type::value_type;
+
+    using base_type::w;
+    using base_type::x;
+    using base_type::y;
+
+    PSST_MATH_COORD_ACCESS(z, 3)
+
+    //@{
+    /** @name Coordinate permutations */
+    PSST_MATH_COORD_PERMUTATION2(axes::wxyz, x, z)
+    PSST_MATH_COORD_PERM2(axes::wxyz, w, z)
+    PSST_MATH_COORD_PERM2(axes::wxyz, y, z)
+    PSST_MATH_COORD_PERMUTATIONS4(axes::wxyz, w, x, y, z)
     //@}
 };
 //@}

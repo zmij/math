@@ -14,6 +14,7 @@ namespace math {
 namespace axes {
 struct none {};
 struct xyzw {};
+struct wxyz {};
 struct argb {};
 struct rgba {};
 struct hsva {};
