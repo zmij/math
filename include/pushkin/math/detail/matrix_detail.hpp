@@ -9,30 +9,34 @@
 #define PUSHKIN_MATRIX_DETAIL_HPP_
 
 #include <pushkin/math/vector.hpp>
+#include <pushkin/math/matrix_fwd.hpp>
 
 namespace psst {
 namespace math {
 
 namespace detail {
 
-template < typename RowIndexTuple, ::std::size_t ColCount, typename T >
+template < typename RowIndexTuple, ::std::size_t ColCount, typename T, typename Axes >
 struct matrix_builder;
 
-template < size_t ... RowIndexes, ::std::size_t CC, typename T >
-struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
-        data_holder< RowIndexes, vector< T, CC > > ... {
+template < ::std::size_t ... RowIndexes, ::std::size_t CC, typename T, typename Axes >
+struct matrix_builder < indexes_tuple< RowIndexes ... >, CC, T, Axes > :
+        data_holder< RowIndexes, vector< T, CC, Axes > > ...,
+        axes_names<Axes>::template type<sizeof ... (RowIndexes),
+            matrix_builder< indexes_tuple<RowIndexes...>, CC, T, Axes >,
+            vector<T, CC, Axes>> {
 
     using row_index_tuple       = detail::indexes_tuple< RowIndexes ... >;
-    using row_type              = vector< T, CC >;
+    using row_type              = vector< T, CC, Axes >;
 
     static constexpr ::std::size_t row_count    = row_index_tuple::size;
     static constexpr ::std::size_t col_count    = row_type::size;
     static constexpr ::std::size_t size         = row_count * col_count;
 
-    using this_type             = matrix_builder < row_index_tuple, CC, T >;
+    using this_type             = matrix_builder < row_index_tuple, CC, T, Axes >;
 
     using col_index_tuple       = typename detail::index_builder< CC >::type;
-    using transposed_type       = matrix_builder< col_index_tuple, row_index_tuple::size, T >;
+    using transposed_type       = matrix_builder< col_index_tuple, row_index_tuple::size, T, Axes >;
 
 
     using row_iterator          = row_type*;
@@ -58,8 +62,8 @@ struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
 
     matrix_builder() = default;
 
-    template < typename ... E >
-    matrix_builder( vector<E, CC> const& ... args )
+    template < typename EAxes, typename ... E >
+    matrix_builder( vector<E, CC, EAxes> const& ... args )
         : data_holder< RowIndexes, row_type >(args) ...
     {
     }
@@ -84,14 +88,14 @@ struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
     {
     }
 
-    template < size_t N >
+    template < ::std::size_t N >
     lvalue_row_reference
     at()
     {
         return this->detail::data_holder< N, row_type >::value;
     }
 
-    template < size_t N >
+    template < ::std::size_t N >
     const_row_reference
     at() const
     {
@@ -155,14 +159,14 @@ struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
     }
 
     lvalue_row_reference
-    operator[] (size_t idx)
+    operator[] (::std::size_t idx)
     {
         assert(idx < row_count);
         return row_begin()[idx];
     }
 
     const_row_reference
-    operator[] (size_t idx) const
+    operator[] (::std::size_t idx) const
     {
         assert(idx < row_count);
         return row_begin()[idx];
@@ -171,19 +175,18 @@ struct matrix_builder < detail::indexes_tuple< RowIndexes ... >, CC, T > :
 
 } // namespace detail
 
-// Forward decl
-template < typename T, size_t RC, size_t CC >
-struct matrix;
-
 namespace detail {
 
 template < ::std::size_t N, typename T, typename U >
 struct matrix_cmp;
 
-template < ::std::size_t N, typename T, typename U, ::std::size_t RC, ::std::size_t CC >
-struct matrix_cmp< N, matrix<T, RC, CC>, matrix<U, RC, CC> > {
-    using left_side     = matrix<T, RC, CC>;
-    using right_side    = matrix<U, RC, CC>;
+template < ::std::size_t N,
+    typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_cmp< N, matrix<T, RC, CC, Axes>, matrix<U, RC, CC, Axes> > {
+    using left_side     = matrix<T, RC, CC, Axes>;
+    using right_side    = matrix<U, RC, CC, Axes>;
     using prev_elem     = matrix_cmp<N - 1, left_side, right_side>;
 
     static bool
@@ -211,10 +214,12 @@ struct matrix_cmp< N, matrix<T, RC, CC>, matrix<U, RC, CC> > {
     }
 };
 
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC >
-struct matrix_cmp< 0, matrix<T, RC, CC>, matrix<U, RC, CC> > {
-    using left_side     = matrix<T, RC, CC>;
-    using right_side    = matrix<U, RC, CC>;
+template < typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_cmp< 0, matrix<T, RC, CC, Axes>, matrix<U, RC, CC, Axes> > {
+    using left_side     = matrix<T, RC, CC, Axes>;
+    using right_side    = matrix<U, RC, CC, Axes>;
 
     static bool
     eq(left_side const& lhs, right_side const& rhs)
@@ -238,12 +243,14 @@ struct matrix_cmp< 0, matrix<T, RC, CC>, matrix<U, RC, CC> > {
 /**
  * Matrix scalar multiplication metafunction
  */
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct matrix_scalar_multiplication;
 
-template < size_t N, typename T, size_t RC, size_t CC >
-struct matrix_scalar_multiplication< N, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < ::std::size_t N, typename T,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_scalar_multiplication< N, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     template < typename U >
     void
     operator()( matrix_type& m, U s )
@@ -253,9 +260,9 @@ struct matrix_scalar_multiplication< N, matrix< T, RC, CC > > {
     }
 };
 
-template < typename T, size_t RC, size_t CC >
-struct matrix_scalar_multiplication< 0, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_scalar_multiplication< 0, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     template < typename U >
     void
     operator()( matrix_type& m, U s )
@@ -267,12 +274,14 @@ struct matrix_scalar_multiplication< 0, matrix< T, RC, CC > > {
 /**
  * Matrix scalar multiplication metafunction
  */
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
 struct matrix_scalar_division;
 
-template < size_t N, typename T, size_t RC, size_t CC >
-struct matrix_scalar_division< N, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < ::std::size_t N, typename T,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_scalar_division< N, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     template < typename U >
     void
     operator()( matrix_type& m, U s )
@@ -282,9 +291,9 @@ struct matrix_scalar_division< N, matrix< T, RC, CC > > {
     }
 };
 
-template < typename T, size_t RC, size_t CC >
-struct matrix_scalar_division< 0, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_scalar_division< 0, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     template < typename U >
     void
     operator()( matrix_type& m, U s )
@@ -296,25 +305,33 @@ struct matrix_scalar_division< 0, matrix< T, RC, CC > > {
 /**
  * Matrix addition metafunction
  */
-template < size_t N, typename T >
+template < ::std::size_t N, typename T, typename U >
 struct matrix_addition;
 
-template < size_t N, typename T, size_t RC, size_t CC >
-struct matrix_addition< N, matrix < T, RC, CC > > {
-    template < typename U >
+template < ::std::size_t N, typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_addition< N, matrix < T, RC, CC, Axes >, matrix< U, RC, CC, Axes > > {
+    using left_type     = matrix<T, RC, CC, Axes>;
+    using right_type    = matrix<T, RC, CC, Axes>;
+
     void
-    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    operator()(left_type& lhs, right_type const& rhs)
     {
-        matrix_addition< N - 1, matrix< T, RC, CC > >{}(lhs, rhs);
+        matrix_addition< N - 1, left_type, right_type >{}(lhs, rhs);
         lhs.template at<N>() += rhs.template at<N>();
     }
 };
 
-template < typename T, size_t RC, size_t CC >
-struct matrix_addition< 0, matrix < T, RC, CC > > {
-    template < typename U >
+template < typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_addition< 0, matrix < T, RC, CC, Axes >, matrix < U, RC, CC, Axes > > {
+    using left_type     = matrix<T, RC, CC, Axes>;
+    using right_type    = matrix<T, RC, CC, Axes>;
+
     void
-    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    operator()(left_type& lhs, right_type const& rhs)
     {
         lhs.template at<0>() += rhs.template at<0>();
     }
@@ -323,24 +340,32 @@ struct matrix_addition< 0, matrix < T, RC, CC > > {
 /**
  * Matrix subtraction metafunction
  */
-template < ::std::size_t N, typename T >
+template < ::std::size_t N, typename T, typename U >
 struct matrix_subtraction;
 
-template < ::std::size_t N, typename T, size_t RC, size_t CC >
-struct matrix_subtraction<N, matrix<T, RC, CC>> {
-    template < typename U >
+template < ::std::size_t N, typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_subtraction<N, matrix<T, RC, CC, Axes>, matrix<U, RC, CC, Axes>> {
+    using left_type     = matrix<T, RC, CC, Axes>;
+    using right_type    = matrix<T, RC, CC, Axes>;
+
     void
-    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    operator()(left_type& lhs, right_type const& rhs)
     {
-        matrix_subtraction< N - 1, matrix< T, RC, CC > >{}(lhs, rhs);
+        matrix_subtraction< N - 1, left_type, right_type >{}(lhs, rhs);
         lhs.template at<N>() -= rhs.template at<N>();
     }
 };
-template < typename T, size_t RC, size_t CC >
-struct matrix_subtraction< 0, matrix < T, RC, CC > > {
-    template < typename U >
+template < typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_subtraction< 0, matrix < T, RC, CC, Axes >, matrix< U, RC, CC, Axes > > {
+    using left_type     = matrix<T, RC, CC, Axes>;
+    using right_type    = matrix<T, RC, CC, Axes>;
+
     void
-    operator()(matrix<T, RC, CC>& lhs, matrix<U, RC, CC> const& rhs)
+    operator()(left_type& lhs, right_type const& rhs)
     {
         lhs.template at<0>() -= rhs.template at<0>();
     }
@@ -349,12 +374,13 @@ struct matrix_subtraction< 0, matrix < T, RC, CC > > {
 /**
  * Matrix transposition row loop metafunction
  */
-template < size_t R, size_t C, typename T >
+template < ::std::size_t R, ::std::size_t C, typename T >
 struct matrix_row_transpose;
 
-template < size_t R, size_t C, typename T, size_t RC, size_t CC >
-struct matrix_row_transpose< R, C, matrix<T, RC, CC > > {
-    using source_type = matrix< T, RC, CC >;
+template < ::std::size_t R, ::std::size_t C,
+        typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_row_transpose< R, C, matrix<T, RC, CC, Axes > > {
+    using source_type = matrix< T, RC, CC, Axes >;
     using source_row = typename source_type::row_type;
     using transposed_type = typename source_type::transposed_type;
 
@@ -366,9 +392,10 @@ struct matrix_row_transpose< R, C, matrix<T, RC, CC > > {
     }
 };
 
-template < size_t R, typename T, size_t RC, size_t CC >
-struct matrix_row_transpose< R, 0, matrix<T, RC, CC > > {
-    using source_type = matrix< T, RC, CC >;
+template < ::std::size_t R,
+    typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_row_transpose< R, 0, matrix<T, RC, CC, Axes > > {
+    using source_type = matrix< T, RC, CC, Axes >;
     using source_row = typename source_type::row_type;
     using transposed_type = typename source_type::transposed_type;
 
@@ -382,12 +409,13 @@ struct matrix_row_transpose< R, 0, matrix<T, RC, CC > > {
 /**
  * Matrix transposition metafunction
  */
-template < size_t R, typename T >
+template < ::std::size_t R, typename T >
 struct matrix_transpose;
 
-template < size_t R, typename T, size_t RC, size_t CC >
-struct matrix_transpose < R, matrix< T, RC, CC > > {
-    using source_type = matrix< T, RC, CC >;
+template < ::std::size_t R,
+    typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_transpose < R, matrix< T, RC, CC, Axes > > {
+    using source_type = matrix< T, RC, CC, Axes >;
     using transposed_type = typename source_type::transposed_type;
 
     void
@@ -398,9 +426,9 @@ struct matrix_transpose < R, matrix< T, RC, CC > > {
     }
 };
 
-template < typename T, size_t RC, size_t CC >
-struct matrix_transpose < 0, matrix< T, RC, CC > > {
-    using source_type = matrix< T, RC, CC >;
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_transpose < 0, matrix< T, RC, CC, Axes > > {
+    using source_type = matrix< T, RC, CC, Axes >;
     using transposed_type = typename source_type::transposed_type;
 
     void
@@ -417,14 +445,17 @@ struct matrix_transpose < 0, matrix< T, RC, CC > > {
  * @tparam M Matrix type
  * @tparam V Vector type
  */
-template < size_t C, typename M, typename V >
+template < ::std::size_t C, typename M, typename V >
 struct matrix_vector_multiply;
 
-template < size_t C, typename T, typename U, size_t RC, size_t CC >
-struct matrix_vector_multiply< C, matrix< T, RC, CC >, vector< U, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
-    using vector_type = vector< U, CC >;
-    using result_type = vector< T, CC >;
+template < ::std::size_t C,
+    typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_vector_multiply< C, matrix< T, RC, CC, Axes >, vector< U, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
+    using vector_type = vector< U, CC, Axes >;
+    using result_type = vector< T, CC, Axes >;
 
     void
     operator()(result_type& res, matrix_type const& m, vector_type const& v)
@@ -434,11 +465,13 @@ struct matrix_vector_multiply< C, matrix< T, RC, CC >, vector< U, CC > > {
     }
 };
 
-template < typename T, typename U, size_t RC, size_t CC >
-struct matrix_vector_multiply< 0, matrix< T, RC, CC >, vector< U, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
-    using vector_type = vector< U, CC >;
-    using result_type = vector< T, CC >;
+template < typename T, typename U,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_vector_multiply< 0, matrix< T, RC, CC, Axes >, vector< U, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
+    using vector_type = vector< U, CC, Axes >;
+    using result_type = vector< T, CC, Axes >;
 
     void
     operator()(result_type& res, matrix_type const& m, vector_type const& v)
@@ -451,16 +484,20 @@ struct matrix_vector_multiply< 0, matrix< T, RC, CC >, vector< U, CC > > {
  * Matrix multiplication row loop metafunction
  * TODO Replace with matrix-vector multiply
  */
-template < size_t R, size_t C, typename M1, typename M2 >
+template < ::std::size_t R, ::std::size_t C, typename M1, typename M2 >
 struct matrix_cell_multiply;
 
-template < size_t R, size_t C, typename T, typename U, size_t R1, size_t C1, size_t C2 >
-struct matrix_cell_multiply< R, C, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
-    using left_side_type = matrix< T, R1, C1 >;
+template < ::std::size_t R, ::std::size_t C,
+    typename T, typename U,
+    ::std::size_t R1, ::std::size_t C1, ::std::size_t C2,
+    typename Axes >
+struct matrix_cell_multiply< R, C,
+        matrix< T, R1, C1, Axes >, matrix< U, C1, C2, Axes > > {
+    using left_side_type = matrix< T, R1, C1, Axes >;
     using left_side_row = typename left_side_type::row_type;
 
-    using right_side_type = matrix< U, C1, C2 >;
-    using result_type = matrix< T, R1, C2 >;
+    using right_side_type = matrix< U, C1, C2, Axes >;
+    using result_type = matrix< T, R1, C2, Axes >;
 
     using right_side_transposed = typename right_side_type::transposed_type;
 
@@ -472,13 +509,17 @@ struct matrix_cell_multiply< R, C, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
     }
 };
 
-template < size_t R, typename T, typename U, size_t R1, size_t C1, size_t C2 >
-struct matrix_cell_multiply< R, 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
-    using left_side_type = matrix< T, R1, C1 >;
+template < ::std::size_t R,
+    typename T, typename U,
+    ::std::size_t R1, ::std::size_t C1, ::std::size_t C2,
+    typename Axes >
+struct matrix_cell_multiply< R, 0,
+        matrix< T, R1, C1, Axes >, matrix< U, C1, C2, Axes > > {
+    using left_side_type = matrix< T, R1, C1, Axes >;
     using left_side_row = typename left_side_type::row_type;
 
-    using right_side_type = matrix< U, C1, C2 >;
-    using result_type = matrix< T, R1, C2 >;
+    using right_side_type = matrix< U, C1, C2, Axes >;
+    using result_type = matrix< T, R1, C2, Axes >;
 
     using right_side_transposed = typename right_side_type::transposed_type;
 
@@ -492,14 +533,18 @@ struct matrix_cell_multiply< R, 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
 /**
  * Matrix multiplication metafunction
  */
-template < size_t R, typename M1, typename M2 >
+template < ::std::size_t R, typename M1, typename M2 >
 struct matrix_row_multiply;
 
-template < size_t R, typename T, typename U, size_t R1, size_t C1, size_t C2 >
-struct matrix_row_multiply< R, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
-    using left_side_type    = matrix< T, R1, C1 >;
-    using right_side_type   = matrix< U, C1, C2 >;
-    using result_type       = matrix< T, R1, C2 >;
+template < ::std::size_t R,
+        typename T, typename U,
+        ::std::size_t R1, ::std::size_t C1, ::std::size_t C2,
+        typename Axes >
+struct matrix_row_multiply< R,
+        matrix< T, R1, C1, Axes >, matrix< U, C1, C2, Axes > > {
+    using left_side_type    = matrix< T, R1, C1, Axes >;
+    using right_side_type   = matrix< U, C1, C2, Axes >;
+    using result_type       = matrix< T, R1, C2, Axes >;
 
     using right_side_transposed = typename right_side_type::transposed_type;
 
@@ -512,11 +557,13 @@ struct matrix_row_multiply< R, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
     }
 };
 
-template < typename T, typename U, size_t R1, size_t C1, size_t C2 >
-struct matrix_row_multiply< 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
-    using left_side_type = matrix< T, R1, C1 >;
-    using right_side_type = matrix< U, C1, C2 >;
-    using result_type = matrix< T, R1, C2 >;
+template < typename T, typename U,
+    ::std::size_t R1, ::std::size_t C1, ::std::size_t C2,
+    typename Axes >
+struct matrix_row_multiply< 0, matrix< T, R1, C1, Axes >, matrix< U, C1, C2, Axes > > {
+    using left_side_type = matrix< T, R1, C1, Axes >;
+    using right_side_type = matrix< U, C1, C2, Axes >;
+    using result_type = matrix< T, R1, C2, Axes >;
 
     using right_side_transposed = typename right_side_type::transposed_type;
 
@@ -532,7 +579,7 @@ struct matrix_row_multiply< 0, matrix< T, R1, C1 >, matrix< U, C1, C2 > > {
 /**
  * Cofactor sign metafunction
  */
-template < size_t R, size_t C >
+template < ::std::size_t R, ::std::size_t C >
 struct cofactor_sign {
     static constexpr int value = ((R + C) % 2) ? -1 : 1;
 };
@@ -548,17 +595,17 @@ struct matrix_minor;
 /**
  * Matrix cofactor metafunction
  */
-template < size_t R, size_t C, typename T, size_t Size >
+template < ::std::size_t R, ::std::size_t C, typename T, ::std::size_t Size >
 struct matrix_cofactor;
 
-template < size_t R, size_t C, typename T, size_t Size >
-struct matrix_cofactor < R, C, matrix< T, Size, Size >, Size > {
+template < ::std::size_t R, ::std::size_t C, typename T, ::std::size_t Size, typename Axes >
+struct matrix_cofactor < R, C, matrix< T, Size, Size, Axes >, Size > {
 
 };
 
-template < typename T >
-struct matrix_cofactor < 0, 0, matrix< T, 1, 1 >, 1 > {
-    using matrix_type = matrix<T, 1, 1>;
+template < typename T, typename Axes >
+struct matrix_cofactor < 0, 0, matrix< T, 1, 1, Axes >, 1 > {
+    using matrix_type = matrix<T, 1, 1, Axes>;
     T
     operator()( matrix_type const& )
     {
@@ -566,15 +613,15 @@ struct matrix_cofactor < 0, 0, matrix< T, 1, 1 >, 1 > {
     }
 };
 
-template < size_t N, typename T >
+template < ::std::size_t N, typename T >
     struct identity_matrix;
 
 /**
  * Top specialization
  */
-template < size_t N, typename T>
-struct identity_matrix< N, matrix< T, N + 1, N + 1> > {
-    using matrix_type = matrix<T, N + 1, N + 1>;
+template < ::std::size_t N, typename T, typename Axes>
+struct identity_matrix< N, matrix< T, N + 1, N + 1, Axes> > {
+    using matrix_type = matrix<T, N + 1, N + 1, Axes>;
 
     static void
     fill_matrix(matrix_type& m)
@@ -593,9 +640,9 @@ struct identity_matrix< N, matrix< T, N + 1, N + 1> > {
     }
 };
 
-template < size_t N, typename T, size_t Size >
-struct identity_matrix< N, matrix< T, Size, Size > > {
-    using matrix_type = matrix<T, Size, Size>;
+template < ::std::size_t N, typename T, ::std::size_t Size, typename Axes >
+struct identity_matrix< N, matrix< T, Size, Size, Axes > > {
+    using matrix_type = matrix<T, Size, Size, Axes>;
 
     static void
     fill_matrix(matrix_type& m)
@@ -606,9 +653,9 @@ struct identity_matrix< N, matrix< T, Size, Size > > {
     }
 };
 
-template < typename T, size_t Size >
-struct identity_matrix< 0, matrix< T, Size, Size > > {
-    using matrix_type = matrix<T, Size, Size>;
+template < typename T, ::std::size_t Size, typename Axes >
+struct identity_matrix< 0, matrix< T, Size, Size, Axes > > {
+    using matrix_type = matrix<T, Size, Size, Axes>;
 
     static void
     fill_matrix(matrix_type& m)

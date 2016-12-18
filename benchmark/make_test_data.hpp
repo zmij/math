@@ -23,7 +23,7 @@ using dimension_count = ::std::integral_constant<::std::size_t, N>;
 //  Vector 3
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 3>
+vector<T, 3, axes::xyzw>
 make_test_vector(dimension_count<3> const&)
 {
     return { 1, 2, 3 };
@@ -33,7 +33,7 @@ make_test_vector(dimension_count<3> const&)
 //  Vector 4
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 4>
+vector<T, 4, axes::xyzw>
 make_test_vector(dimension_count<4> const&)
 {
     return { 1, 2, 3, 4 };
@@ -43,7 +43,7 @@ make_test_vector(dimension_count<4> const&)
 //  Vector 10
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 10>
+vector<T, 10, axes::xyzw>
 make_test_vector(dimension_count<10> const&)
 {
     return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };

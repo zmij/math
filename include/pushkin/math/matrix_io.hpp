@@ -18,12 +18,14 @@ namespace math {
 
 namespace detail {
 
-template < size_t, typename T >
+template < ::std::size_t, typename T >
 struct matrix_output;
 
-template < size_t N, typename T, size_t RC, size_t CC >
-struct matrix_output< N, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < ::std::size_t N, typename T,
+    ::std::size_t RC, ::std::size_t CC,
+    typename Axes >
+struct matrix_output< N, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     static void
     output(std::ostream& os, matrix_type const& m)
     {
@@ -36,9 +38,9 @@ struct matrix_output< N, matrix< T, RC, CC > > {
     }
 };
 
-template < typename T, size_t RC, size_t CC >
-struct matrix_output< 0, matrix< T, RC, CC > > {
-    using matrix_type = matrix< T, RC, CC >;
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_output< 0, matrix< T, RC, CC, Axes > > {
+    using matrix_type = matrix< T, RC, CC, Axes >;
     static void
     output(std::ostream& out, matrix_type const& m)
     {
@@ -48,9 +50,9 @@ struct matrix_output< 0, matrix< T, RC, CC > > {
 
 } // namespace detail
 
-template < typename T, size_t RC, size_t CC >
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
 std::ostream&
-operator << (std::ostream& os, matrix< T, RC, CC> const& m)
+operator << (std::ostream& os, matrix< T, RC, CC, Axes > const& m)
 {
     std::ostream::sentry s(os);
     if (s) {
@@ -58,7 +60,7 @@ operator << (std::ostream& os, matrix< T, RC, CC> const& m)
         os << fct.start();
         if (fct.pretty())
             os << fct.row_separator() << fct.offset();
-        detail::matrix_output< RC - 1, matrix< T, RC, CC > >::output(os, m);
+        detail::matrix_output< RC - 1, matrix< T, RC, CC, Axes > >::output(os, m);
         if (fct.pretty())
             os << fct.row_separator();
         os << fct.end();

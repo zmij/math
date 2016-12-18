@@ -38,6 +38,9 @@ using vector3d = math::vector<double, 3>;
 using vector3df = math::vector<float, 3>;
 using matrix3x3 = math::matrix<double, 3, 3>;
 
+using rgba_col = vector<float, 4, axes::rgba>;
+using argb_col = vector<float, 4, axes::argb>;
+
 TEST(Vector, Construction)
 {
     //EXPECT_TRUE(::std::is_standard_layout<vector3d>::value);
@@ -80,6 +83,12 @@ TEST(Vector, Construction)
         EXPECT_EQ(1, v1[0]);
         EXPECT_EQ(2, v1[1]);
         EXPECT_EQ(3, v1[2]);
+
+        EXPECT_EQ((vector3d{1, 1, 1}), v1.xxx());
+        EXPECT_EQ((vector3d{2, 2, 2}), v1.yyy());
+        EXPECT_EQ((vector3d{3, 3, 3}), v1.zzz());
+        EXPECT_EQ((vector3d{3, 2, 1}), v1.zyx());
+        EXPECT_EQ((vector3d{2, 1, 3}), v1.yxz());
     }
     {
         // Pointer to double
@@ -98,6 +107,20 @@ TEST(Vector, Construction)
             EXPECT_EQ(2, v1[1]);
             EXPECT_EQ(3, v1[2]);
         }
+    }
+    {
+        rgba_col c{0.1, 0.2, 0.3, 0.4};
+        EXPECT_FLOAT_EQ(0.1, c.r());
+        EXPECT_FLOAT_EQ(0.2, c.g());
+        EXPECT_FLOAT_EQ(0.3, c.b());
+        EXPECT_FLOAT_EQ(0.4, c.a());
+    }
+    {
+        argb_col c{0.1, 0.2, 0.3, 0.4};
+        EXPECT_FLOAT_EQ(0.1, c.a());
+        EXPECT_FLOAT_EQ(0.2, c.r());
+        EXPECT_FLOAT_EQ(0.3, c.g());
+        EXPECT_FLOAT_EQ(0.4, c.b());
     }
 }
 
@@ -209,14 +232,32 @@ TEST(Matrix, Construction)
        EXPECT_EQ(11, m1[0][0]);
        EXPECT_EQ(12, m1[0][1]);
        EXPECT_EQ(13, m1[0][2]);
+       EXPECT_EQ(11, m1[0].x());
+       EXPECT_EQ(12, m1[0].y());
+       EXPECT_EQ(13, m1[0].z());
+       EXPECT_EQ(11, m1.x().x());
+       EXPECT_EQ(12, m1.x().y());
+       EXPECT_EQ(13, m1.x().z());
 
        EXPECT_EQ(21, m1[1][0]);
        EXPECT_EQ(22, m1[1][1]);
        EXPECT_EQ(23, m1[1][2]);
+       EXPECT_EQ(21, m1[1].x());
+       EXPECT_EQ(22, m1[1].y());
+       EXPECT_EQ(23, m1[1].z());
+       EXPECT_EQ(21, m1.y().x());
+       EXPECT_EQ(22, m1.y().y());
+       EXPECT_EQ(23, m1.y().z());
 
        EXPECT_EQ(31, m1[2][0]);
        EXPECT_EQ(32, m1[2][1]);
        EXPECT_EQ(33, m1[2][2]);
+       EXPECT_EQ(31, m1[2].x());
+       EXPECT_EQ(32, m1[2].y());
+       EXPECT_EQ(33, m1[2].z());
+       EXPECT_EQ(31, m1.z().x());
+       EXPECT_EQ(32, m1.z().y());
+       EXPECT_EQ(33, m1.z().z());
     }
     {
         double vals[]{

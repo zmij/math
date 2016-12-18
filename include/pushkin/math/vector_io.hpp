@@ -191,12 +191,12 @@ using set_braces = basic_set_braces<char>;
 
 namespace detail {
 
-template< size_t, typename T >
+template< ::std::size_t, typename T >
 struct vector_output;
 
-template< size_t N, typename T, size_t Size >
-struct vector_output< N, vector< T, Size > > {
-    using vector_type = vector< T, Size >;
+template< ::std::size_t N, typename T, ::std::size_t Size, typename Axes >
+struct vector_output< N, vector< T, Size, Axes > > {
+    using vector_type = vector< T, Size, Axes >;
     static void
     output(std::ostream& os, vector_type const& v)
     {
@@ -210,9 +210,9 @@ struct vector_output< N, vector< T, Size > > {
     }
 };
 
-template< typename T, size_t Size >
-struct vector_output< 0, vector< T, Size > > {
-    using vector_type = vector< T, Size >;
+template< typename T, ::std::size_t Size, typename Axes >
+struct vector_output< 0, vector< T, Size, Axes > > {
+    using vector_type = vector< T, Size, Axes >;
     static void
     output(std::ostream& out, vector_type const& v)
     {
@@ -222,9 +222,9 @@ struct vector_output< 0, vector< T, Size > > {
 
 } // namespace detail
 
-template < typename T, size_t Size >
+template < typename T, ::std::size_t Size, typename Axes >
 std::ostream&
-operator << (std::ostream& os, vector<T, Size> const& v)
+operator << (std::ostream& os, vector<T, Size, Axes> const& v)
 {
     std::ostream::sentry s(os);
     if (s) {
@@ -232,7 +232,7 @@ operator << (std::ostream& os, vector<T, Size> const& v)
         os << fct.start();
         if (fct.pretty())
             os << fct.separator();
-        detail::vector_output< Size - 1, vector<T, Size> >::output(os, v);
+        detail::vector_output< Size - 1, vector<T, Size, Axes> >::output(os, v);
         if (fct.pretty())
             os << fct.separator();
         os << fct.end();

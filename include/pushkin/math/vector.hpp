@@ -19,13 +19,14 @@
 namespace psst {
 namespace math {
 
-template < typename T, size_t Size >
+template < typename T, size_t Size, typename Axes >
 struct vector : detail::vector_builder<
-    typename detail::index_builder< Size >::type, T > {
+    typename detail::index_builder< Size >::type, T, Axes > {
 
     using base_type         = detail::vector_builder<
-                                typename detail::index_builder< Size >::type, T >;
-    using this_type         = vector< T, Size >;
+                                typename detail::index_builder< Size >::type, T,
+                                Axes >;
+    using this_type         = vector< T, Size, Axes >;
 
     using value_type        = typename base_type::value_type;
     using lvalue_reference  = typename base_type::lvalue_reference;
@@ -52,7 +53,7 @@ struct vector : detail::vector_builder<
     }
 
     template < typename U, size_t SizeR >
-    vector( vector<U, SizeR> const& rhs )
+    vector( vector<U, SizeR, Axes> const& rhs )
         : base_type(rhs)
     {
     }
@@ -83,7 +84,7 @@ struct vector : detail::vector_builder<
 
     template < typename U >
     this_type&
-    operator += (vector<U, Size> const& rhs)
+    operator += (vector<U, Size, Axes> const& rhs)
     {
         detail::vector_addition< Size - 1, this_type >()(*this, rhs);
         return *this;
@@ -91,7 +92,7 @@ struct vector : detail::vector_builder<
 
     template < typename U >
     this_type&
-    operator -= (vector<U, Size> const& rhs)
+    operator -= (vector<U, Size, Axes> const& rhs)
     {
         detail::vector_substraction< Size - 1, this_type >()(*this, rhs);
         return *this;
@@ -150,59 +151,71 @@ struct vector : detail::vector_builder<
     }
 };
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator == (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator == (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
-    using left_side = vector<T, TSize>;
-    using right_side = vector<U, USize>;
+    using left_side = vector<T, TSize, Axes>;
+    using right_side = vector<U, USize, Axes>;
     using min_type = detail::min<TSize, USize>;
     return detail::vector_cmp<min_type::value - 1, left_side, right_side>::eq(lhs, rhs);
 }
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator != (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator != (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(lhs == rhs);
 }
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator < (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator < (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
-    using left_side = vector<T, TSize>;
-    using right_side = vector<U, USize>;
+    using left_side = vector<T, TSize, Axes>;
+    using right_side = vector<U, USize, Axes>;
     using min_type = detail::min<TSize, USize>;
     return detail::vector_cmp<min_type::value - 1, left_side, right_side>::less(lhs, rhs);
 }
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator > (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator > (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return rhs < lhs;
 }
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator <= (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator <= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(rhs < lhs);
 }
 
-template < typename T, typename U, ::std::size_t TSize, ::std::size_t USize >
+template < typename T, typename U,
+    ::std::size_t TSize, ::std::size_t USize,
+    typename Axes >
 bool
-operator >= (vector< T, TSize > const& lhs, vector < U, USize > const& rhs)
+operator >= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(lhs < rhs);
 }
 
-template < typename T, size_t Size >
-typename vector< T, Size>::value_type
-dot_product(vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
+template < typename T, size_t Size, typename Axes >
+typename vector< T, Size, Axes >::value_type
+dot_product(vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
 {
-    return detail::dot_product< Size - 1, vector<T, Size> >()(lhs, rhs);
+    return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
 }
 
 /**
@@ -211,89 +224,89 @@ dot_product(vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
  * @param rhs
  * @return
  */
-template < typename T, size_t Size >
-typename vector< T, Size>::value_type
-operator | (vector< T, Size> const& lhs,  vector< T, Size> const& rhs)
+template < typename T, size_t Size, typename Axes >
+typename vector< T, Size, Axes >::value_type
+operator | (vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
 {
-    return detail::dot_product< Size - 1, vector<T, Size> >()(lhs, rhs);
+    return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
 }
 
-template < typename T, size_t Size, typename U >
-vector< T, Size>
-operator * (vector< T, Size> const& v, U s)
+template < typename T, size_t Size, typename Axes, typename U >
+vector< T, Size, Axes >
+operator * (vector< T, Size, Axes> const& v, U s)
 {
-    vector< T, Size> res(v);
+    vector< T, Size, Axes> res(v);
     res *= s;
     return res;
 }
 
-template < typename T, size_t Size, typename U >
-vector< T, Size>
-operator * (U s, vector< T, Size> const& v)
+template < typename T, size_t Size, typename Axes, typename U >
+vector< T, Size, Axes >
+operator * (U s, vector< T, Size, Axes > const& v)
 {
-    vector< T, Size> res(v);
+    vector< T, Size, Axes > res(v);
     res *= s;
     return res;
 }
 
-template < typename T, size_t Size, typename U >
-vector< T, Size>
-operator / (vector< T, Size> const& v, U s)
+template < typename T, size_t Size, typename Axes, typename U >
+vector< T, Size, Axes >
+operator / (vector< T, Size, Axes > const& v, U s)
 {
-    vector< T, Size> res(v);
+    vector< T, Size, Axes > res(v);
     res /= s;
     return res;
 }
 
-template < typename T, typename U, size_t Size >
-vector< T, Size >
-operator + ( vector< T, Size > const& lhs, vector< U, Size > const& rhs )
+template < typename T, typename U, size_t Size, typename Axes >
+vector< T, Size, Axes >
+operator + ( vector< T, Size, Axes > const& lhs, vector< U, Size, Axes > const& rhs )
 {
-    vector< T, Size > res(lhs);
+    vector< T, Size, Axes > res(lhs);
     res += rhs;
     return res;
 }
 
-template < typename T, typename U, size_t Size >
-vector< T, Size >
-operator - ( vector< T, Size > const& lhs, vector< U, Size > const& rhs )
+template < typename T, typename U, size_t Size, typename Axes >
+vector< T, Size, Axes >
+operator - ( vector< T, Size, Axes > const& lhs, vector< U, Size, Axes > const& rhs )
 {
-    vector< T, Size > res(lhs);
+    vector< T, Size, Axes > res(lhs);
     res -= rhs;
     return res;
 }
 
-template < typename T, size_t Size >
-typename vector<T, Size>::value_type
-magnitude_square(vector<T, Size> const& v)
+template < typename T, size_t Size, typename Axes >
+typename vector<T, Size, Axes>::value_type
+magnitude_square(vector<T, Size, Axes> const& v)
 {
     return v.magnitude_square();
 }
 
-template < typename T, size_t Size >
-typename vector<T, Size>::value_type
-magnitude(vector<T, Size> const& v)
+template < typename T, size_t Size, typename Axes >
+typename vector<T, Size, Axes>::value_type
+magnitude(vector<T, Size, Axes> const& v)
 {
     return v.magnitude();
 }
 
-template< typename T, typename U, size_t Size >
-typename vector<T, Size>::value_type
-distance_square(vector<T, Size> const& a, vector<U, Size> const& b)
+template< typename T, typename U, size_t Size, typename Axes >
+typename vector<T, Size, Axes>::value_type
+distance_square(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
 {
     return magnitude_square(a - b);
 }
 
-template< typename T, typename U, size_t Size >
-typename vector<T, Size>::value_type
-distance(vector<T, Size> const& a, vector<U, Size> const& b)
+template< typename T, typename U, size_t Size, typename Axes >
+typename vector<T, Size, Axes>::value_type
+distance(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
 {
     return magnitude(a - b);
 }
 
-template < typename T, size_t Size >
-vector< typename vector<T, Size>::value_type, Size >
-normalize(vector<T, Size> const& v)
+template < typename T, size_t Size, typename Axes >
+vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
+normalize(vector<T, Size, Axes> const& v)
 {
     return v.normalize();
 }
@@ -304,11 +317,11 @@ normalize(vector<T, Size> const& v)
  * @param b
  * @return
  */
-template < typename T, typename U >
-vector< typename vector<T, 3>::value_type, 3 >
-cross(vector<T, 3> const& lhs, vector<U, 3> const& rhs)
+template < typename T, typename U, typename Axes >
+vector< typename vector<T, 3, Axes>::value_type, 3, Axes >
+cross(vector<T, 3, Axes> const& lhs, vector<U, 3, Axes> const& rhs)
 {
-    vector< T, 3 > res {
+    vector< T, 3, Axes > res {
         lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
         lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
         lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>()
@@ -316,9 +329,9 @@ cross(vector<T, 3> const& lhs, vector<U, 3> const& rhs)
     return res;
 }
 
-template < typename T, typename U >
-vector< typename vector<T, 3>::value_type, 3 >
-operator ^ (vector<T, 3> const& lhs, vector<U, 3> const& rhs)
+template < typename T, typename U, typename Axes >
+vector< typename vector<T, 3, Axes>::value_type, 3, Axes >
+operator ^ (vector<T, 3, Axes> const& lhs, vector<U, 3, Axes> const& rhs)
 {
     return cross(lhs, rhs);
 }
@@ -330,14 +343,14 @@ operator ^ (vector<T, 3> const& lhs, vector<U, 3> const& rhs)
  * @return
  */
 template < typename T, typename U >
-vector< typename vector<T, 4>::value_type, 4 >
-cross(vector<T, 4> const& lhs, vector<U, 4> const& rhs)
+vector< typename vector<T, 4, axes::xyzw>::value_type, 4, axes::xyzw >
+cross(vector<T, 4, axes::xyzw> const& lhs, vector<U, 4, axes::xyzw> const& rhs)
 {
-    vector< T, 4 > res {
+    vector< T, 4, axes::xyzw > res {
         lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
         lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
         lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>(),
-        typename vector<T, 4>::value_type(1)
+        typename vector<T, 4, axes::xyzw>::value_type(1)
     };
     return res;
 }
@@ -348,9 +361,9 @@ cross(vector<T, 4> const& lhs, vector<U, 4> const& rhs)
  * @param v Source vector
  * @return Vector that is parallel to n
  */
-template < typename T, size_t Size >
-vector< typename vector<T, Size>::value_type, Size >
-projection( vector<T, Size> const& n, vector<T, Size> const& v )
+template < typename T, size_t Size, typename Axes >
+vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
+projection( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
 {
     return n * ( v * n / n.magnitude_square() );
 }
@@ -361,9 +374,9 @@ projection( vector<T, Size> const& n, vector<T, Size> const& v )
  * @param v
  * @return
  */
-template < typename T, size_t Size >
-vector< typename vector<T, Size>::value_type, Size >
-perpendicular( vector<T, Size> const& n, vector<T, Size> const& v )
+template < typename T, size_t Size, typename Axes >
+vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
+perpendicular( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
 {
     return v - projection(n, v);
 }
@@ -374,11 +387,11 @@ perpendicular( vector<T, Size> const& n, vector<T, Size> const& v )
  * @param v
  * @return Pair of vectors vǁ, vⱶ. vǁ is parallel to n, vǁ + vⱶ = v
  */
-template < typename T, size_t Size >
+template < typename T, size_t Size, typename Axes >
 ::std::pair<
-    vector< typename vector<T, Size>::value_type, Size >,
-    vector< typename vector<T, Size>::value_type, Size > >
-project( vector<T, Size> const& n, vector<T, Size> const& v )
+    vector< typename vector<T, Size, Axes>::value_type, Size, Axes >,
+    vector< typename vector<T, Size, Axes>::value_type, Size, Axes > >
+project( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
 {
     auto p = projection(n, v);
     return ::std::make_pair(p, v - p);
