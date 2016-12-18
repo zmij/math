@@ -162,6 +162,30 @@ VectorNorm( benchmark::State& state )
     }
 }
 
+template < typename Vector >
+void
+VectorLerp( benchmark::State& state )
+{
+    while (state.KeepRunning()) {
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        auto v2 = v1 * 2;
+        benchmark::DoNotOptimize(lerp(v1, v2, 0.5));
+    }
+}
+
+template < typename Vector >
+void
+VectorSlerp( benchmark::State& state )
+{
+    while (state.KeepRunning()) {
+        auto v1 = make_test_vector<typename Vector::value_type>(
+                dimension_count<Vector::size>{});
+        auto v2 = v1 * 2;
+        benchmark::DoNotOptimize(slerp(v1, v2, 0.5));
+    }
+}
+
 //----------------------------------------------------------------------------
 BENCHMARK_TEMPLATE(Compare,             float);
 BENCHMARK_TEMPLATE(Compare,             double);
@@ -188,6 +212,10 @@ BENCHMARK_TEMPLATE(VectorMag,           vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorMag,           vector<double,  3>);
 BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorNorm,          vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorLerp,          vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorLerp,          vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorSlerp,         vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorSlerp,         vector<double,  3>);
 
 BENCHMARK_TEMPLATE(VectorEq,            vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorEq,            vector<double,  4>);
@@ -211,6 +239,10 @@ BENCHMARK_TEMPLATE(VectorMag,           vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorMag,           vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorNorm,          vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorLerp,          vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorLerp,          vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorSlerp,         vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorSlerp,         vector<double,  4>);
 
 BENCHMARK_TEMPLATE(VectorEq,            vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   10>);

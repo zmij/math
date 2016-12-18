@@ -377,6 +377,12 @@ cross(vector<T, 4, axes::xyzw> const& lhs, vector<U, 4, axes::xyzw> const& rhs)
     };
     return res;
 }
+template < typename T, typename U >
+vector< typename vector<T, 4, axes::xyzw>::value_type, 4, axes::xyzw >
+operator ^ (vector<T, 4, axes::xyzw> const& lhs, vector<U, 4, axes::xyzw> const& rhs)
+{
+    return cross(lhs, rhs);
+}
 
 /**
  * Projection of vector v onto vector n
@@ -418,6 +424,54 @@ project( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
 {
     auto p = projection(n, v);
     return ::std::make_pair(p, v - p);
+}
+
+template < typename T, ::std::size_t Size, typename Axes, typename U >
+vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
+lerp( vector<T, Size, Axes> const& start, vector<T, Size, Axes> const& end, U percent )
+{
+    return start + (end - start) * percent;
+}
+
+template < typename T, ::std::size_t Size, typename Axes, typename U >
+vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
+slerp( vector<T, Size, Axes> const& start, vector<T, Size, Axes> const& end, U percent )
+{
+    using vector_type = vector<T, Size, Axes>;
+    using value_traits = typename vector_type::value_traits;
+    using ::std::sin;
+    using ::std::cos;
+    using ::std::acos;
+
+    vector_type s{start};
+    auto s_mag = s.magnitude();
+    s /= s_mag; // Normalize
+    vector_type e{end};
+    auto e_mag = e.magnitude();
+    e /= e_mag; // Normalize
+    // Lerp magnitude
+    auto res_mag = s_mag + (e_mag - s_mag) * percent;
+
+    auto dot = dot_product(s, e);
+    if (value_traits::eq(dot, 0)) {
+        // Perpendicular vectors
+        auto theta = acos(dot) * percent;
+        auto res = s * cos(theta) + e * sin(theta);
+        return res * res_mag;
+    } else if (value_traits::eq(dot, 1)) {
+        // Collinear vectors same direction
+        return lerp(start, end, percent);
+    } else if (value_traits::eq(dot, -1)) {
+        // Collinear vectors opposite direction
+        throw ::std::runtime_error("Slerp for opposite vectors is undefined");
+    } else {
+        // Generic formula
+        auto omega = acos(dot);
+        auto sin_o = sin(omega);
+        auto res = (s * sin((1-percent) * omega) +
+                e * sin(percent * omega)) / sin_o;
+        return res * res_mag;
+    }
 }
 
 } // namespace math

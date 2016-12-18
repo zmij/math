@@ -220,6 +220,21 @@ TEST(Vector, Iteration)
     }
 }
 
+TEST(Vector, Lerp)
+{
+    vector3d v1{1, 1, 1};
+    vector3d v2{3, 3, 3};
+    EXPECT_EQ((vector3d{2, 2, 2}), lerp(v1, v2, 0.5));
+}
+
+TEST(Vector, Slerp)
+{
+    vector3d v1{1, 0, 0};
+    vector3d v2{0, 1, 0};
+    double v = 1 / ::std::sqrt(2);
+    EXPECT_EQ((vector3d{v, v, 0}), slerp(v1, v2, 0.5));
+}
+
 TEST(Matrix, Construction)
 {
     {  // default
