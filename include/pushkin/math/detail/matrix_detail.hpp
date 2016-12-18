@@ -88,6 +88,13 @@ struct matrix_builder < indexes_tuple< RowIndexes ... >, CC, T, Axes > :
     {
     }
 
+    pointer
+    data()
+    { return this->template at<0>().data(); }
+    const_pointer
+    data() const
+    { return this->template at<0>().data(); }
+
     template < ::std::size_t N >
     lvalue_row_reference
     at()

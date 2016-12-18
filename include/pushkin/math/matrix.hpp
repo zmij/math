@@ -31,6 +31,9 @@ struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::ty
     using row_type          = typename base_type::row_type;
     using value_type        = typename base_type::value_type;
 
+    using pointer           = typename base_type::pointer;
+    using const_pointer     = typename base_type::const_pointer;
+
     matrix() = default;
 
     matrix( std::initializer_list< std::initializer_list< value_type > > const& args) :
@@ -43,6 +46,16 @@ struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::ty
         base_type(args ... )
     {
     }
+
+    using base_type::data;
+    using base_type::at;
+    using base_type::begin;
+    using base_type::cbegin;
+    using base_type::end;
+    using base_type::cend;
+    using base_type::row_begin;
+    using base_type::row_end;
+    using base_type::operator[];
 
     this_type
     operator - ()
@@ -93,6 +106,17 @@ struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::ty
 
         return res;
     }
+
+    /**
+     * Implicit conversion to pointer to element
+     */
+    operator pointer()
+    { return data(); }
+    /**
+     * Implicit conversion to const pointer to element
+     */
+    operator const_pointer() const
+    { return data(); }
 
     template < typename U = T >
     static typename ::std::enable_if< RC == CC, matrix<U, RC, CC, Axes> >::type const&

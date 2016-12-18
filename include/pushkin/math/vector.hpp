@@ -62,6 +62,14 @@ struct vector : detail::vector_builder<
     vector( vector<U, SizeR, Axes> const& rhs )
         : base_type(rhs) {}
 
+    using base_type::data;
+    using base_type::at;
+    using base_type::begin;
+    using base_type::cbegin;
+    using base_type::end;
+    using base_type::cend;
+    using base_type::operator[];
+
     this_type
     operator - ()
     {
@@ -153,6 +161,17 @@ struct vector : detail::vector_builder<
         v.normalize();
         return v;
     }
+
+    /**
+     * Implicit conversion to pointer to element
+     */
+    operator pointer()
+    { return data(); }
+    /**
+     * Implicit conversion to const pointer to element
+     */
+    operator const_pointer() const
+    { return data(); }
 };
 
 template < typename T, typename U,
