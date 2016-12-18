@@ -37,27 +37,30 @@ struct vector : detail::vector_builder<
 
     vector() = default;
 
+    /**
+     * Single value construction, initialize all components to the
+     * same value. To precede initializer list constructor, should
+     * be called with round parenthesis.
+     * @param val
+     */
+    explicit
+    vector(T val)
+        : base_type(val) {}
+
     template < typename ... E >
-    vector(E const& ... args)
-        : base_type(args ... )
-    {
-    }
+    vector(E&& ... args,
+            typename ::std::enable_if<(sizeof ... (E) > 1)>::type* = nullptr)
+        : base_type(::std::forward<E>(args) ... ) {}
 
     vector(::std::initializer_list< value_type > const& args)
-        : base_type(args)
-    {
-    }
+        : base_type(args.begin()) {}
 
     vector(const_pointer p)
-        : base_type(p)
-    {
-    }
+        : base_type(p) {}
 
     template < typename U, size_t SizeR >
     vector( vector<U, SizeR, Axes> const& rhs )
-        : base_type(rhs)
-    {
-    }
+        : base_type(rhs) {}
 
     this_type
     operator - ()

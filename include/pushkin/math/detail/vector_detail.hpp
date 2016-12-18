@@ -109,6 +109,13 @@ struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
     vector_builder() = default;
 
     /**
+     * Single value constructor, for initializing all values to the value
+     * @param val
+     */
+    vector_builder(T val)
+        : data_holder< Indexes, T >(val) ... {}
+
+    /**
      * Construct vector from a vector of larger size
      * @param rhs
      * @param
@@ -117,33 +124,24 @@ struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
     vector_builder(
             vector_builder< indexes_tuple< IndexesR ... >, U, Axes > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
-        : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ...
-    {
-    }
+        : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ... {}
 
     template < typename ... E >
     vector_builder(E const& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
-        : data_holder< Indexes, T >(args) ...
-    {
-    }
+        : data_holder< Indexes, T >(args) ... {}
 
     template < typename ... E >
     vector_builder(E&& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
-        : data_holder< Indexes, T >( std::forward<E>(args) ) ...
-    {
-    }
+        : data_holder< Indexes, T >( std::forward<E>(args) ) ... {}
 
-    vector_builder(::std::initializer_list<value_type> const& args)
-        : data_holder< Indexes, T >(*(args.begin() + Indexes))...
-    {
-    }
+    template < typename U >
+    vector_builder(::std::initializer_list<U> const& args)
+        : data_holder< Indexes, T >(*(args.begin() + Indexes))... {}
 
     vector_builder(const_pointer p)
-        : data_holder< Indexes, T >(*(p + Indexes))...
-    {
-    }
+        : data_holder< Indexes, T >(*(p + Indexes))... {}
 
     pointer
     data()

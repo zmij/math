@@ -62,16 +62,16 @@ struct matrix_builder < indexes_tuple< RowIndexes ... >, CC, T, Axes > :
 
     matrix_builder() = default;
 
+    matrix_builder(T val)
+        : data_holder< RowIndexes, row_type >(val) ... {}
+
     template < typename EAxes, typename ... E >
     matrix_builder( vector<E, CC, EAxes> const& ... args )
-        : data_holder< RowIndexes, row_type >(args) ...
-    {
-    }
+        : data_holder< RowIndexes, row_type >(args) ... {}
 
     matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args)
         : data_holder< RowIndexes, row_type >( row_type(*(args.begin() + RowIndexes)) ) ...
-    {
-    }
+    {}
 
     /**
      * Construct from value_type[] array, expects size elements in the array.

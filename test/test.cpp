@@ -65,6 +65,13 @@ TEST(Vector, Construction)
             << "Size of vector is equal to sizes of it's components";
     }
     {
+        // Single value
+        vector3d v1 (1);
+        EXPECT_EQ(1, v1[0]);
+        EXPECT_EQ(1, v1[1]);
+        EXPECT_EQ(1, v1[2]);
+    }
+    {
         EXPECT_EQ(sizeof(float)*3, sizeof(vector3df))
             << "Size of vector is equal to sizes of it's components";
     }
@@ -226,9 +233,6 @@ TEST(Matrix, Construction)
            { 31, 32, 33 }
        };
 
-       ::std::cerr << m1 << "\n"
-            << io::pretty << m1 << "\n";
-
        EXPECT_EQ(11, m1[0][0]);
        EXPECT_EQ(12, m1[0][1]);
        EXPECT_EQ(13, m1[0][2]);
@@ -297,6 +301,20 @@ TEST(Matrix, Construction)
         EXPECT_EQ(31, m1[2][0]);
         EXPECT_EQ(32, m1[2][1]);
         EXPECT_EQ(33, m1[2][2]);
+    }
+    {
+        matrix3x3 m1{42};
+        EXPECT_EQ(42, m1[0][0]);
+        EXPECT_EQ(42, m1[0][1]);
+        EXPECT_EQ(42, m1[0][2]);
+
+        EXPECT_EQ(42, m1[1][0]);
+        EXPECT_EQ(42, m1[1][1]);
+        EXPECT_EQ(42, m1[1][2]);
+
+        EXPECT_EQ(42, m1[2][0]);
+        EXPECT_EQ(42, m1[2][1]);
+        EXPECT_EQ(42, m1[2][2]);
     }
 }
 
