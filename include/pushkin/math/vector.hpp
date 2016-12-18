@@ -31,6 +31,7 @@ struct vector : detail::vector_builder<
     using value_type        = typename base_type::value_type;
     using lvalue_reference  = typename base_type::lvalue_reference;
     using const_reference   = typename base_type::const_reference;
+    using magnitude_type    = typename base_type::magnitude_type;
     using pointer           = typename base_type::pointer;
     using const_pointer     = typename base_type::const_pointer;
 
@@ -98,13 +99,13 @@ struct vector : detail::vector_builder<
         return *this;
     }
 
-    value_type
+    magnitude_type
     magnitude_square() const
     {
         return detail::dot_product< Size - 1, this_type >()(*this, *this);
     }
 
-    value_type
+    magnitude_type
     magnitude() const
     {
         return ::std::sqrt(magnitude_square());
@@ -212,7 +213,7 @@ operator >= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > cons
 }
 
 template < typename T, size_t Size, typename Axes >
-typename vector< T, Size, Axes >::value_type
+typename vector< T, Size, Axes >::magnitude_type
 dot_product(vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
 {
     return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
@@ -225,7 +226,7 @@ dot_product(vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& 
  * @return
  */
 template < typename T, size_t Size, typename Axes >
-typename vector< T, Size, Axes >::value_type
+typename vector< T, Size, Axes >::magnitude_type
 operator | (vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
 {
     return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
@@ -277,28 +278,28 @@ operator - ( vector< T, Size, Axes > const& lhs, vector< U, Size, Axes > const& 
 }
 
 template < typename T, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::value_type
+typename vector<T, Size, Axes>::magnitude_type
 magnitude_square(vector<T, Size, Axes> const& v)
 {
     return v.magnitude_square();
 }
 
 template < typename T, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::value_type
+typename vector<T, Size, Axes>::magnitude_type
 magnitude(vector<T, Size, Axes> const& v)
 {
     return v.magnitude();
 }
 
 template< typename T, typename U, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::value_type
+typename vector<T, Size, Axes>::magnitude_type
 distance_square(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
 {
     return magnitude_square(a - b);
 }
 
 template< typename T, typename U, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::value_type
+typename vector<T, Size, Axes>::magnitude_type
 distance(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
 {
     return magnitude(a - b);

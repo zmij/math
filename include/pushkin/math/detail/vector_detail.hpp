@@ -10,6 +10,7 @@
 
 #include <type_traits>
 #include <pushkin/math/detail/axis_names.hpp>
+#include <pushkin/math/detail/value_traits.hpp>
 
 namespace psst {
 namespace math {
@@ -92,10 +93,12 @@ struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
     using this_type             = vector_builder< indexes_tuple_type, T, Axes >;
 
     using element_type          = T;
-    using value_type            = typename ::std::decay<T>::type;
-    using lvalue_reference      = typename ::std::add_lvalue_reference<value_type>::type;
-    using const_reference       = typename ::std::add_lvalue_reference<
-                                    typename ::std::add_const<value_type>::type>::type;
+    using value_traits          = vector_value_traits<T>;
+    using value_type            = typename value_traits::value_type;
+    using lvalue_reference      = typename value_traits::lvalue_reference;
+    using const_reference       = typename value_traits::const_reference;
+
+    using magnitude_type        = typename value_traits::magnitude_type;
 
     using pointer               = value_type*;
     using const_pointer         = value_type const*;
@@ -298,7 +301,7 @@ struct dot_product;
 template < ::std::size_t N, typename T, ::std::size_t Size, typename Axes >
 struct dot_product< N, vector<T, Size, Axes> > {
     using vector_type   = vector<T, Size, Axes>;
-    using value_type    = typename vector_type::value_type;
+    using value_type    = typename vector_type::magnitude_type;
 
     value_type
     operator()( vector_type const& lhs, vector_type const& rhs )
@@ -311,7 +314,7 @@ struct dot_product< N, vector<T, Size, Axes> > {
 template < typename T, ::std::size_t Size, typename Axes >
 struct dot_product< 0, vector<T, Size, Axes> > {
     using vector_type   = vector<T, Size, Axes>;
-    using value_type    = typename vector_type::value_type;
+    using value_type    = typename vector_type::magnitude_type;
 
     value_type
     operator()(vector_type const& lhs, vector_type const& rhs)
