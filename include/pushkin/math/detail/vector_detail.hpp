@@ -238,6 +238,7 @@ template < ::std::size_t N, typename T, typename U,
     typename Axes >
 struct vector_cmp<N, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
     using left_side     = vector<T, TSize, Axes>;
+    using traits_type   = typename left_side::value_traits;
     using right_side    = vector<U, USize, Axes>;
     using prev_elem     = vector_cmp<N - 1, left_side, right_side>;
 
@@ -245,23 +246,25 @@ struct vector_cmp<N, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
     eq(left_side const& lhs, right_side const& rhs)
     {
         return prev_elem::eq(lhs, rhs) &&
-                lhs.template at<N>() == rhs.template at<N>();
+                traits_type::eq(lhs.template at<N>(),
+                                rhs.template at<N>());
     }
 
     static bool
     less(left_side const& lhs, right_side const& rhs)
     {
         auto p = prev_elem::cmp(lhs, rhs);
-        return p < 0 ? true : lhs.template at<N>() < rhs.template at<N>();
+        return p < 0 ? true : traits_type::less(
+                                lhs.template at<N>(),
+                                rhs.template at<N>());
     }
     static int
     cmp(left_side const& lhs, right_side const& rhs)
     {
         auto p = prev_elem::cmp(lhs, rhs);
         if (p == 0) {
-            auto l = lhs.template at<0>();
-            auto r = rhs.template at<0>();
-            return l == r ? 0 : l < r ? -1 : 1;
+            return traits_type::cmp(lhs.template at<N>(),
+                    rhs.template at<N>());
         }
         return p;
     }
@@ -273,25 +276,24 @@ template < typename T, typename U,
 struct vector_cmp<0, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
     using left_side     = vector<T, TSize, Axes>;
     using right_side    = vector<U, USize, Axes>;
+    using traits_type   = typename left_side::value_traits;
 
     static bool
     eq(left_side const& lhs, right_side const& rhs)
     {
-        return lhs.template at<0>() == rhs.template at<0>();
+        return traits_type::eq(lhs.template at<0>(), rhs.template at<0>());
     }
 
     static bool
     less(left_side const& lhs, right_side const& rhs)
     {
-        return lhs.template at<0>() < rhs.template at<0>();
+        return traits_type::less(lhs.template at<0>(), rhs.template at<0>());
     }
 
     static int
     cmp(left_side const& lhs, right_side const& rhs)
     {
-        auto l = lhs.template at<0>();
-        auto r = rhs.template at<0>();
-        return l == r ? 0 : l < r ? -1 : 1;
+        return traits_type::cmp(lhs.template at<0>(), rhs.template at<0>());
     }
 };
 
