@@ -195,6 +195,88 @@ struct axis_access< 4, axes::wxyz, VectorBuilder, T >
 //@}
 
 //@{
+/** @name Polar coordinates */
+template < typename VectorBuilder, typename T >
+struct axis_access< 1, axes::polar, VectorBuilder, T >
+    : basic_axis_access< VectorBuilder, T > {
+
+    using base_type     = basic_axis_access<VectorBuilder, T>;
+    using coord_names   = axes::polar;
+
+    PSST_MATH_COORD_ACCESS(r, 0);
+    PSST_MATH_COORD_ACCESS(rho, 0);
+};
+template < typename VectorBuilder, typename T >
+struct axis_access<2, axes::polar, VectorBuilder, T >
+    : axis_access<1, axes::polar, VectorBuilder, T> {
+    using base_type =  axis_access<1, axes::polar, VectorBuilder, T>;
+
+    PSST_MATH_COORD_ACCESS(phi, 1);
+    PSST_MATH_COORD_ACCESS(azimuth, 1);
+};
+//@}
+
+//@{
+/** @name Spherical coordinates */
+template < typename VectorBuilder, typename T >
+struct axis_access< 1, axes::spherical, VectorBuilder, T >
+    : basic_axis_access< VectorBuilder, T > {
+
+    using base_type     = basic_axis_access<VectorBuilder, T>;
+    using coord_names   = axes::spherical;
+
+    PSST_MATH_COORD_ACCESS(r, 0);
+    PSST_MATH_COORD_ACCESS(rho, 0);
+};
+template < typename VectorBuilder, typename T >
+struct axis_access<2, axes::spherical, VectorBuilder, T >
+    : axis_access<1, axes::spherical, VectorBuilder, T> {
+    using base_type =  axis_access<1, axes::spherical, VectorBuilder, T>;
+
+    PSST_MATH_COORD_ACCESS(phi, 1);
+    PSST_MATH_COORD_ACCESS(inclination, 1);
+};
+template < typename VectorBuilder, typename T >
+struct axis_access<3, axes::spherical, VectorBuilder, T >
+    : axis_access<2, axes::spherical, VectorBuilder, T> {
+    using base_type =  axis_access<2, axes::spherical, VectorBuilder, T>;
+
+    PSST_MATH_COORD_ACCESS(theta, 2);
+    PSST_MATH_COORD_ACCESS(azimuth, 2);
+};
+//@}
+
+//@{
+/** @name Cylindrical coordinates */
+template < typename VectorBuilder, typename T >
+struct axis_access< 1, axes::cylindrical, VectorBuilder, T >
+    : basic_axis_access< VectorBuilder, T > {
+
+    using base_type     = basic_axis_access<VectorBuilder, T>;
+    using coord_names   = axes::cylindrical;
+
+    PSST_MATH_COORD_ACCESS(r, 0);
+    PSST_MATH_COORD_ACCESS(rho, 0);
+};
+template < typename VectorBuilder, typename T >
+struct axis_access<2, axes::cylindrical, VectorBuilder, T >
+    : axis_access<1, axes::cylindrical, VectorBuilder, T> {
+    using base_type =  axis_access<1, axes::cylindrical, VectorBuilder, T>;
+
+    PSST_MATH_COORD_ACCESS(phi, 1);
+    PSST_MATH_COORD_ACCESS(azimuth, 1);
+};
+template < typename VectorBuilder, typename T >
+struct axis_access<3, axes::cylindrical, VectorBuilder, T >
+    : axis_access<2, axes::cylindrical, VectorBuilder, T> {
+    using base_type =  axis_access<2, axes::cylindrical, VectorBuilder, T>;
+
+    PSST_MATH_COORD_ACCESS(z, 2);
+    PSST_MATH_COORD_ACCESS(elevation, 2);
+};
+//@}
+
+//@{
 /** @name axes::argb axes names */
 template < typename VectorBuilder, typename T >
 struct axis_access< 1, axes::argb, VectorBuilder, T >
@@ -379,37 +461,13 @@ struct axis_access< 4, axes::hsla, VectorBuilder, T >
 template < typename Tag >
 struct axes_names {
     template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = basic_axis_access<BuilderType, T>;
+    using type = axis_access< AxesCount, Tag, BuilderType, T >;
 };
 
 template <>
-struct axes_names<axes::xyzw> {
+struct axes_names<axes::none> {
     template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = axis_access< AxesCount, axes::xyzw, BuilderType, T>;
-};
-
-template <>
-struct axes_names<axes::argb> {
-    template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = axis_access< AxesCount, axes::argb, BuilderType, T>;
-};
-
-template <>
-struct axes_names<axes::rgba> {
-    template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = axis_access< AxesCount, axes::rgba, BuilderType, T>;
-};
-
-template <>
-struct axes_names<axes::hsva> {
-    template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = axis_access< AxesCount, axes::hsva, BuilderType, T>;
-};
-
-template <>
-struct axes_names<axes::hsla> {
-    template < ::std::size_t AxesCount, typename BuilderType, typename T >
-    using type = axis_access< AxesCount, axes::hsla, BuilderType, T>;
+    using type = basic_axis_access< BuilderType, T>;
 };
 
 }  /* namespace detail */

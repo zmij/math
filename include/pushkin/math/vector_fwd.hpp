@@ -15,6 +15,12 @@ namespace axes {
 struct none {};
 struct xyzw {};
 struct wxyz {};
+
+// FIXME Vector calculus for non-Cartesian coordinates
+struct polar {};
+struct spherical {};
+struct cylindrical {};
+
 struct argb {};
 struct rgba {};
 struct hsva {};
