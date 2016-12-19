@@ -15,6 +15,7 @@
 #include <cmath>
 
 #include <pushkin/math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/conversion.hpp>
 
 namespace psst {
 namespace math {
@@ -162,6 +163,12 @@ struct vector : detail::vector_builder<
         return v;
     }
 
+    template < typename TAxes >
+    vector<value_type, Size, TAxes>
+    convert() const
+    {
+        return math::convert<vector<value_type, Size, TAxes>>(*this);
+    }
     /**
      * Implicit conversion to pointer to element
      */
