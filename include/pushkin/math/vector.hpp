@@ -21,11 +21,11 @@ namespace math {
 
 template < typename T, size_t Size, typename Axes >
 struct vector : detail::vector_builder<
-    typename detail::index_builder< Size >::type, T, Axes > {
+    typename detail::index_builder< Size >::type, T >,
+    detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
 
     using base_type         = detail::vector_builder<
-                                typename detail::index_builder< Size >::type, T,
-                                Axes >;
+                                typename detail::index_builder< Size >::type, T >;
     using this_type         = vector< T, Size, Axes >;
 
     using value_type        = typename base_type::value_type;

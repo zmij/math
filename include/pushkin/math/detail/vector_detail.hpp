@@ -79,18 +79,16 @@ struct index_builder< 0, indexes_tuple< Indexes ... > > {
     static constexpr ::std::size_t size = sizeof ... (Indexes);
 };
 
-template < typename IndexTuple, typename T, typename Axes >
+template < typename IndexTuple, typename T >
 struct vector_builder;
 
-template < ::std::size_t ... Indexes, typename T, typename Axes >
-struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
-    data_holder< Indexes, T > ...,
-    axes_names<Axes>::template type<sizeof ... (Indexes),
-        vector_builder<indexes_tuple< Indexes ... >, T, Axes>, T> {
+template < ::std::size_t ... Indexes, typename T >
+struct vector_builder< indexes_tuple< Indexes ... >, T > :
+    data_holder< Indexes, T > ... {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
     using indexes_tuple_type    = indexes_tuple< Indexes ... >;
-    using this_type             = vector_builder< indexes_tuple_type, T, Axes >;
+    using this_type             = vector_builder< indexes_tuple_type, T >;
 
     using element_type          = T;
     using value_traits          = vector_value_traits<T>;
@@ -122,7 +120,7 @@ struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
      */
     template < size_t ... IndexesR, typename U >
     vector_builder(
-            vector_builder< indexes_tuple< IndexesR ... >, U, Axes > const& rhs,
+            vector_builder< indexes_tuple< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
         : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ... {}
 
@@ -217,9 +215,6 @@ struct vector_builder< indexes_tuple< Indexes ... >, T, Axes > :
         return begin()[idx];
     }
 };
-} // namespace detail
-
-namespace detail {
 
 template < ::std::size_t L, ::std::size_t R >
 struct min : ::std::conditional<
