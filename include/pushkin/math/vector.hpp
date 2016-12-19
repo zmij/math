@@ -15,19 +15,23 @@
 #include <cmath>
 
 #include <pushkin/math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/calculus.hpp>
 
 namespace psst {
 namespace math {
 
 template < typename T, size_t Size, typename Axes >
-struct vector : detail::vector_builder<
-    typename detail::index_builder< Size >::type, T >,
-    detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
+struct vector
+    : detail::vector_builder<
+        typename detail::index_builder< Size >::type, T >,
+      detail::calculus_selector<T, Size, Axes>,
+      detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
 
     using base_type         = detail::vector_builder<
                                 typename detail::index_builder< Size >::type, T >;
     using this_type         = vector< T, Size, Axes >;
 
+    using value_traits      = typename base_type::value_traits;
     using value_type        = typename base_type::value_type;
     using lvalue_reference  = typename base_type::lvalue_reference;
     using const_reference   = typename base_type::const_reference;
@@ -69,98 +73,6 @@ struct vector : detail::vector_builder<
     using base_type::end;
     using base_type::cend;
     using base_type::operator[];
-
-    this_type
-    operator - ()
-    {
-        this_type res(*this);
-        res *= -1;
-        return res;
-    }
-
-    template < typename U >
-    this_type&
-    operator *= (U val)
-    {
-        detail::vector_scalar_multiplication< Size - 1, this_type >()(*this, val);
-        return *this;
-    }
-
-    template < typename U >
-    this_type&
-    operator /= (U val)
-    {
-        detail::vector_scalar_division< Size - 1, this_type >()(*this, val);
-        return *this;
-    }
-
-    template < typename U >
-    this_type&
-    operator += (vector<U, Size, Axes> const& rhs)
-    {
-        detail::vector_addition< Size - 1, this_type >()(*this, rhs);
-        return *this;
-    }
-
-    template < typename U >
-    this_type&
-    operator -= (vector<U, Size, Axes> const& rhs)
-    {
-        detail::vector_substraction< Size - 1, this_type >()(*this, rhs);
-        return *this;
-    }
-
-    magnitude_type
-    magnitude_square() const
-    {
-        return detail::dot_product< Size - 1, this_type >()(*this, *this);
-    }
-
-    magnitude_type
-    magnitude() const
-    {
-        return ::std::sqrt(magnitude_square());
-    }
-
-    bool
-    is_zero() const
-    {
-        return magnitude_square() == 0;
-    }
-
-    bool
-    is_unit() const
-    {
-        return magnitude_square() == 1;
-    }
-
-    this_type&
-    zero()
-    {
-        detail::set_all_elements< Size - 1, this_type >()(*this, 0);
-        return *this;
-    }
-
-    this_type&
-    normalize()
-    {
-        value_type m = magnitude();
-        if (m != 0) {
-            if (m != 1)
-                (*this) /= m;
-        } else {
-            throw ::std::runtime_error("Cannot normalize a zero vector");
-        }
-        return *this;
-    }
-
-    this_type
-    normalize() const
-    {
-        this_type v(*this);
-        v.normalize();
-        return v;
-    }
 
     /**
      * Implicit conversion to pointer to element
