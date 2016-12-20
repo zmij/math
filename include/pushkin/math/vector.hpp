@@ -15,6 +15,7 @@
 #include <cmath>
 
 #include <pushkin/math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/calculus.hpp>
 
 namespace psst {
@@ -23,9 +24,9 @@ namespace math {
 template < typename T, size_t Size, typename Axes >
 struct vector
     : detail::vector_builder<
-        typename detail::index_builder< Size >::type, T >,
+    typename detail::index_builder< Size >::type, T >,
       detail::calculus_selector<T, Size, Axes>,
-      detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
+    detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
 
     using base_type         = detail::vector_builder<
                                 typename detail::index_builder< Size >::type, T >;
@@ -74,6 +75,12 @@ struct vector
     using base_type::cend;
     using base_type::operator[];
 
+    template < typename TAxes >
+    vector<value_type, Size, TAxes>
+    convert() const
+    {
+        return math::convert<vector<value_type, Size, TAxes>>(*this);
+    }
     /**
      * Implicit conversion to pointer to element
      */

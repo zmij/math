@@ -235,6 +235,21 @@ TEST(Vector, Slerp)
     EXPECT_EQ((vector3d{v, v, 0}), slerp(v1, v2, 0.5));
 }
 
+TEST(Vector, PolarCvt)
+{
+    using vector2d    = vector<double, 2, axes::xyzw>;
+    using polar_coord = vector<double, 2, axes::polar>;
+
+    vector2d v{1, 0};
+    polar_coord pc{1, 0};
+
+    EXPECT_EQ(pc, convert<polar_coord>(v));
+    EXPECT_EQ(v, convert<vector2d>(pc));
+
+    EXPECT_EQ(pc, v.convert<axes::polar>());
+    EXPECT_EQ(v, pc.convert<axes::xyzw>());
+}
+
 TEST(Matrix, Construction)
 {
     {  // default
