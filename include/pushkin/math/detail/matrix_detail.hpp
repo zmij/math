@@ -60,30 +60,30 @@ struct matrix_builder < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
     using const_row_reference   = typename ::std::add_lvalue_reference<
                                     typename ::std::add_const<row_type>::type>::type;
 
-    matrix_builder() = default;
+    constexpr matrix_builder() = default;
 
-    matrix_builder(T val)
+    constexpr matrix_builder(T val)
         : data_holder< RowIndexes, row_type >(val) ... {}
 
     template < typename EAxes, typename ... E >
-    matrix_builder( vector<E, CC, EAxes> const& ... args )
+    constexpr matrix_builder( vector<E, CC, EAxes> const& ... args )
         : data_holder< RowIndexes, row_type >(args) ... {}
 
-    matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args)
+    constexpr matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args)
         : data_holder< RowIndexes, row_type >( row_type(*(args.begin() + RowIndexes)) ) ...
     {}
 
     /**
-     * Construct from value_type[] array, expects size elements in the array.
+     * Construct from value_type[] array, expects `size` elements in the array.
      * Values must be in rows
      * @param p
      */
-    matrix_builder(const_pointer p)
+    constexpr matrix_builder(const_pointer p)
         : data_holder< RowIndexes, row_type >( p + RowIndexes * col_count ) ...
     {
     }
 
-    matrix_builder(const_md_pointer p)
+    constexpr matrix_builder(const_md_pointer p)
         : data_holder< RowIndexes, row_type >( p[RowIndexes] ) ...
     {
     }

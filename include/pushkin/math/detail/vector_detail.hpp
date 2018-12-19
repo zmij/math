@@ -27,7 +27,7 @@ struct data_holder {
 
     type value;
 
-    data_holder() = default;
+    constexpr data_holder() = default;
     data_holder(data_holder const&) = default;
     data_holder(data_holder&&) = default;
     data_holder&
@@ -35,16 +35,12 @@ struct data_holder {
     data_holder&
     operator = (data_holder&&) = default;
 
-    data_holder(type const& value)
-        : value(value)
-    {
-    }
+    constexpr data_holder(type const& value)
+        : value(value) {}
 
     template< typename Y >
-    data_holder(Y const& value)
-        : value(value)
-    {
-    }
+    constexpr data_holder(Y const& value)
+        : value(value) {}
 
     void
     swap(data_holder<Index, T>& rhs)
@@ -67,6 +63,7 @@ struct vector_builder;
 
 template < ::std::size_t ... Indexes, typename T >
 struct vector_builder< std::index_sequence< Indexes ... >, T > :
+    // TODO Replace the data holder with an std::array
     data_holder< Indexes, T > ... {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
@@ -87,13 +84,13 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
     using iterator              = value_type*;
     using const_iterator        = value_type const*;
 
-    vector_builder() = default;
+    constexpr vector_builder() = default;
 
     /**
      * Single value constructor, for initializing all values to the value
      * @param val
      */
-    vector_builder(T val)
+    constexpr vector_builder(T val)
         : data_holder< Indexes, T >(val) ... {}
 
     /**
@@ -102,26 +99,26 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
      * @param
      */
     template < size_t ... IndexesR, typename U >
-    vector_builder(
+    constexpr vector_builder(
             vector_builder< std::index_sequence< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
         : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ... {}
 
     template < typename ... E >
-    vector_builder(E const& ... args,
+    constexpr vector_builder(E const& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
         : data_holder< Indexes, T >(args) ... {}
 
     template < typename ... E >
-    vector_builder(E&& ... args,
+    constexpr vector_builder(E&& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
         : data_holder< Indexes, T >( std::forward<E>(args) ) ... {}
 
     template < typename U >
-    vector_builder(::std::initializer_list<U> const& args)
+    constexpr vector_builder(::std::initializer_list<U> const& args)
         : data_holder< Indexes, T >(*(args.begin() + Indexes))... {}
 
-    vector_builder(const_pointer p)
+    constexpr vector_builder(const_pointer p)
         : data_holder< Indexes, T >(*(p + Indexes))... {}
 
     pointer
@@ -130,7 +127,7 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
         return &this->data_holder< 0, T >::value;
     }
 
-    const_pointer
+    constexpr const_pointer
     data() const
     {
         return &this->data_holder< 0, T >::value;
@@ -144,7 +141,7 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
     }
 
     template < size_t N >
-    const_reference
+    constexpr const_reference
     at() const
     {
         return this->data_holder< N, T >::value;
@@ -156,12 +153,12 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
         return &this->data_holder< 0, T >::value;
     }
 
-    const_iterator
+    constexpr const_iterator
     begin() const
     {
         return cbegin();
     }
-    const_iterator
+    constexpr const_iterator
     cbegin() const
     {
         return &this->data_holder< 0, T >::value;
@@ -173,12 +170,12 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
         return begin() + size;
     }
 
-    const_iterator
+    constexpr const_iterator
     end() const
     {
         return cend();
     }
-    const_iterator
+    constexpr const_iterator
     cend() const
     {
         return begin() + size;
@@ -191,10 +188,10 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
         return begin()[idx];
     }
 
-    const_reference
+    constexpr const_reference
     operator[](size_t idx) const
     {
-        assert(idx < indexes_tuple_type::size);
+        assert(idx < size);
         return begin()[idx];
     }
 };
@@ -218,7 +215,7 @@ struct vector_cmp<N, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
     using right_side    = vector<U, USize, Axes>;
     using prev_elem     = vector_cmp<N - 1, left_side, right_side>;
 
-    static bool
+    constexpr static bool
     eq(left_side const& lhs, right_side const& rhs)
     {
         return prev_elem::eq(lhs, rhs) &&
@@ -226,7 +223,7 @@ struct vector_cmp<N, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
                                 rhs.template at<N>());
     }
 
-    static bool
+    constexpr static bool
     less(left_side const& lhs, right_side const& rhs)
     {
         auto p = prev_elem::cmp(lhs, rhs);
@@ -234,7 +231,7 @@ struct vector_cmp<N, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
                                 lhs.template at<N>(),
                                 rhs.template at<N>());
     }
-    static int
+    constexpr static int
     cmp(left_side const& lhs, right_side const& rhs)
     {
         auto p = prev_elem::cmp(lhs, rhs);
@@ -254,19 +251,19 @@ struct vector_cmp<0, vector<T, TSize, Axes>, vector<U, USize, Axes>> {
     using right_side    = vector<U, USize, Axes>;
     using traits_type   = typename left_side::value_traits;
 
-    static bool
+    constexpr static bool
     eq(left_side const& lhs, right_side const& rhs)
     {
         return traits_type::eq(lhs.template at<0>(), rhs.template at<0>());
     }
 
-    static bool
+    constexpr static bool
     less(left_side const& lhs, right_side const& rhs)
     {
         return traits_type::less(lhs.template at<0>(), rhs.template at<0>());
     }
 
-    static int
+    constexpr static int
     cmp(left_side const& lhs, right_side const& rhs)
     {
         return traits_type::cmp(lhs.template at<0>(), rhs.template at<0>());

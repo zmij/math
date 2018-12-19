@@ -40,7 +40,7 @@ struct vector
     using pointer           = typename base_type::pointer;
     using const_pointer     = typename base_type::const_pointer;
 
-    vector() = default;
+    constexpr vector() = default;
 
     /**
      * Single value construction, initialize all components to the
@@ -48,23 +48,23 @@ struct vector
      * be called with round parenthesis.
      * @param val
      */
-    explicit
+    constexpr explicit
     vector(T val)
         : base_type(val) {}
 
     template < typename ... E >
-    vector(E&& ... args,
+    constexpr vector(E&& ... args,
             typename ::std::enable_if<(sizeof ... (E) > 1)>::type* = nullptr)
         : base_type(::std::forward<E>(args) ... ) {}
 
-    vector(::std::initializer_list< value_type > const& args)
+    constexpr vector(::std::initializer_list< value_type > const& args)
         : base_type(args.begin()) {}
 
-    vector(const_pointer p)
+    constexpr vector(const_pointer p)
         : base_type(p) {}
 
     template < typename U, size_t SizeR >
-    vector( vector<U, SizeR, Axes> const& rhs )
+    constexpr vector( vector<U, SizeR, Axes> const& rhs )
         : base_type(rhs) {}
 
     using base_type::data;

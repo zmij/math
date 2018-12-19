@@ -34,18 +34,14 @@ struct matrix : detail::matrix_builder< std::make_index_sequence< RC >, CC, T, A
     using pointer           = typename base_type::pointer;
     using const_pointer     = typename base_type::const_pointer;
 
-    matrix() = default;
+    constexpr matrix() = default;
 
-    matrix( std::initializer_list< std::initializer_list< value_type > > const& args) :
-        base_type(args)
-    {
-    }
+    constexpr matrix( std::initializer_list< std::initializer_list< value_type > > const& args) :
+        base_type(args) {}
 
     template < typename ... E >
-    matrix(E const& ... args) :
-        base_type(args ... )
-    {
-    }
+    constexpr matrix(E const& ... args) :
+        base_type(args ... ) {}
 
     using base_type::data;
     using base_type::at;
