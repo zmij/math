@@ -5,7 +5,7 @@
  *      Author: sergey.fedorov
  */
 
-#include <benchmark/benchmark_api.h>
+#include <benchmark/benchmark.h>
 #include <pushkin/math/vector.hpp>
 #include <pushkin/math/matrix.hpp>
 
@@ -259,4 +259,4 @@ BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   10>);
 }  /* namespace math */
 }  /* namespace psst */
 
-BENCHMARK_MAIN()
+BENCHMARK_MAIN();

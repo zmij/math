@@ -5,9 +5,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-if (NOT GTEST_INCLUDE_DIRS)
-    find_package(GTest REQUIRED)
-endif()
+find_package(ExternalProjectGTest REQUIRED)
 if (NOT CMAKE_THREAD_LIBS_INIT)
     find_package(Threads REQUIRED)
 endif()

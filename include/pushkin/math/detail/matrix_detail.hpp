@@ -20,23 +20,23 @@ template < typename RowIndexTuple, ::std::size_t ColCount, typename T, typename 
 struct matrix_builder;
 
 template < ::std::size_t ... RowIndexes, ::std::size_t CC, typename T, typename Axes >
-struct matrix_builder < indexes_tuple< RowIndexes ... >, CC, T, Axes > :
+struct matrix_builder < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
         data_holder< RowIndexes, vector< T, CC, Axes > > ...,
         axes_names<Axes>::template type<sizeof ... (RowIndexes),
-            matrix_builder< indexes_tuple<RowIndexes...>, CC, T, Axes >,
+            matrix_builder< std::index_sequence<RowIndexes...>, CC, T, Axes >,
             vector<T, CC, Axes>> {
 
-    using row_index_tuple       = detail::indexes_tuple< RowIndexes ... >;
+    using row_index_tuple       = std::index_sequence< RowIndexes ... >;
     using row_type              = vector< T, CC, Axes >;
 
-    static constexpr ::std::size_t row_count    = row_index_tuple::size;
+    static constexpr ::std::size_t row_count    = sizeof...(RowIndexes);
     static constexpr ::std::size_t col_count    = row_type::size;
     static constexpr ::std::size_t size         = row_count * col_count;
 
     using this_type             = matrix_builder < row_index_tuple, CC, T, Axes >;
 
-    using col_index_tuple       = typename detail::index_builder< CC >::type;
-    using transposed_type       = matrix_builder< col_index_tuple, row_index_tuple::size, T, Axes >;
+    using col_index_tuple       = std::make_index_sequence< CC >;
+    using transposed_type       = matrix_builder< col_index_tuple, row_count, T, Axes >;
 
 
     using row_iterator          = row_type*;

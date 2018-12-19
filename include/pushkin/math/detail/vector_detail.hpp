@@ -9,6 +9,8 @@
 #define PUSHKIN_VECTOR_DETAIL_HPP_
 
 #include <type_traits>
+#include <utility>
+
 #include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/value_traits.hpp>
 
@@ -16,8 +18,8 @@ namespace psst {
 namespace math {
 
 namespace detail {
-/** Variadic template arguments unwrapping */
 
+/** Variadic template arguments unwrapping */
 template< ::std::size_t Index, typename T >
 struct data_holder {
     static constexpr ::std::size_t index = Index;
@@ -60,34 +62,15 @@ struct data_holder {
     }
 };
 
-template< ::std::size_t ... Indexes >
-struct indexes_tuple {
-    static constexpr ::std::size_t size = sizeof ... (Indexes);
-};
-
-template< ::std::size_t num, typename tp = indexes_tuple< > >
-struct index_builder;
-
-template< ::std::size_t num, size_t ... Indexes >
-struct index_builder< num, indexes_tuple< Indexes ... > > : index_builder<
-        num - 1, indexes_tuple< Indexes ..., sizeof ... (Indexes) > > {
-};
-
-template< ::std::size_t ... Indexes >
-struct index_builder< 0, indexes_tuple< Indexes ... > > {
-    using type = indexes_tuple< Indexes ... >;
-    static constexpr ::std::size_t size = sizeof ... (Indexes);
-};
-
 template < typename IndexTuple, typename T >
 struct vector_builder;
 
 template < ::std::size_t ... Indexes, typename T >
-struct vector_builder< indexes_tuple< Indexes ... >, T > :
+struct vector_builder< std::index_sequence< Indexes ... >, T > :
     data_holder< Indexes, T > ... {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
-    using indexes_tuple_type    = indexes_tuple< Indexes ... >;
+    using indexes_tuple_type    = std::index_sequence< Indexes ... >;
     using this_type             = vector_builder< indexes_tuple_type, T >;
 
     using element_type          = T;
@@ -120,7 +103,7 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
      */
     template < size_t ... IndexesR, typename U >
     vector_builder(
-            vector_builder< indexes_tuple< IndexesR ... >, U > const& rhs,
+            vector_builder< std::index_sequence< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
         : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ... {}
 
@@ -187,7 +170,7 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
     iterator
     end()
     {
-        return begin() + indexes_tuple_type::size;
+        return begin() + size;
     }
 
     const_iterator
@@ -198,13 +181,13 @@ struct vector_builder< indexes_tuple< Indexes ... >, T > :
     const_iterator
     cend() const
     {
-        return begin() + indexes_tuple_type::size;
+        return begin() + size;
     }
 
     lvalue_reference
     operator[](size_t idx)
     {
-        assert(idx < indexes_tuple_type::size);
+        assert(idx < size);
         return begin()[idx];
     }
 

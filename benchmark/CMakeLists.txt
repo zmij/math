@@ -2,9 +2,7 @@
 # Created on: 13 дек. 2016 г.
 #     Author: sergey.fedorov
 
-if (NOT GBENCH_FOUND)
-    find_package(GBenchmark REQUIRED)
-endif()
+find_package(ExternalProjectGBench REQUIRED)
 if (NOT CMAKE_THREAD_LIBS_INIT)
     find_package(Threads REQUIRED)
 endif()

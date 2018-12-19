@@ -20,10 +20,10 @@ namespace math {
  * @tparam CC column count;
  */
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix : detail::matrix_builder< typename detail::index_builder< RC >::type, CC, T, Axes > {
+struct matrix : detail::matrix_builder< std::make_index_sequence< RC >, CC, T, Axes > {
 
     using base_type         = detail::matrix_builder<
-                                typename detail::index_builder< RC >::type, CC, T, Axes >;
+                                std::make_index_sequence< RC >, CC, T, Axes >;
 
     using this_type         = matrix< T, RC, CC, Axes >;
     using transposed_type   = matrix< T, CC, RC, Axes >;

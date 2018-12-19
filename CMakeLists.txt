@@ -23,22 +23,45 @@ else()
     set(PROJECT_VERSION ${_pversion})
 endif()
 
-option(BUILD_TESTS "Build tests for ${lib_name} library" ON)
-option(BUILD_BENCHMARKS "Build benchmarks for ${lib_name} library" ON)
+option(PSST_MATH_BUILD_TESTS "Build tests for ${lib_name} library" ON)
+option(PSST_MATH_BUILD_BENCHMARKS "Build benchmarks for ${lib_name} library" ON)
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
-add_definitions("-std=c++11")
-add_definitions(-Wall -Werror -pedantic)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_definitions(-Wall -Werror -Wpedantic)
+
+option(USE_CCACHE "Use ccache for build" ON)
+if (USE_CCACHE)
+    find_program(CCACHE ccache)
+    if (CCACHE)
+        message(STATUS "ccache found and enabled")
+        set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
+        set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    else()
+        message(WARNING "ccache enabled, but not found")
+    endif()
+else()
+    message(STATUS "ccache disabled")
+endif()
+
+
 add_subdirectory(include)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-if (BUILD_TESTS)
+
+if (PSST_MATH_BUILD_TESTS OR PSST_MATH_BUILD_BENCHMARKS)
+find_package(ExternalProjectZmijModules)
+endif()
+
+if (PSST_MATH_BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-if (BUILD_BENCHMARKS)
+if (PSST_MATH_BUILD_BENCHMARKS)
     enable_testing()
     add_subdirectory(benchmark)
 endif()
