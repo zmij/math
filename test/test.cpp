@@ -34,9 +34,9 @@ PrintTo(matrix<T, RC, CC> const& mtx, ::std::ostream* os)
 
 namespace test {
 
-using vector3d = math::vector<double, 3>;
-using vector3df = math::vector<float, 3>;
-using matrix3x3 = math::matrix<double, 3, 3>;
+using vector3d = vector<double, 3>;
+using vector3df = vector<float, 3>;
+using matrix3x3 = matrix<double, 3, 3>;
 
 using rgba_col = vector<float, 4, axes::rgba>;
 using argb_col = vector<float, 4, axes::argb>;
@@ -170,7 +170,7 @@ TEST(Vector, Add)
 TEST(Vector, Multiply)
 {
     vector3d initial{1,2,3}, expected{5, 10, 15};
-    auto v1 = initial * 5;
+    vector3d v1 = initial * 5;
     ::std::cerr << sizeof(v1) << " " << io::pretty << v1 << "\n";
     EXPECT_EQ(expected, v1);
     v1 = expected / 5;
@@ -183,6 +183,19 @@ TEST(Vector, Magnitude)
     EXPECT_EQ(3, v1.magnitude_square());
     EXPECT_FALSE(v1.is_unit());
     EXPECT_FALSE(v1.is_zero());
+}
+
+TEST(Vector, Expression)
+{
+  using ::std::sin;
+  using ::std::cos;
+  using ::std::acos;
+
+  vector3df v1 {1, 1, 1}, v2 {1, 0, 1}, expected { 3.75, 0.75, 3.75 };
+
+  auto exp = (v1 * .5 + v2 * 2) / 2;
+  vector3df res = exp * 3;
+  EXPECT_EQ(expected, res);
 }
 
 TEST(Vector, Normalize)

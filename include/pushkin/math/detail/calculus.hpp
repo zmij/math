@@ -137,6 +137,9 @@ private:
     rebind() const { return static_cast<vector_type const&>(*this); }
 };
 
+/**
+ * Polar coordinates calculus
+ */
 template < typename T >
 struct nonvector_calculus<T, 2, axes::polar> {
     using vector_type           = vector<T, 2, axes::polar>;

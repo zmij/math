@@ -67,8 +67,8 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
     data_holder< Indexes, T > ... {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
-    using indexes_tuple_type    = std::index_sequence< Indexes ... >;
-    using this_type             = vector_builder< indexes_tuple_type, T >;
+    using index_sequence_type   = std::index_sequence< Indexes ... >;
+    using this_type             = vector_builder< index_sequence_type, T >;
 
     using element_type          = T;
     using value_traits          = vector_value_traits<T>;
@@ -98,7 +98,7 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
      * @param rhs
      * @param
      */
-    template < size_t ... IndexesR, typename U >
+    template < ::std::size_t ... IndexesR, typename U >
     constexpr vector_builder(
             vector_builder< std::index_sequence< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
@@ -133,14 +133,14 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
         return &this->data_holder< 0, T >::value;
     }
 
-    template < size_t N >
+    template < ::std::size_t N >
     lvalue_reference
     at()
     {
         return this->data_holder< N, T >::value;
     }
 
-    template < size_t N >
+    template < ::std::size_t N >
     constexpr const_reference
     at() const
     {
@@ -182,14 +182,14 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
     }
 
     lvalue_reference
-    operator[](size_t idx)
+    operator[](::std::size_t idx)
     {
         assert(idx < size);
         return begin()[idx];
     }
 
     constexpr const_reference
-    operator[](size_t idx) const
+    operator[](::std::size_t idx) const
     {
         assert(idx < size);
         return begin()[idx];

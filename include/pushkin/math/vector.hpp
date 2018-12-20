@@ -21,7 +21,7 @@
 namespace psst {
 namespace math {
 
-template < typename T, size_t Size, typename Axes >
+template < typename T, ::std::size_t Size, typename Axes >
 struct vector
     : detail::vector_builder<
       std::make_index_sequence< Size >, T >,
@@ -32,6 +32,7 @@ struct vector
                                 std::make_index_sequence< Size >, T >;
     using this_type         = vector< T, Size, Axes >;
 
+    using element_type      = typename base_type::element_type;
     using value_traits      = typename base_type::value_traits;
     using value_type        = typename base_type::value_type;
     using lvalue_reference  = typename base_type::lvalue_reference;
@@ -39,6 +40,10 @@ struct vector
     using magnitude_type    = typename base_type::magnitude_type;
     using pointer           = typename base_type::pointer;
     using const_pointer     = typename base_type::const_pointer;
+
+    using index_sequence_type = typename base_type::index_sequence_type;
+
+    static constexpr auto size = base_type::size;
 
     constexpr vector() = default;
 
@@ -63,7 +68,7 @@ struct vector
     constexpr vector(const_pointer p)
         : base_type(p) {}
 
-    template < typename U, size_t SizeR >
+    template < typename U, ::std::size_t SizeR >
     constexpr vector( vector<U, SizeR, Axes> const& rhs )
         : base_type(rhs) {}
 
@@ -96,7 +101,7 @@ struct vector
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator == (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     using left_side = vector<T, TSize, Axes>;
@@ -108,7 +113,7 @@ operator == (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > cons
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator != (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(lhs == rhs);
@@ -117,7 +122,7 @@ operator != (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > cons
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator < (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     using left_side = vector<T, TSize, Axes>;
@@ -129,7 +134,7 @@ operator < (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator > (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return rhs < lhs;
@@ -138,7 +143,7 @@ operator > (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator <= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(rhs < lhs);
@@ -147,7 +152,7 @@ operator <= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > cons
 template < typename T, typename U,
     ::std::size_t TSize, ::std::size_t USize,
     typename Axes >
-bool
+constexpr bool
 operator >= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
 {
     return !(lhs < rhs);

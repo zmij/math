@@ -123,6 +123,29 @@ struct vector_value_traits : compare_traits<T> {
     using magnitude_type    = typename magnitude_traits::magnitude_type;
 };
 
+template < typename T, typename U >
+struct most_precise_type {
+    using type = decltype(std::declval<T>() / std::declval<U>());
+};
+
+template < typename T, typename U >
+using most_presize_type_t = typename most_precise_type<T, U>::type;
+
+template < typename T, typename U >
+struct shorter_sequence;
+
+template <typename T, T... LHS, T... RHS>
+struct shorter_sequence<std::integer_sequence<T, LHS...>,
+        std::integer_sequence<T, RHS...>> {
+    using type = std::conditional_t<
+          sizeof...(LHS) <= sizeof...(RHS),
+          std::integer_sequence<T, LHS...>,
+          std::integer_sequence<T, RHS...>
+        >;
+};
+
+template < typename T, typename U >
+using shorter_sequence_t = typename shorter_sequence<T, U>::type;
 
 }  /* namespace detail */
 }  /* namespace math */

@@ -11,11 +11,11 @@
 #define PSST_MATH_COORD_ACCESS(name, number)\
     typename base_type::lvalue_reference \
     name() { return base_type::rebind().template at<number>(); } \
-    typename base_type::const_reference \
+    constexpr typename base_type::const_reference \
     name() const { return base_type::rebind().template at<number>(); }
 
 #define PSST_MATH_COORD_VEC2(names, a, b) \
-    vector<value_type, 2, names> \
+    constexpr vector<value_type, 2, names> \
     a##b() const { return { a(), b() }; }
 
 #define PSST_MATH_COORD_PERM2(names, a, b) \
@@ -28,7 +28,7 @@
     PSST_MATH_COORD_VEC2(names, b, b)
 
 #define PSST_MATH_COORD_VEC3(names, a, b, c) \
-    vector<value_type, 3, names> \
+    constexpr vector<value_type, 3, names> \
     a##b##c() const { return { a(), b(), c() }; }
 
 #define PSST_MATH_PERM3_3(names, a, b, u, v, w) \
@@ -65,7 +65,7 @@
     PSST_MATH_COORD4_PERM4_2(names, d, a, b, c, d)
 
 #define PSST_MATH_COORD_VEC4(names, a, b, c, d)\
-    vector<value_type, 4, names> \
+    constexpr vector<value_type, 4, names> \
     a##b##c##d() const { return { a(), b(), c(), d() }; }
 
 #define PSST_MATH_PERM4_4(names, a, b, c, u, v, w, x) \

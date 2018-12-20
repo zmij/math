@@ -74,6 +74,36 @@ VectorAdd( benchmark::State& state )
 }
 template < typename Vector >
 void
+VectorAddAssign( benchmark::State& state )
+{
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+
+    while (state.KeepRunning()) {
+        decltype (v1) v3;
+        benchmark::DoNotOptimize(v3 = v1 + v2);
+    }
+}
+template < typename Vector >
+void
+VectorSum( benchmark::State& state )
+{
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v3 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+
+    while (state.KeepRunning()) {
+        decltype (v1) v4;
+        benchmark::DoNotOptimize(v4 = v1 + v2 + v3);
+    }
+}
+template < typename Vector >
+void
 VectorSub( benchmark::State& state )
 {
     auto v1 = make_test_vector<typename Vector::value_type>(
@@ -83,6 +113,20 @@ VectorSub( benchmark::State& state )
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(v2 -= v1);
+    }
+}
+template < typename Vector >
+void
+VectorSubAssign( benchmark::State& state )
+{
+    auto v1 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(
+            dimension_count<Vector::size>{});
+
+    while (state.KeepRunning()) {
+        decltype (v1) v3;
+        benchmark::DoNotOptimize(v3 = v1 - v2);
     }
 }
 template < typename Vector >
@@ -169,7 +213,7 @@ VectorLerp( benchmark::State& state )
     while (state.KeepRunning()) {
         auto v1 = make_test_vector<typename Vector::value_type>(
                 dimension_count<Vector::size>{});
-        auto v2 = v1 * 2;
+        decltype(v1) v2 = v1 * 2;
         benchmark::DoNotOptimize(lerp(v1, v2, 0.5));
     }
 }
@@ -178,11 +222,12 @@ template < typename Vector >
 void
 VectorSlerp( benchmark::State& state )
 {
+    using value_type = typename Vector::value_type;
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
+        auto v1 = make_test_vector<value_type>(
                 dimension_count<Vector::size>{});
-        auto v2 = v1 * 2;
-        benchmark::DoNotOptimize(slerp(v1, v2, 0.5));
+        decltype(v1) v2 = v1 * 2;
+        benchmark::DoNotOptimize(slerp(v1, v2, value_type{0.5}));
     }
 }
 
@@ -196,8 +241,14 @@ BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorCmp,           vector<double,  3>);
 BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorAdd,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorAddAssign,     vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorAddAssign,     vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorSum,           vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorSum,           vector<double,  3>);
 BENCHMARK_TEMPLATE(VectorSub,           vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorSub,           vector<double,  3>);
+BENCHMARK_TEMPLATE(VectorSubAssign,     vector<float,   3>);
+BENCHMARK_TEMPLATE(VectorSubAssign,     vector<double,  3>);
 BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   3>);
 BENCHMARK_TEMPLATE(VectorScalarMul,     vector<double,  3>);
 BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   3>);
@@ -223,8 +274,14 @@ BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorCmp,           vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorAdd,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorAddAssign,     vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorAddAssign,     vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorSum,           vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorSum,           vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorSub,           vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorSub,           vector<double,  4>);
+BENCHMARK_TEMPLATE(VectorSubAssign,     vector<float,   4>);
+BENCHMARK_TEMPLATE(VectorSubAssign,     vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorScalarMul,     vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   4>);
@@ -247,7 +304,10 @@ BENCHMARK_TEMPLATE(VectorSlerp,         vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorEq,            vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorCmp,           vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorAdd,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorAddAssign,     vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorSum,           vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorSub,           vector<float,   10>);
+BENCHMARK_TEMPLATE(VectorSubAssign,     vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorScalarMul,     vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorDot,           vector<float,   10>);
