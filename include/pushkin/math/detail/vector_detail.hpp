@@ -8,11 +8,12 @@
 #ifndef PUSHKIN_VECTOR_DETAIL_HPP_
 #define PUSHKIN_VECTOR_DETAIL_HPP_
 
-#include <type_traits>
-#include <utility>
-
 #include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/value_traits.hpp>
+
+#include <type_traits>
+#include <utility>
+#include <array>
 
 namespace psst {
 namespace math {
@@ -58,13 +59,16 @@ struct data_holder {
     }
 };
 
+template <::std::size_t Index, typename T>
+struct value_fill {
+  T value;
+};
+
 template < typename IndexTuple, typename T >
 struct vector_builder;
 
 template < ::std::size_t ... Indexes, typename T >
-struct vector_builder< std::index_sequence< Indexes ... >, T > :
-    // TODO Replace the data holder with an std::array
-    data_holder< Indexes, T > ... {
+struct vector_builder< std::index_sequence< Indexes ... >, T > {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
     using index_sequence_type   = std::index_sequence< Indexes ... >;
@@ -91,7 +95,7 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
      * @param val
      */
     constexpr vector_builder(T val)
-        : data_holder< Indexes, T >(val) ... {}
+        : data_({value_fill<Indexes, T>{val}.value ...}) {}
 
     /**
      * Construct vector from a vector of larger size
@@ -102,98 +106,71 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > :
     constexpr vector_builder(
             vector_builder< std::index_sequence< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
-        : data_holder< Indexes, T >( rhs.template at< Indexes >() ) ... {}
+        : data_({rhs.template at< Indexes >()...}) {}
 
     template < typename ... E >
     constexpr vector_builder(E const& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
-        : data_holder< Indexes, T >(args) ... {}
+        : data_({args...}) {}
 
     template < typename ... E >
     constexpr vector_builder(E&& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
-        : data_holder< Indexes, T >( std::forward<E>(args) ) ... {}
+        : data_({std::forward<E>(args)...}) {}
 
     template < typename U >
     constexpr vector_builder(::std::initializer_list<U> const& args)
-        : data_holder< Indexes, T >(*(args.begin() + Indexes))... {}
+        : data_({*(args.begin() + Indexes)...}) {}
 
     constexpr vector_builder(const_pointer p)
-        : data_holder< Indexes, T >(*(p + Indexes))... {}
+        : data_({*(p + Indexes)...}) {}
 
     pointer
-    data()
-    {
-        return &this->data_holder< 0, T >::value;
-    }
+    data() { return data_.data(); }
 
     constexpr const_pointer
-    data() const
-    {
-        return &this->data_holder< 0, T >::value;
-    }
+    data() const { return data_.data(); }
 
     template < ::std::size_t N >
     lvalue_reference
-    at()
-    {
-        return this->data_holder< N, T >::value;
-    }
+    at() { return ::std::get<N>(data_); }
 
     template < ::std::size_t N >
     constexpr const_reference
-    at() const
-    {
-        return this->data_holder< N, T >::value;
-    }
+    at() const { return ::std::get<N>(data_); }
 
     iterator
-    begin()
-    {
-        return &this->data_holder< 0, T >::value;
-    }
+    begin() { return data_.begin(); }
 
     constexpr const_iterator
-    begin() const
-    {
-        return cbegin();
-    }
+    begin() const { return cbegin(); }
     constexpr const_iterator
-    cbegin() const
-    {
-        return &this->data_holder< 0, T >::value;
-    }
+    cbegin() const { return data_.cbegin(); }
 
     iterator
-    end()
-    {
-        return begin() + size;
-    }
+    end() { return data_.end(); }
 
     constexpr const_iterator
-    end() const
-    {
-        return cend();
-    }
+    end() const { return cend(); }
     constexpr const_iterator
-    cend() const
-    {
-        return begin() + size;
-    }
+    cend() const { return data_.end(); }
 
     lvalue_reference
     operator[](::std::size_t idx)
     {
         assert(idx < size);
-        return begin()[idx];
+        return data_[idx];
     }
 
     constexpr const_reference
     operator[](::std::size_t idx) const
     {
         assert(idx < size);
-        return begin()[idx];
+        return data_[idx];
     }
+private:
+    using data_type = ::std::array<T, size>;
+    data_type data_;
 };
 
 template < ::std::size_t L, ::std::size_t R >
