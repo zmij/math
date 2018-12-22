@@ -17,13 +17,12 @@ namespace math {
 namespace detail {
 
 template < typename RowIndexTuple, ::std::size_t ColCount, typename T, typename Axes >
-struct matrix_builder;
+struct matrix_data;
 
 template < ::std::size_t ... RowIndexes, ::std::size_t CC, typename T, typename Axes >
-struct matrix_builder < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
-        data_holder< RowIndexes, vector< T, CC, Axes > > ...,
-        axes_names<Axes>::template type<sizeof ... (RowIndexes),
-            matrix_builder< std::index_sequence<RowIndexes...>, CC, T, Axes >,
+struct matrix_data < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
+        axes_names_t<sizeof ... (RowIndexes), Axes,
+            matrix_data< std::index_sequence<RowIndexes...>, CC, T, Axes >,
             vector<T, CC, Axes>> {
 
     using row_index_tuple       = std::index_sequence< RowIndexes ... >;
@@ -33,10 +32,10 @@ struct matrix_builder < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
     static constexpr ::std::size_t col_count    = row_type::size;
     static constexpr ::std::size_t size         = row_count * col_count;
 
-    using this_type             = matrix_builder < row_index_tuple, CC, T, Axes >;
+    using this_type             = matrix_data < row_index_tuple, CC, T, Axes >;
 
     using col_index_tuple       = std::make_index_sequence< CC >;
-    using transposed_type       = matrix_builder< col_index_tuple, row_count, T, Axes >;
+    using transposed_type       = matrix_data< col_index_tuple, row_count, T, Axes >;
 
 
     using row_iterator          = row_type*;
@@ -60,124 +59,97 @@ struct matrix_builder < std::index_sequence< RowIndexes ... >, CC, T, Axes > :
     using const_row_reference   = typename ::std::add_lvalue_reference<
                                     typename ::std::add_const<row_type>::type>::type;
 
-    constexpr matrix_builder() = default;
+    constexpr matrix_data() = default;
 
-    constexpr matrix_builder(T val)
-        : data_holder< RowIndexes, row_type >(val) ... {}
+    constexpr matrix_data(T val)
+        : data_({ value_fill<RowIndexes, row_type>{row_type(val)}.value ... }) {}
 
     template < typename EAxes, typename ... E >
-    constexpr matrix_builder( vector<E, CC, EAxes> const& ... args )
-        : data_holder< RowIndexes, row_type >(args) ... {}
+    constexpr matrix_data( vector<E, CC, EAxes> const& ... args )
+        : data_({ args... }) {}
 
-    constexpr matrix_builder( std::initializer_list< std::initializer_list< value_type > > const& args)
-        : data_holder< RowIndexes, row_type >( row_type(*(args.begin() + RowIndexes)) ) ...
-    {}
+    constexpr matrix_data( std::initializer_list< std::initializer_list< value_type > > const& args)
+        : data_({ row_type(*(args.begin() + RowIndexes)) ... }) {}
 
     /**
      * Construct from value_type[] array, expects `size` elements in the array.
      * Values must be in rows
      * @param p
      */
-    constexpr matrix_builder(const_pointer p)
-        : data_holder< RowIndexes, row_type >( p + RowIndexes * col_count ) ...
-    {
-    }
+    constexpr matrix_data(const_pointer p)
+        : data_({ p + RowIndexes * col_count ... }) {}
 
-    constexpr matrix_builder(const_md_pointer p)
-        : data_holder< RowIndexes, row_type >( p[RowIndexes] ) ...
-    {
-    }
+    constexpr matrix_data(const_md_pointer p)
+        : data_({ p[RowIndexes] ... }) {}
 
     pointer
     data()
-    { return this->template at<0>().data(); }
+    { return std::get<0>(data_).data(); }
     const_pointer
     data() const
-    { return this->template at<0>().data(); }
+    { return std::get<0>(data_).data(); }
 
     template < ::std::size_t N >
     lvalue_row_reference
     at()
-    {
-        return this->detail::data_holder< N, row_type >::value;
-    }
+    { return std::get<N>(data_); }
 
     template < ::std::size_t N >
     const_row_reference
     at() const
-    {
-        return this->detail::data_holder< N, row_type >::value;
-    }
+    { return std::get<N>(data_); }
 
     iterator
     begin()
-    {
-        return this->template at<0>().begin();
-    }
+    { return data_.front().begin(); }
     const_iterator
-    begin() const
-    {
-        return cbegin();
-    }
+    begin() const { return cbegin(); }
     const_iterator
     cbegin() const
-    {
-        return this->template at<0>().begin();
-    }
+    { return data_.front().cbegin(); }
 
     iterator
     end()
-    {
-        return this->template at< row_count - 1 >().end();
-    }
+    { return data_.back().end(); }
     const_iterator
     end() const
-    {
-        return cend();
-    }
+    { return cend(); }
     const_iterator
     cend() const
-    {
-        return this->template at< row_count - 1 >().cend();
-    }
+    { return data_.back().end(); }
 
     row_iterator
     row_begin()
-    {
-        return &this->detail::data_holder< 0, row_type >::value;
-    }
+    { return data_.begin(); }
 
     const_row_iterator
     row_begin() const
-    {
-        return &this->detail::data_holder< 0, row_type >::value;
-    }
+    { return data_.begin(); }
 
     row_iterator
     row_end()
-    {
-        return row_begin() + row_count;
-    }
+    { return data_.end(); }
 
     const_row_iterator
     row_end() const
-    {
-        return row_begin() + row_count;
-    }
+    { return data_.end(); }
 
     lvalue_row_reference
     operator[] (::std::size_t idx)
     {
         assert(idx < row_count);
-        return row_begin()[idx];
+        return data_[idx];
     }
 
     const_row_reference
     operator[] (::std::size_t idx) const
     {
         assert(idx < row_count);
-        return row_begin()[idx];
+        return data_[idx];
     }
+private:
+    using data_type = std::array<row_type, row_count>;
+    data_type data_;
 };
 
 } // namespace detail

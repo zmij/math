@@ -23,12 +23,11 @@ namespace math {
 
 template < typename T, ::std::size_t Size, typename Axes >
 struct vector
-    : detail::vector_builder<
-      std::make_index_sequence< Size >, T >,
+    : detail::vector_data<std::make_index_sequence< Size >, T >,
       detail::calculus_selector<T, Size, Axes>,
-    detail::axes_names<Axes>::template type<Size, vector<T, Size, Axes>, T> {
+      detail::axes_names_t<Size, Axes, vector<T, Size, Axes>, T> {
 
-    using base_type         = detail::vector_builder<
+    using base_type         = detail::vector_data<
                                 std::make_index_sequence< Size >, T >;
     using this_type         = vector< T, Size, Axes >;
 

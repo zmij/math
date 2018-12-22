@@ -23,7 +23,7 @@ using dimension_count = ::std::integral_constant<::std::size_t, N>;
 //  Vector 3
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 3, axes::xyzw>
+constexpr vector<T, 3, axes::xyzw>
 make_test_vector(dimension_count<3> const&)
 {
     return { 1, 2, 3 };
@@ -33,7 +33,7 @@ make_test_vector(dimension_count<3> const&)
 //  Vector 4
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 4, axes::xyzw>
+constexpr vector<T, 4, axes::xyzw>
 make_test_vector(dimension_count<4> const&)
 {
     return { 1, 2, 3, 4 };
@@ -43,7 +43,7 @@ make_test_vector(dimension_count<4> const&)
 //  Vector 10
 //----------------------------------------------------------------------------
 template < typename T >
-vector<T, 10, axes::xyzw>
+constexpr vector<T, 10, axes::xyzw>
 make_test_vector(dimension_count<10> const&)
 {
     return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -53,7 +53,7 @@ make_test_vector(dimension_count<10> const&)
 //  Matrix 3x3
 //----------------------------------------------------------------------------
 template < typename T >
-matrix<T, 3, 3>
+constexpr matrix<T, 3, 3>
 make_test_matrix(matrix_size<3, 3> const&)
 {
     return
@@ -68,7 +68,7 @@ make_test_matrix(matrix_size<3, 3> const&)
 //  Matrix 4x4
 //----------------------------------------------------------------------------
 template < typename T >
-matrix<T, 4, 4>
+constexpr matrix<T, 4, 4>
 make_test_matrix(matrix_size<4, 4> const&)
 {
     return
@@ -84,7 +84,7 @@ make_test_matrix(matrix_size<4, 4> const&)
 //  Matrix 3x4
 //----------------------------------------------------------------------------
 template < typename T >
-matrix<T, 3, 4>
+constexpr matrix<T, 3, 4>
 make_test_matrix(matrix_size<3, 4> const&)
 {
     return
@@ -99,7 +99,7 @@ make_test_matrix(matrix_size<3, 4> const&)
 //  Matrix 4x3
 //----------------------------------------------------------------------------
 template < typename T >
-matrix<T, 4, 3>
+constexpr matrix<T, 4, 3>
 make_test_matrix(matrix_size<4, 3> const&)
 {
     return
@@ -115,7 +115,7 @@ make_test_matrix(matrix_size<4, 3> const&)
 //  Matrix 10x10
 //----------------------------------------------------------------------------
 template < typename T >
-matrix<T, 10, 10>
+constexpr matrix<T, 10, 10>
 make_test_matrix(matrix_size<10, 10> const&)
 {
     return

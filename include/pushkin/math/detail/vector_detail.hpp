@@ -65,14 +65,14 @@ struct value_fill {
 };
 
 template < typename IndexTuple, typename T >
-struct vector_builder;
+struct vector_data;
 
 template < ::std::size_t ... Indexes, typename T >
-struct vector_builder< std::index_sequence< Indexes ... >, T > {
+struct vector_data< std::index_sequence< Indexes ... >, T > {
 
     static constexpr ::std::size_t size = sizeof ... (Indexes);
     using index_sequence_type   = std::index_sequence< Indexes ... >;
-    using this_type             = vector_builder< index_sequence_type, T >;
+    using this_type             = vector_data< index_sequence_type, T >;
 
     using element_type          = T;
     using value_traits          = vector_value_traits<T>;
@@ -88,13 +88,15 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > {
     using iterator              = value_type*;
     using const_iterator        = value_type const*;
 
-    constexpr vector_builder() = default;
+    constexpr vector_data()
+        : data_({value_fill<Indexes, T>{0}.value ...}) {}
+
 
     /**
      * Single value constructor, for initializing all values to the value
      * @param val
      */
-    constexpr vector_builder(T val)
+    constexpr vector_data(T val)
         : data_({value_fill<Indexes, T>{val}.value ...}) {}
 
     /**
@@ -103,26 +105,26 @@ struct vector_builder< std::index_sequence< Indexes ... >, T > {
      * @param
      */
     template < ::std::size_t ... IndexesR, typename U >
-    constexpr vector_builder(
-            vector_builder< std::index_sequence< IndexesR ... >, U > const& rhs,
+    constexpr vector_data(
+            vector_data< std::index_sequence< IndexesR ... >, U > const& rhs,
             typename ::std::enable_if< size <= sizeof ... (IndexesR) >::type* = 0 )
         : data_({rhs.template at< Indexes >()...}) {}
 
     template < typename ... E >
-    constexpr vector_builder(E const& ... args,
+    constexpr vector_data(E const& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
         : data_({args...}) {}
 
     template < typename ... E >
-    constexpr vector_builder(E&& ... args,
+    constexpr vector_data(E&& ... args,
             typename ::std::enable_if< size == sizeof ... (E) >::type* = 0)
         : data_({std::forward<E>(args)...}) {}
 
     template < typename U >
-    constexpr vector_builder(::std::initializer_list<U> const& args)
+    constexpr vector_data(::std::initializer_list<U> const& args)
         : data_({*(args.begin() + Indexes)...}) {}
 
-    constexpr vector_builder(const_pointer p)
+    constexpr vector_data(const_pointer p)
         : data_({*(p + Indexes)...}) {}
 
     pointer

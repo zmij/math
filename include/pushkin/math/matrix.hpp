@@ -20,9 +20,9 @@ namespace math {
  * @tparam CC column count;
  */
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix : detail::matrix_builder< std::make_index_sequence< RC >, CC, T, Axes > {
+struct matrix : detail::matrix_data< std::make_index_sequence< RC >, CC, T, Axes > {
 
-    using base_type         = detail::matrix_builder<
+    using base_type         = detail::matrix_data<
                                 std::make_index_sequence< RC >, CC, T, Axes >;
 
     using this_type         = matrix< T, RC, CC, Axes >;
@@ -36,12 +36,15 @@ struct matrix : detail::matrix_builder< std::make_index_sequence< RC >, CC, T, A
 
     constexpr matrix() = default;
 
-    constexpr matrix( std::initializer_list< std::initializer_list< value_type > > const& args) :
-        base_type(args) {}
+    constexpr matrix( std::initializer_list< std::initializer_list< value_type > > const& args)
+        : base_type(args) {}
 
     template < typename ... E >
-    constexpr matrix(E const& ... args) :
-        base_type(args ... ) {}
+    constexpr matrix(E const& ... args)
+        : base_type(args ... ) {}
+
+    constexpr matrix(T val)
+        : base_type(val) {}
 
     using base_type::data;
     using base_type::at;

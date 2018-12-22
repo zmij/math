@@ -17,7 +17,8 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(
     test_program_SRCS
     # Add your sources here
-    test.cpp
+    vector_test.cpp
+    matrix_test.cpp
 )
 add_executable(test-psst-math ${test_program_SRCS})
 target_link_libraries(
