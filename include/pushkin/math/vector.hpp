@@ -23,28 +23,29 @@ namespace math {
 
 template < typename T, ::std::size_t Size, typename Axes >
 struct vector
-    : detail::vector_data<std::make_index_sequence< Size >, T >,
-      detail::calculus_selector<T, Size, Axes>,
+    : detail::calculus_selector<T, Size, Axes>,
       detail::axes_names_t<Size, Axes, vector<T, Size, Axes>, T> {
 
-    using base_type         = detail::vector_data<
-                                std::make_index_sequence< Size >, T >;
-    using this_type         = vector< T, Size, Axes >;
+    using this_type             = vector< T, Size, Axes >;
 
-    using element_type      = typename base_type::element_type;
-    using value_traits      = typename base_type::value_traits;
-    using value_type        = typename base_type::value_type;
-    using lvalue_reference  = typename base_type::lvalue_reference;
-    using const_reference   = typename base_type::const_reference;
-    using magnitude_type    = typename base_type::magnitude_type;
-    using pointer           = typename base_type::pointer;
-    using const_pointer     = typename base_type::const_pointer;
+    using element_type          = T;
+    using value_traits          = detail::vector_value_traits<T>;
+    using value_type            = typename value_traits::value_type;
+    using lvalue_reference      = typename value_traits::lvalue_reference;
+    using const_reference       = typename value_traits::const_reference;
+    using magnitude_type        = typename value_traits::magnitude_type;
 
-    using index_sequence_type = typename base_type::index_sequence_type;
+    using pointer               = typename value_traits::pointer;
+    using const_pointer         = typename value_traits::const_pointer;
 
-    static constexpr auto size = base_type::size;
+    using iterator              = pointer;
+    using const_iterator        = const_pointer;
 
-    constexpr vector() = default;
+    using index_sequence_type   = typename ::std::make_index_sequence<Size>;
+
+    static constexpr auto size  = Size;
+
+    constexpr vector() : vector{T{0}, index_sequence_type{}} {}
 
     /**
      * Single value construction, initialize all components to the
@@ -53,32 +54,62 @@ struct vector
      * @param val
      */
     constexpr explicit
-    vector(T val)
-        : base_type(val) {}
-
-    template < typename ... E >
-    constexpr vector(E&& ... args,
-            typename ::std::enable_if<(sizeof ... (E) > 1)>::type* = nullptr)
-        : base_type(::std::forward<E>(args) ... ) {}
+    vector(T val) : vector(val, index_sequence_type{}) {}
 
     constexpr vector(::std::initializer_list< value_type > const& args)
-        : base_type(args.begin()) {}
+        : vector(args.begin(), index_sequence_type{}) {}
 
-    constexpr vector(const_pointer p)
-        : base_type(p) {}
+    constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
 
-    template < typename U, ::std::size_t SizeR >
-    constexpr vector( vector<U, SizeR, Axes> const& rhs )
-        : base_type(rhs) {}
+    template < typename U, ::std::size_t SizeR, typename AxesR >
+    constexpr explicit vector( vector<U, SizeR, AxesR> const& rhs )
+        : vector(rhs,
+            ::std::make_index_sequence< detail::min<Size, SizeR >::value >{}) {}
 
-    using base_type::data;
-    using base_type::at;
-    using base_type::begin;
-    using base_type::cbegin;
-    using base_type::end;
-    using base_type::cend;
-    using base_type::operator[];
+    pointer
+    data() { return data_.data(); }
 
+    constexpr const_pointer
+    data() const { return data_.data(); }
+
+    template < ::std::size_t N >
+    lvalue_reference
+    at() { return ::std::get<N>(data_); }
+
+    template < ::std::size_t N >
+    constexpr const_reference
+    at() const { return ::std::get<N>(data_); }
+
+    iterator
+    begin() { return data_.begin(); }
+
+    constexpr const_iterator
+    begin() const { return cbegin(); }
+    constexpr const_iterator
+    cbegin() const { return data_.cbegin(); }
+
+    iterator
+    end() { return data_.end(); }
+
+    constexpr const_iterator
+    end() const { return cend(); }
+    constexpr const_iterator
+    cend() const { return data_.end(); }
+
+    lvalue_reference
+    operator[](::std::size_t idx)
+    {
+        assert(idx < size);
+        return data_[idx];
+    }
+
+    constexpr const_reference
+    operator[](::std::size_t idx) const
+    {
+        assert(idx < size);
+        return data_[idx];
+    }
+    // TODO Make converter a CRTP base
     template < typename TAxes >
     vector<value_type, Size, TAxes>
     convert() const
@@ -95,6 +126,19 @@ struct vector
      */
     operator const_pointer() const
     { return data(); }
+private:
+    template <::std::size_t... Indexes>
+    constexpr vector(T val, ::std::index_sequence<Indexes...>)
+      : data_({ detail::value_fill<Indexes, T>{val}.value ... }){}
+    template <::std::size_t... Indexes>
+    constexpr vector(const_pointer p, ::std::index_sequence<Indexes...>)
+      : data_({ *(p + Indexes)... }) {}
+    template < typename U, ::std::size_t SizeR, typename AxesR, ::std::size_t... Indexes >
+    constexpr vector(vector<U, SizeR, AxesR> const& rhs, ::std::index_sequence<Indexes...>)
+      : data_({rhs.template at<Indexes>()...}) {}
+private:
+    using data_type = ::std::array<T, size>;
+    data_type data_;
 };
 
 template < typename T, typename U,

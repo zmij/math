@@ -114,10 +114,12 @@ struct compare_traits : compare_traits_impl<T, ::std::is_floating_point<T>::valu
 
 template < typename T >
 struct vector_value_traits : compare_traits<T> {
-    using value_type        = typename ::std::decay<T>::type;
-    using lvalue_reference  = typename ::std::add_lvalue_reference< value_type >::type;
-    using const_reference   = typename ::std::add_lvalue_reference<
-                                typename ::std::add_const< value_type >::type >::type;
+    using value_type        = ::std::decay_t<T>;
+    using lvalue_reference  = ::std::add_lvalue_reference_t< value_type >;
+    using const_reference   = ::std::add_lvalue_reference_t<::std::add_const_t< value_type > >;
+
+    using pointer           = ::std::add_pointer_t<T>;
+    using const_pointer     = ::std::add_pointer_t<T const>;
 
     using magnitude_traits  = magnitude_traits_impl<T, ::std::is_integral<value_type>::value>;
     using magnitude_type    = typename magnitude_traits::magnitude_type;
@@ -146,6 +148,13 @@ struct shorter_sequence<std::integer_sequence<T, LHS...>,
 
 template < typename T, typename U >
 using shorter_sequence_t = typename shorter_sequence<T, U>::type;
+
+template < ::std::size_t L, ::std::size_t R >
+struct min : ::std::conditional<
+        L < R,
+        ::std::integral_constant<::std::size_t, L>,
+        ::std::integral_constant<::std::size_t, R>
+    >::type {};
 
 }  /* namespace detail */
 }  /* namespace math */
