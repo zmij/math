@@ -16,7 +16,7 @@ struct none {};
 struct xyzw {};
 struct wxyz {};
 
-// FIXME Vector calculus for non-Cartesian coordinates
+// FIXME Calculus for non-Cartesian coordinates
 struct polar {};
 struct spherical {};
 struct cylindrical {};
@@ -43,6 +43,7 @@ template <>
 struct default_axes<4> { using type = xyzw; };
 }  /* namespace axes */
 
+// TODO Parameter for calculus
 template < typename T, ::std::size_t Size,
            typename Axes = axes::default_axes_t<Size> >
 struct vector;

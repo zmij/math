@@ -20,41 +20,136 @@ namespace math {
  * @tparam CC column count;
  */
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix : detail::matrix_data< std::make_index_sequence< RC >, CC, T, Axes > {
+struct matrix : detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T, CC, Axes>> {
+    static constexpr ::std::size_t row_count  = RC;
+    static constexpr ::std::size_t col_count  = CC;
+    static constexpr ::std::size_t size       = row_count * col_count;
 
-    using base_type         = detail::matrix_data<
-                                std::make_index_sequence< RC >, CC, T, Axes >;
+    using this_type             = matrix< T, row_count, col_count, Axes >;
+    using transposed_type       = matrix< T, col_count, row_count, Axes >;
 
-    using this_type         = matrix< T, RC, CC, Axes >;
-    using transposed_type   = matrix< T, CC, RC, Axes >;
+    using row_type              = vector<T, col_count, Axes>;
+    using row_indexes_type      = ::std::make_index_sequence<row_count>;
+    using col_indexes_type      = ::std::make_index_sequence<col_count>;
 
-    using row_type          = typename base_type::row_type;
-    using value_type        = typename base_type::value_type;
+    using element_type          = typename row_type::element_type;
+    using value_type            = typename row_type::value_type;
+    using lvalue_reference      = typename row_type::lvalue_reference;
+    using const_reference       = typename row_type::const_reference;
+    using pointer               = typename row_type::pointer;
+    using const_pointer         = typename row_type::const_pointer;
+    using iterator              = typename row_type::iterator;
+    using const_iterator        = typename row_type::const_iterator;
 
-    using pointer           = typename base_type::pointer;
-    using const_pointer     = typename base_type::const_pointer;
+    using row_iterator          = row_type*;
+    using const_row_iterator    = row_type const*;
+    using lvalue_row_reference  = ::std::add_lvalue_reference_t< row_type >;
+    using const_row_reference   = ::std::add_lvalue_reference_t<::std::add_const_t<row_type>>;
+
+    using multi_dim_type        = value_type[col_count];
+    using const_multi_dim_type  = value_type const[col_count];
+    using multi_dim_ptr         = multi_dim_type*;
+    using const_multi_dim_ptr   = const_multi_dim_type const*;
+
+    using init_list             = ::std::initializer_list< typename row_type::init_list >;
 
     constexpr matrix() = default;
 
-    constexpr matrix( std::initializer_list< std::initializer_list< value_type > > const& args)
-        : base_type(args) {}
+    constexpr explicit matrix(value_type val)
+        : matrix(val, col_indexes_type{}) {}
 
-    template < typename ... E >
-    constexpr matrix(E const& ... args)
-        : base_type(args ... ) {}
+    constexpr explicit matrix(const_pointer p)
+        : matrix(p, row_indexes_type{}) {}
 
-    constexpr matrix(T val)
-        : base_type(val) {}
+    constexpr explicit matrix(const_multi_dim_ptr p)
+        : matrix(p, row_indexes_type{}) {}
 
-    using base_type::data;
-    using base_type::at;
-    using base_type::begin;
-    using base_type::cbegin;
-    using base_type::end;
-    using base_type::cend;
-    using base_type::row_begin;
-    using base_type::row_end;
-    using base_type::operator[];
+    constexpr matrix(init_list const& args)
+        : matrix(args, row_indexes_type{}) {}
+
+    pointer
+    data()
+    { return std::get<0>(data_).data(); }
+    const_pointer
+    data() const
+    { return std::get<0>(data_).data(); }
+
+    template < ::std::size_t R >
+    lvalue_row_reference
+    at()
+    {
+        static_assert(R < row_count, "Invalid matrix row index");
+        return ::std::get<R>(data_);
+    }
+
+    template < ::std::size_t R >
+    const_row_reference
+    at() const
+    {
+        static_assert(R < row_count, "Invalid matrix row index");
+        return ::std::get<R>(data_);
+    }
+
+    template < ::std::size_t R, ::std::size_t C >
+    lvalue_reference
+    element()
+    {
+        static_assert(C < col_count, "Invalid matrix column index");
+        return at<R>().template at<C>();
+    }
+    template < ::std::size_t R, ::std::size_t C >
+    const_reference
+    element() const
+    {
+        static_assert(C < col_count, "Invalid matrix column index");
+        return at<R>().template at<C>();
+    }
+
+    iterator
+    begin()
+    { return data_.front().begin(); }
+    const_iterator
+    begin() const { return cbegin(); }
+    const_iterator
+    cbegin() const
+    { return data_.front().cbegin(); }
+
+    iterator
+    end()
+    { return data_.back().end(); }
+    const_iterator
+    end() const
+    { return cend(); }
+    const_iterator
+    cend() const
+    { return data_.back().end(); }
+
+    row_iterator
+    row_begin()
+    { return data_.begin(); }
+    const_row_iterator
+    row_begin() const
+    { return data_.begin(); }
+
+    row_iterator
+    row_end()
+    { return data_.end(); }
+    const_row_iterator
+    row_end() const
+    { return data_.end(); }
+
+    lvalue_row_reference
+    operator[] (::std::size_t idx)
+    {
+        assert(idx < row_count);
+        return data_[idx];
+    }
+    const_row_reference
+    operator[] (::std::size_t idx) const
+    {
+        assert(idx < row_count);
+        return data_[idx];
+    }
 
     this_type
     operator - ()
@@ -124,6 +219,22 @@ struct matrix : detail::matrix_data< std::make_index_sequence< RC >, CC, T, Axes
         static this_type _identity(detail::identity_matrix< RC - 1, this_type >::build_matrix());
         return _identity;
     }
+private:
+    template < ::std::size_t... RI >
+    constexpr matrix(value_type val, ::std::index_sequence<RI...>)
+        : data_({ detail::value_fill<RI, row_type>{row_type(val)}.value... }) {}
+    template < ::std::size_t... RI >
+    constexpr matrix(init_list const& args, ::std::index_sequence<RI...>)
+        : data_({ row_type( *(args.begin() + RI) ) ... }) {}
+    template < ::std::size_t... RI >
+    constexpr matrix(const_pointer p, ::std::index_sequence<RI...>)
+        : data_({ row_type(p + RI * col_count) ... }) {}
+    template < ::std::size_t... RI >
+    constexpr matrix(const_multi_dim_ptr p, ::std::index_sequence<RI...>)
+        : data_({ row_type(p[RI]) ... }) {}
+private:
+    using data_type     = ::std::array<row_type, row_count>;
+    data_type data_;
 };
 
 template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
@@ -257,27 +368,6 @@ operator * (vector< U, C, Axes > const& v, matrix< T, C, C, Axes > const& m)
 // TODO matrix minor
 // TODO matrix cofactor
 // TODO matrix determinant
-
-template < ::std::size_t R, ::std::size_t C >
-struct matrix_size {
-    static constexpr ::std::size_t rows = R;
-    static constexpr ::std::size_t cols = C;
-    static constexpr ::std::size_t size = rows * cols;
-};
-
-template < typename T >
-struct matrix_traits;
-
-template < typename T, ::std::size_t R, ::std::size_t C, typename Axes >
-struct matrix_traits<matrix<T, R, C, Axes>> {
-    using matrix_type                   = matrix<T, R, C, Axes>;
-    using value_type                    = typename matrix_type::value_type;
-    using size_type                     = matrix_size<R, C>;
-    using axes_names                    = Axes;
-    static constexpr ::std::size_t rows = size_type::rows;
-    static constexpr ::std::size_t cols = size_type::cols;
-    static constexpr ::std::size_t size = size_type::size;
-};
 
 
 } // namespace math

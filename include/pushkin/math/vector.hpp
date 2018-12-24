@@ -29,7 +29,7 @@ struct vector
     using this_type             = vector< T, Size, Axes >;
 
     using element_type          = T;
-    using value_traits          = detail::vector_value_traits<T>;
+    using value_traits          = detail::scalar_value_traits<T>;
     using value_type            = typename value_traits::value_type;
     using lvalue_reference      = typename value_traits::lvalue_reference;
     using const_reference       = typename value_traits::const_reference;
@@ -42,6 +42,7 @@ struct vector
     using const_iterator        = const_pointer;
 
     using index_sequence_type   = typename ::std::make_index_sequence<Size>;
+    using init_list             = ::std::initializer_list< value_type >;
 
     static constexpr auto size  = Size;
 
@@ -54,9 +55,9 @@ struct vector
      * @param val
      */
     constexpr explicit
-    vector(T val) : vector(val, index_sequence_type{}) {}
+    vector(value_type val) : vector(val, index_sequence_type{}) {}
 
-    constexpr vector(::std::initializer_list< value_type > const& args)
+    constexpr vector(init_list const& args)
         : vector(args.begin(), index_sequence_type{}) {}
 
     constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
@@ -74,11 +75,19 @@ struct vector
 
     template < ::std::size_t N >
     lvalue_reference
-    at() { return ::std::get<N>(data_); }
+    at()
+    {
+        static_assert(N < size, "Invalid value index in vector");
+        return ::std::get<N>(data_);
+    }
 
     template < ::std::size_t N >
     constexpr const_reference
-    at() const { return ::std::get<N>(data_); }
+    at() const
+    {
+        static_assert(N < size, "Invalid value index in vector");
+        return ::std::get<N>(data_);
+    }
 
     iterator
     begin() { return data_.begin(); }
@@ -128,7 +137,7 @@ struct vector
     { return data(); }
 private:
     template <::std::size_t... Indexes>
-    constexpr vector(T val, ::std::index_sequence<Indexes...>)
+    constexpr vector(value_type val, ::std::index_sequence<Indexes...>)
       : data_({ detail::value_fill<Indexes, T>{val}.value ... }){}
     template <::std::size_t... Indexes>
     constexpr vector(const_pointer p, ::std::index_sequence<Indexes...>)

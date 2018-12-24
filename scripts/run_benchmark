@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+./benchmark/benchmark-psst-math --benchmark_out_format=csv --benchmark_out=$(date +%s).csv
+

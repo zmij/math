@@ -32,7 +32,7 @@ struct nonvector_calculus;
 template < typename T, ::std::size_t Size, typename Axes >
 struct vector_calculus {
     using vector_type           = vector<T, Size, Axes>;
-    using value_traits          = vector_value_traits<T>;
+    using value_traits          = scalar_value_traits<T>;
     using value_type            = typename value_traits::value_type;
     using lvalue_reference      = typename value_traits::lvalue_reference;
     using const_reference       = typename value_traits::const_reference;
@@ -143,7 +143,7 @@ private:
 template < typename T >
 struct nonvector_calculus<T, 2, axes::polar> {
     using vector_type           = vector<T, 2, axes::polar>;
-    using value_traits          = vector_value_traits<T>;
+    using value_traits          = scalar_value_traits<T>;
     using value_type            = typename value_traits::value_type;
     using lvalue_reference      = typename value_traits::lvalue_reference;
     using const_reference       = typename value_traits::const_reference;

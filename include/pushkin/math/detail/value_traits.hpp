@@ -8,10 +8,38 @@
 #ifndef INCLUDE_PUSHKIN_MATH_DETAIL_VALUE_TRAITS_HPP_
 #define INCLUDE_PUSHKIN_MATH_DETAIL_VALUE_TRAITS_HPP_
 
+#include <pushkin/math/vector_fwd.hpp>
+#include <pushkin/math/matrix_fwd.hpp>
+
 #include <type_traits>
 
 namespace psst {
 namespace math {
+
+namespace tag {
+
+struct scalar {};
+struct vector {};
+struct matrix {};
+
+}  // namespace tag
+
+template < typename T >
+struct value_category {
+    using type = tag::scalar;
+};
+template < typename T >
+using value_category_t = typename value_category<T>::type;
+
+template <typename ... T>
+struct value_category<vector<T...>> {
+    using type = tag::vector;
+};
+template <typename ... T>
+struct value_category<matrix<T...>> {
+    using type = tag::matrix;
+};
+
 namespace detail {
 
 template < typename T >
@@ -32,6 +60,9 @@ template < typename T >
 struct iota {
     static constexpr T value = 0;
 };
+
+template < typename T >
+constexpr T iota_v = iota<T>::value;
 
 template <>
 struct iota<float> {
@@ -113,7 +144,7 @@ template < typename T >
 struct compare_traits : compare_traits_impl<T, ::std::is_floating_point<T>::value> {};
 
 template < typename T >
-struct vector_value_traits : compare_traits<T> {
+struct scalar_value_traits : compare_traits<::std::decay_t<T>> {
     using value_type        = ::std::decay_t<T>;
     using lvalue_reference  = ::std::add_lvalue_reference_t< value_type >;
     using const_reference   = ::std::add_lvalue_reference_t<::std::add_const_t< value_type > >;
@@ -157,6 +188,59 @@ struct min : ::std::conditional<
     >::type {};
 
 }  /* namespace detail */
+
+template < typename VectorType >
+struct vector_traits;
+
+template < typename T, ::std::size_t Size, typename Axes >
+struct vector_traits< vector<T, Size, Axes> > {
+    using vector_type           = vector<T, Size, Axes>;
+    using element_type          = T;
+    using value_traits          = detail::scalar_value_traits<T>;
+    using value_type            = typename value_traits::value_type;
+    using lvalue_reference      = typename value_traits::lvalue_reference;
+    using const_reference       = typename value_traits::const_reference;
+    using magnitude_type        = typename value_traits::magnitude_type;
+
+    using pointer               = typename value_traits::pointer;
+    using const_pointer         = typename value_traits::const_pointer;
+
+    static constexpr auto size  = Size;
+};
+
+template < ::std::size_t R, ::std::size_t C >
+struct matrix_size {
+    static constexpr ::std::size_t rows = R;
+    static constexpr ::std::size_t cols = C;
+    static constexpr ::std::size_t size = rows * cols;
+};
+
+
+template < typename MatrixType >
+struct matrix_traits;
+
+template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+struct matrix_traits<matrix<T, RC, CC, Axes>> {
+    using matrix_type           = matrix<T, RC, CC, Axes>;
+    using row_type              = vector<T, CC, Axes>;
+    using size_type             = matrix_size<RC, CC>;
+    using axes_names            = Axes;
+    using element_type          = T;
+    using value_traits          = detail::scalar_value_traits<T>;
+    using value_type            = typename value_traits::value_type;
+    using lvalue_reference      = typename value_traits::lvalue_reference;
+    using const_reference       = typename value_traits::const_reference;
+    using magnitude_type        = typename value_traits::magnitude_type;
+
+    using pointer               = typename value_traits::pointer;
+    using const_pointer         = typename value_traits::const_pointer;
+
+    static constexpr ::std::size_t rows = size_type::rows;
+    static constexpr ::std::size_t cols = size_type::cols;
+    static constexpr ::std::size_t size = size_type::size;
+};
+
+
 }  /* namespace math */
 }  /* namespace psst */
 
