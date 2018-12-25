@@ -115,14 +115,14 @@ struct vector_sum
 
     constexpr vector_sum(left_arg_type const& lhs,
         right_arg_type const& rhs)
-      : lhs_{lhs}, rhs_{rhs} {}
+      : lhs_{&lhs}, rhs_{&rhs} {}
 
     template < ::std::size_t N >
     constexpr value_type
-    at() const { return lhs_.template at<N>() + rhs_.template at<N>(); }
+    at() const { return lhs_->template at<N>() + rhs_->template at<N>(); }
 private:
-    left_arg_type const& lhs_;
-    right_arg_type const& rhs_;
+    left_arg_type const* lhs_;
+    right_arg_type const* rhs_;
 };
 
 template <typename LHS, typename RHS, typename Result>
@@ -135,14 +135,14 @@ struct vector_diff
 
     constexpr vector_diff(left_arg_type const& lhs,
         right_arg_type const& rhs)
-      : lhs_{lhs}, rhs_{rhs} {}
+      : lhs_{&lhs}, rhs_{&rhs} {}
 
     template < ::std::size_t N >
     constexpr value_type
-    at() const { return lhs_.template at<N>() - rhs_.template at<N>(); }
+    at() const { return lhs_->template at<N>() - rhs_->template at<N>(); }
 private:
-    left_arg_type const& lhs_;
-    right_arg_type const& rhs_;
+    left_arg_type const* lhs_;
+    right_arg_type const* rhs_;
 };
 
 template <typename LHS, typename RHS, typename Result>
@@ -156,16 +156,16 @@ struct vector_scalar_multiply : vector_expression< vector_scalar_multiply<LHS, R
           "Use vector_scalar_exp_multiply for scalar expressions");
 
     constexpr vector_scalar_multiply(expr_arg_type const& lhs, scalar_arg_type rhs)
-        : lhs_{lhs}, rhs_{rhs} {}
+        : lhs_{&lhs}, rhs_{rhs} {}
 
     template < ::std::size_t N >
     constexpr value_type
     at() const
     {
-        return lhs_.template at<N>() * rhs_;
+        return lhs_->template at<N>() * rhs_;
     }
 private:
-    expr_arg_type const& lhs_;
+    expr_arg_type const* lhs_;
     scalar_arg_type rhs_;
 };
 
@@ -205,16 +205,16 @@ struct vector_scalar_divide : vector_expression< vector_scalar_divide<LHS, RHS, 
           "Use vector_scalar_exp_divide for scalar expressions");
 
     constexpr vector_scalar_divide(expr_arg_type const& lhs, scalar_arg_type rhs)
-        : lhs_{lhs}, rhs_{rhs} {}
+        : lhs_{&lhs}, rhs_{rhs} {}
 
     template < ::std::size_t N >
     constexpr value_type
     at() const
     {
-        return lhs_.template at<N>() / rhs_;
+        return lhs_->template at<N>() / rhs_;
     }
 private:
-    expr_arg_type const& lhs_;
+    expr_arg_type const* lhs_;
     scalar_arg_type rhs_;
 };
 
@@ -300,7 +300,7 @@ operator + (vector_expression<LHS, T> const& lhs,
     using lhs_type          = vector_expression<LHS, T>;
     using rhs_type          = vector_expression<RHS, U>;
     using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_sum< lhs_type, rhs_type, result_type >{lhs, rhs};
+    return vector_sum< LHS, RHS, result_type >{lhs, rhs};
 }
 template <typename LHS, typename RHS, typename T, typename U>
 constexpr auto
@@ -310,7 +310,7 @@ operator - (vector_expression<LHS, T> const& lhs,
     using lhs_type          = vector_expression<LHS, T>;
     using rhs_type          = vector_expression<RHS, U>;
     using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_diff< lhs_type, rhs_type, result_type >{lhs, rhs};
+    return vector_diff< LHS, RHS, result_type >{lhs, rhs};
 }
 
 template <typename Expr, typename T, typename U>
@@ -319,7 +319,7 @@ operator * (vector_expression<Expr, T> const& expr, U scalar)
 {
     using expr_type         = vector_expression<Expr, T>;
     using result_type       = vector_expression_result_t<expr_type, U>;
-    return vector_scalar_multiply< expr_type, U, result_type>{expr, scalar};
+    return vector_scalar_multiply< Expr, U, result_type>{expr, scalar};
 }
 
 template <typename Expr, typename T, typename U>
@@ -337,7 +337,7 @@ operator * (vector_expression<LHS, T> const& lhs,
     using lhs_type          = vector_expression<LHS, T>;
     using rhs_type          = scalar_expression<RHS, U>;
     using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_scalar_exp_multiply< lhs_type, rhs_type, result_type>{lhs, rhs};
+    return vector_scalar_exp_multiply< LHS, RHS, result_type>{lhs, rhs};
 }
 
 template <typename RHS, typename LHS, typename T, typename U>
@@ -355,7 +355,7 @@ operator / (vector_expression<Expr, T> const& expr, U scalar)
 {
     using expr_type         = vector_expression<Expr, T>;
     using result_type       = vector_expression_result_t<expr_type, U>;
-    return vector_scalar_divide< expr_type, U, result_type>{expr, scalar};
+    return vector_scalar_divide< Expr, U, result_type>{expr, scalar};
 }
 
 template <typename RHS, typename LHS, typename T, typename U>
@@ -366,7 +366,7 @@ operator / (vector_expression<LHS, T> const& lhs,
     using lhs_type          = vector_expression<LHS, T>;
     using rhs_type          = scalar_expression<RHS, U>;
     using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_scalar_exp_divide< lhs_type, rhs_type, result_type>{lhs, rhs};
+    return vector_scalar_exp_divide< LHS, RHS, result_type>{lhs, rhs};
 }
 
 }  // namespace expr
