@@ -51,8 +51,7 @@ struct vector_expression {
         return rebind().template at<N>();
     }
     constexpr result_type
-    value() const { return result_type(*this); }
-    constexpr operator result_type() const { return this->value(); }
+    value() const { return result_type(rebind()); }
 
     constexpr operator expression_type const&() const { return rebind(); }
 private:
