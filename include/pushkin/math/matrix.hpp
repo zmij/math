@@ -20,26 +20,28 @@ namespace math {
  * @tparam CC column count;
  */
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix : detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T, CC, Axes>> {
-    static constexpr ::std::size_t row_count  = RC;
-    static constexpr ::std::size_t col_count  = CC;
-    static constexpr ::std::size_t size       = row_count * col_count;
+struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
+            detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T, CC, Axes>> {
 
-    using this_type             = matrix< T, row_count, col_count, Axes >;
-    using transposed_type       = matrix< T, col_count, row_count, Axes >;
+    using this_type             = matrix< T, RC, CC, Axes >;
+    using transposed_type       = matrix< T, CC, RC, Axes >;
+    using traits                = matrix_traits<this_type>;
 
-    using row_type              = vector<T, col_count, Axes>;
-    using row_indexes_type      = ::std::make_index_sequence<row_count>;
-    using col_indexes_type      = ::std::make_index_sequence<col_count>;
+    using row_type              = typename traits::row_type;
+    using row_indexes_type      = typename traits::row_indexes_type;
+    using col_indexes_type      = typename traits::col_indexes_type;
 
-    using element_type          = typename row_type::element_type;
-    using value_type            = typename row_type::value_type;
-    using lvalue_reference      = typename row_type::lvalue_reference;
-    using const_reference       = typename row_type::const_reference;
-    using pointer               = typename row_type::pointer;
-    using const_pointer         = typename row_type::const_pointer;
-    using iterator              = typename row_type::iterator;
-    using const_iterator        = typename row_type::const_iterator;
+    using value_type            = typename traits::value_type;
+    using lvalue_reference      = typename traits::lvalue_reference;
+    using const_reference       = typename traits::const_reference;
+    using pointer               = typename traits::pointer;
+    using const_pointer         = typename traits::const_pointer;
+    using iterator              = typename traits::iterator;
+    using const_iterator        = typename traits::const_iterator;
+
+    static constexpr ::std::size_t row_count  = traits::rows;
+    static constexpr ::std::size_t col_count  = traits::cols;
+    static constexpr ::std::size_t size       = traits::size;
 
     using row_iterator          = row_type*;
     using const_row_iterator    = row_type const*;
@@ -222,7 +224,7 @@ struct matrix : detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T
 private:
     template < ::std::size_t... RI >
     constexpr matrix(value_type val, ::std::index_sequence<RI...>)
-        : data_({ detail::value_fill<RI, row_type>{row_type(val)}.value... }) {}
+        : data_({ utils::value_fill<RI, row_type>{row_type(val)}.value... }) {}
     template < ::std::size_t... RI >
     constexpr matrix(init_list const& args, ::std::index_sequence<RI...>)
         : data_({ row_type( *(args.begin() + RI) ) ... }) {}

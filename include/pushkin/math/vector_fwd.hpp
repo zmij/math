@@ -48,7 +48,6 @@ template < typename T, ::std::size_t Size,
            typename Axes = axes::default_axes_t<Size> >
 struct vector;
 
-
 }  /* namespace math */
 }  /* namespace psst */
 

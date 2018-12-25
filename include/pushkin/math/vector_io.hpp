@@ -239,7 +239,18 @@ operator << (std::ostream& os, vector<T, Size, Axes> const& v)
     }
     return os;
 }
+namespace expr {
 
+template < typename Expression, typename Result >
+std::ostream&
+operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
+{
+    Result res = v;
+    os << res;
+    return os;
+}
+
+}  // namespace expr
 } // namespace math
 }  /* namespace psst */
 

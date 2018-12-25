@@ -25,6 +25,17 @@ PrintTo(vector<T, N> const& vec, ::std::ostream* os)
     *os << io::pretty << vec << io::ugly;
 }
 
+namespace expr {
+
+template <typename Exp, typename Res>
+void
+PrintTo(vector_expression<Exp, Res> const& exp, ::std::ostream* os)
+{
+    *os << io::pretty << exp << io::ugly;
+}
+
+}  // namespace expr
+
 namespace test {
 
 using vector3d = vector<double, 3>;
@@ -57,6 +68,16 @@ TEST(Vector, ConstructDefault)
 
     EXPECT_EQ(sizeof(double)*3, sizeof(v1))
         << "Size of vector is equal to sizes of it's components";
+
+    vector3d::base_expression_type const& be = v1;
+    EXPECT_EQ(0, be.at<0>());
+    EXPECT_EQ(0, be.at<1>());
+    EXPECT_EQ(0, be.at<2>());
+    vector3d const& v2 = be;
+    EXPECT_EQ(0, v2[0]);
+    EXPECT_EQ(0, v2[1]);
+    EXPECT_EQ(0, v2[2]);
+
 }
 
 TEST(Vector, ConstructSingleValue)
@@ -159,23 +180,22 @@ TEST(Vector, Add)
     {
         vector3d expected{6, 11, 17};
         auto res = v1 + v2;
-        EXPECT_EQ(expected, res);
+        EXPECT_EQ(expected, res) << "Unexpected result " << res << "\n";
     }
     {
         auto res = v1 - v2;
         vector3d expected{-2, -1, -1};
-        EXPECT_EQ(expected, res);
+        EXPECT_EQ(expected, res) << "Unexpected result " << res << "\n";
     }
 }
 
 TEST(Vector, Multiply)
 {
     vector3d initial{1,2,3}, expected{5, 10, 15};
-    vector3d v1 = initial * 5;
-    ::std::cerr << sizeof(v1) << " " << io::pretty << v1 << "\n";
-    EXPECT_EQ(expected, v1);
-    v1 = expected / 5;
-    EXPECT_EQ(initial, v1);
+    auto res1 = initial * 5;
+    EXPECT_EQ(expected, res1) << "Unexpected result " << res1 << "\n";
+    auto res2 = expected / 5;
+    EXPECT_EQ(initial, res2) << "Unexpected result " << res2 << "\n";
 }
 
 TEST(Vector, Magnitude)
@@ -188,13 +208,18 @@ TEST(Vector, Magnitude)
 
 TEST(Vector, Expression)
 {
-  using ::std::sin;
-  using ::std::cos;
-  using ::std::acos;
-
   vector3df v1 {1, 1, 1}, v2 {1, 0, 1}, expected { 3.75, 0.75, 3.75 };
-
-  auto exp = (v1 * .5 + v2 * 2) / 2;
+  std::cout << "Sum " << (v1 + v2 + expected) << "\n";
+  std::cout << "Mul " << (v1 * 2 * 2) << "\n";
+  std::cout << "Div " << (v2 / 2 / 2) << "\n";
+  //auto mul1 = v1 * .5;
+  //std::cout << "Itermediate result " << mul1 << "\n";
+//  auto mul2 = v2 * 2;
+  //std::cout << "Itermediate result " << mul2 << "\n";
+  auto sum = v1 * .5 + v2 * 2;
+  std::cout << "Itermediate result " << sum << "\n";
+  auto exp = sum / 2;
+  std::cout << "Itermediate result " << exp << "\n";
   vector3df res = exp * 3;
   EXPECT_EQ(expected, res);
 }
@@ -205,7 +230,7 @@ TEST(Vector, Normalize)
     EXPECT_FALSE(v1.is_zero());
     EXPECT_FALSE(v1.is_unit());
     v1.normalize();
-    EXPECT_TRUE(v1.is_unit());
+    EXPECT_TRUE(v1.is_unit()) << "Expected magnitude == 1 " << v1 << " mag_sq=" << v1.magnitude_square();
 }
 
 TEST(Vector, Unit)

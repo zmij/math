@@ -51,7 +51,7 @@ struct vector_calculus {
     vector_type&
     operator *= (U val)
     {
-        vector_scalar_multiplication< Size - 1, vector_type >{}(rebind(), val);
+        rebind() = rebind() * val;
         return rebind();
     }
 
@@ -59,7 +59,7 @@ struct vector_calculus {
     vector_type&
     operator /= (U val)
     {
-        detail::vector_scalar_division< Size - 1, vector_type >()(rebind(), val);
+        rebind() = rebind() / val;
         return rebind();
     }
 
@@ -67,7 +67,7 @@ struct vector_calculus {
     vector_type&
     operator += (vector<U, Size, Axes> const& rhs)
     {
-        detail::vector_addition< Size - 1, vector_type >()(rebind(), rhs);
+        rebind() = rebind() + rhs;
         return rebind();
     }
 
@@ -75,7 +75,7 @@ struct vector_calculus {
     vector_type&
     operator -= (vector<U, Size, Axes> const& rhs)
     {
-        detail::vector_substraction< Size - 1, vector_type >()(rebind(), rhs);
+        rebind() = rebind() - rhs;
         return rebind();
     }
 

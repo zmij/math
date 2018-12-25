@@ -23,28 +23,28 @@ namespace math {
 
 template < typename T, ::std::size_t Size, typename Axes >
 struct vector
-    : detail::calculus_selector<T, Size, Axes>,
+    : expr::vector_expression< vector<T, Size, Axes> >,
+      detail::calculus_selector<T, Size, Axes>,
       detail::axes_names_t<Size, Axes, vector<T, Size, Axes>, T> {
 
     using this_type             = vector< T, Size, Axes >;
+    using traits                = vector_traits<this_type>;
+    using base_expression_type  = expr::vector_expression< vector<T, Size, Axes> >;
 
-    using element_type          = T;
-    using value_traits          = detail::scalar_value_traits<T>;
-    using value_type            = typename value_traits::value_type;
-    using lvalue_reference      = typename value_traits::lvalue_reference;
-    using const_reference       = typename value_traits::const_reference;
-    using magnitude_type        = typename value_traits::magnitude_type;
+    using value_type            = typename traits::value_type;
+    using lvalue_reference      = typename traits::lvalue_reference;
+    using const_reference       = typename traits::const_reference;
+    using magnitude_type        = typename traits::magnitude_type;
 
-    using pointer               = typename value_traits::pointer;
-    using const_pointer         = typename value_traits::const_pointer;
+    using pointer               = typename traits::pointer;
+    using const_pointer         = typename traits::const_pointer;
+    using index_sequence_type   = typename traits::index_sequence_type;
 
-    using iterator              = pointer;
-    using const_iterator        = const_pointer;
-
-    using index_sequence_type   = typename ::std::make_index_sequence<Size>;
+    using iterator              = typename traits::iterator;
+    using const_iterator        = typename traits::const_iterator;
     using init_list             = ::std::initializer_list< value_type >;
 
-    static constexpr auto size  = Size;
+    static constexpr auto size  = traits::size;
 
     constexpr vector() : vector{T{0}, index_sequence_type{}} {}
 
@@ -64,8 +64,11 @@ struct vector
 
     template < typename U, ::std::size_t SizeR, typename AxesR >
     constexpr explicit vector( vector<U, SizeR, AxesR> const& rhs )
+        : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{}) {}
+    template < typename Expression, typename Result >
+    constexpr vector(expr::vector_expression<Expression, Result> const& rhs)
         : vector(rhs,
-            ::std::make_index_sequence< detail::min<Size, SizeR >::value >{}) {}
+            utils::make_min_index_sequence<Size, expr::vector_expression<Expression, Result>::size>{}){}
 
     pointer
     data() { return data_.data(); }
@@ -138,77 +141,21 @@ struct vector
 private:
     template <::std::size_t... Indexes>
     constexpr vector(value_type val, ::std::index_sequence<Indexes...>)
-      : data_({ detail::value_fill<Indexes, T>{val}.value ... }){}
+      : data_({ utils::value_fill<Indexes, T>{val}.value ... }){}
     template <::std::size_t... Indexes>
     constexpr vector(const_pointer p, ::std::index_sequence<Indexes...>)
       : data_({ *(p + Indexes)... }) {}
     template < typename U, ::std::size_t SizeR, typename AxesR, ::std::size_t... Indexes >
     constexpr vector(vector<U, SizeR, AxesR> const& rhs, ::std::index_sequence<Indexes...>)
       : data_({rhs.template at<Indexes>()...}) {}
+    template <typename Expr, typename Result, ::std::size_t... Indexes>
+    constexpr vector(expr::vector_expression<Expr, Result> const& rhs, ::std::index_sequence<Indexes...>)
+      : data_({ (value_type)rhs.template at<Indexes>()... }) {}
 private:
     using data_type = ::std::array<T, size>;
     data_type data_;
 };
 
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator == (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    using left_side = vector<T, TSize, Axes>;
-    using right_side = vector<U, USize, Axes>;
-    using min_type = detail::min<TSize, USize>;
-    return detail::vector_cmp<min_type::value - 1, left_side, right_side>::eq(lhs, rhs);
-}
-
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator != (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    return !(lhs == rhs);
-}
-
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator < (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    using left_side = vector<T, TSize, Axes>;
-    using right_side = vector<U, USize, Axes>;
-    using min_type = detail::min<TSize, USize>;
-    return detail::vector_cmp<min_type::value - 1, left_side, right_side>::less(lhs, rhs);
-}
-
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator > (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    return rhs < lhs;
-}
-
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator <= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    return !(rhs < lhs);
-}
-
-template < typename T, typename U,
-    ::std::size_t TSize, ::std::size_t USize,
-    typename Axes >
-constexpr bool
-operator >= (vector< T, TSize, Axes > const& lhs, vector < U, USize, Axes > const& rhs)
-{
-    return !(lhs < rhs);
-}
 
 template < typename T, size_t Size, typename Axes >
 typename vector< T, Size, Axes >::magnitude_type
@@ -230,50 +177,6 @@ operator | (vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& 
     return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
 }
 
-template < typename T, size_t Size, typename Axes, typename U >
-vector< T, Size, Axes >
-operator * (vector< T, Size, Axes> const& v, U s)
-{
-    vector< T, Size, Axes> res(v);
-    res *= s;
-    return res;
-}
-
-template < typename T, size_t Size, typename Axes, typename U >
-vector< T, Size, Axes >
-operator * (U s, vector< T, Size, Axes > const& v)
-{
-    vector< T, Size, Axes > res(v);
-    res *= s;
-    return res;
-}
-
-template < typename T, size_t Size, typename Axes, typename U >
-vector< T, Size, Axes >
-operator / (vector< T, Size, Axes > const& v, U s)
-{
-    vector< T, Size, Axes > res(v);
-    res /= s;
-    return res;
-}
-
-template < typename T, typename U, size_t Size, typename Axes >
-vector< T, Size, Axes >
-operator + ( vector< T, Size, Axes > const& lhs, vector< U, Size, Axes > const& rhs )
-{
-    vector< T, Size, Axes > res(lhs);
-    res += rhs;
-    return res;
-}
-
-template < typename T, typename U, size_t Size, typename Axes >
-vector< T, Size, Axes >
-operator - ( vector< T, Size, Axes > const& lhs, vector< U, Size, Axes > const& rhs )
-{
-    vector< T, Size, Axes > res(lhs);
-    res -= rhs;
-    return res;
-}
 
 template < typename T, size_t Size, typename Axes >
 typename vector<T, Size, Axes>::magnitude_type
