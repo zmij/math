@@ -27,13 +27,13 @@ struct matrix {};
 
 namespace detail {
 
-template < typename T, typename Enable = ::std::void_t<> >
+template < typename T, typename Enable = utils::void_t<> >
 struct value_tag_impl {
   using type = tag::scalar;
 };
 
 template <typename T>
-struct value_tag_impl<T, ::std::void_t<typename T::value_tag>> {
+struct value_tag_impl<T, utils::void_t<typename T::value_tag>> {
     using type = typename T::value_tag;
 };
 }  // namespace detail
@@ -242,10 +242,10 @@ struct matrix_traits<matrix<T, RC, CC, Axes>> {
 };
 
 //@{
-template <typename T, typename = ::std::void_t<>>
+template <typename T, typename = utils::void_t<>>
 struct is_scalar : ::std::false_type {};
 template <typename T>
-struct is_scalar<T, ::std::enable_if_t< ::std::is_same_v<value_tag_t<T>, tag::scalar> > >
+struct is_scalar<T, ::std::enable_if_t< ::std::is_same<value_tag_t<T>, tag::scalar>::value > >
     : ::std::true_type {};
 template <typename T>
 using is_scalar_t = typename is_scalar<T>::type;
@@ -279,11 +279,11 @@ constexpr bool is_matrix_v = is_matrix_t<T>::value;
 
 //@{
 /** @name is_expression trait */
-template <typename T, typename = ::std::void_t<>>
+template <typename T, typename = utils::void_t<>>
 struct is_expression : ::std::false_type {};
 template <typename T>
 struct is_expression<T,
-    ::std::void_t<typename T::expression_type, typename T::result_type>> : ::std::true_type {};
+    utils::void_t<typename T::expression_type, typename T::result_type>> : ::std::true_type {};
 template <typename T>
 using is_expression_t = typename is_expression<T>::type;
 template <typename T>
@@ -292,7 +292,7 @@ constexpr bool is_expression_v = is_expression_t<T>::value;
 
 //@{
 /** @name is_scalar_expression trait */
-template <typename T, typename = ::std::void_t<>>
+template <typename T, typename = utils::void_t<>>
 struct is_scalar_expression : ::std::false_type {};
 template <typename T>
 struct is_scalar_expression<T,
@@ -307,7 +307,7 @@ constexpr bool is_scalar_expression_v = is_scalar_expression_t<T>::type;
 
 //@{
 /** @name is_vector_expression trait */
-template <typename T, typename = ::std::void_t<>>
+template <typename T, typename = utils::void_t<>>
 struct is_vector_expression : ::std::false_type {};
 template <typename T>
 struct is_vector_expression<T,
@@ -322,7 +322,7 @@ constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
 
 //@{
 /** @name is_matrix_expression trait */
-template <typename T, typename = ::std::void_t<>>
+template <typename T, typename = utils::void_t<>>
 struct is_matrix_expression : ::std::false_type {};
 template <typename T>
 struct is_matrix_expression<T,
@@ -431,7 +431,7 @@ detect_vector_exression_result()
         // check the sizes and axes
         static_assert(T::size == U::size,
             "Cannot detect result of an exprssion with vectors of different sizes");
-        static_assert((::std::is_same_v< typename T::axes_names, typename U::axes_names >), "");
+        static_assert((::std::is_same< typename T::axes_names, typename U::axes_names >::value), "");
         return vector<result_value_type, T::size, typename T::axes_names>{};
     } else if constexpr (is_vector_expression_v<T>) {
         // left-hand side is vector expression

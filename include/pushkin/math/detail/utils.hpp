@@ -15,6 +15,20 @@ namespace psst {
 namespace math {
 namespace utils {
 
+#if __cpp_lib_void_t >= 201411
+template <typename... T>
+using void_t = std::void_t<T...>;
+#else
+
+template <typename... T>
+struct make_void_t {
+  using type = void;
+};
+template <typename... T>
+using void_t = typename make_void_t<T...>::type;
+
+#endif
+
 template <::std::size_t Index, typename T>
 struct value_fill {
   T value;

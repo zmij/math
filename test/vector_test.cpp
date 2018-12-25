@@ -216,9 +216,9 @@ TEST(Vector, Expression)
   //std::cout << "Itermediate result " << mul1 << "\n";
 //  auto mul2 = v2 * 2;
   //std::cout << "Itermediate result " << mul2 << "\n";
-  auto sum = v1 * .5 + v2 * 2;
+  auto sum = v1 / 2 + v2 / 2;
   std::cout << "Itermediate result " << sum << "\n";
-  auto exp = sum / 2;
+  auto exp = sum * 4;
   std::cout << "Itermediate result " << exp << "\n";
   vector3df res = exp * 3;
   EXPECT_EQ(expected, res);
