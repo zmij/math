@@ -246,10 +246,11 @@ template <typename T, typename = utils::void_t<>>
 struct is_scalar : ::std::false_type {};
 template <typename T>
 struct is_scalar<T,
-      ::std::enable_if_t< ::std::is_same<value_tag_t<T>, tag::scalar>::value > >
+      ::std::enable_if_t<
+         ::std::is_same<value_tag_t<std::decay_t<T>>, tag::scalar>::value > >
     : ::std::true_type {};
 template <typename T>
-using is_scalar_t = typename is_scalar<T>::type;
+using is_scalar_t = typename is_scalar<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_scalar_v = is_scalar_t<T>::value;
 //@}
@@ -261,9 +262,11 @@ struct is_vector : ::std::false_type {};
 template <typename T, ::std::size_t S, typename Axes >
 struct is_vector<vector<T, S, Axes>> : ::std::true_type {};
 template <typename T>
-using is_vector_t = typename is_vector<T>::type;
+using is_vector_t = typename is_vector<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_vector_v = is_vector_t<T>::value;
+template <typename T>
+struct is_vector<T&> : is_vector<T> {};
 //@}
 
 //@{
@@ -273,9 +276,11 @@ struct is_matrix : ::std::false_type {};
 template <typename T, ::std::size_t RC, ::std::size_t CC, typename Axes>
 struct is_matrix<matrix<T, RC, CC, Axes>> : ::std::true_type {};
 template <typename T>
-using is_matrix_t = typename is_matrix<T>::type;
+using is_matrix_t = typename is_matrix<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_matrix_v = is_matrix_t<T>::value;
+template <typename T>
+struct is_matrix<T&> : is_matrix<T> {};
 //@}
 
 //@{
@@ -288,7 +293,7 @@ struct is_expression<T,
         typename std::decay_t<T>::expression_type,
         typename std::decay_t<T>::result_type>> : ::std::true_type {};
 template <typename T>
-using is_expression_t = typename is_expression<T>::type;
+using is_expression_t = typename is_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_expression_v = is_expression_t<T>::value;
 //@}
@@ -304,7 +309,7 @@ struct is_scalar_expression<T,
           is_scalar_v<typename std::decay_t<T>::result_type>
         >> : ::std::true_type {};
 template <typename T>
-using is_scalar_expression_t = typename is_scalar_expression<T>::type;
+using is_scalar_expression_t = typename is_scalar_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_scalar_expression_v = is_scalar_expression_t<T>::value;
 //@}
@@ -320,7 +325,7 @@ struct is_vector_expression<T,
           is_vector_v<typename std::decay_t<T>::result_type>
         >> : ::std::true_type {};
 template <typename T>
-using is_vector_expression_t = typename is_vector_expression<T>::type;
+using is_vector_expression_t = typename is_vector_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
 //@}
@@ -336,7 +341,7 @@ struct is_matrix_expression<T,
           is_matrix_v<typename std::decay_t<T>::result_type>
         >> : ::std::true_type {};
 template <typename T>
-using is_matrix_expression_t = typename is_matrix_expression<T>::type;
+using is_matrix_expression_t = typename is_matrix_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_matrix_expression_v = is_matrix_expression_t<T>::value;
 //@}
@@ -449,6 +454,13 @@ detect_vector_exression_result()
 }
 
 }  // namespace detail
+
+template < typename T >
+struct scalar_result {
+    using type = decltype(detail::detect_expression_value_type<std::decay_t<T>>());
+};
+template < typename T >
+using scalar_result_t = typename scalar_result<T>::type;
 
 template < typename T, typename U >
 struct scalar_expression_result {

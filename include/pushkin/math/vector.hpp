@@ -157,13 +157,6 @@ private:
 };
 
 
-template < typename T, size_t Size, typename Axes >
-typename vector< T, Size, Axes >::magnitude_type
-dot_product(vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
-{
-    return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
-}
-
 /**
  * Dot product operator
  * @param lhs
@@ -174,43 +167,7 @@ template < typename T, size_t Size, typename Axes >
 typename vector< T, Size, Axes >::magnitude_type
 operator | (vector< T, Size, Axes > const& lhs,  vector< T, Size, Axes > const& rhs)
 {
-    return detail::dot_product< Size - 1, vector<T, Size, Axes> >()(lhs, rhs);
-}
-
-
-template < typename T, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::magnitude_type
-magnitude_square(vector<T, Size, Axes> const& v)
-{
-    return v.magnitude_square();
-}
-
-template < typename T, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::magnitude_type
-magnitude(vector<T, Size, Axes> const& v)
-{
-    return v.magnitude();
-}
-
-template< typename T, typename U, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::magnitude_type
-distance_square(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
-{
-    return magnitude_square(a - b);
-}
-
-template< typename T, typename U, size_t Size, typename Axes >
-typename vector<T, Size, Axes>::magnitude_type
-distance(vector<T, Size, Axes> const& a, vector<U, Size, Axes> const& b)
-{
-    return magnitude(a - b);
-}
-
-template < typename T, size_t Size, typename Axes >
-vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
-normalize(vector<T, Size, Axes> const& v)
-{
-    return v.normalize();
+    return dot_product(lhs, rhs);
 }
 
 /**
@@ -305,53 +262,6 @@ project( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
     return ::std::make_pair(p, v - p);
 }
 
-template < typename T, ::std::size_t Size, typename Axes, typename U >
-vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
-lerp( vector<T, Size, Axes> const& start, vector<T, Size, Axes> const& end, U percent )
-{
-    return start + (end - start) * percent;
-}
-
-template < typename T, ::std::size_t Size, typename Axes, typename U >
-vector< typename vector<T, Size, Axes>::value_type, Size, Axes >
-slerp( vector<T, Size, Axes> const& start, vector<T, Size, Axes> const& end, U percent )
-{
-    using vector_type = vector<T, Size, Axes>;
-    using value_traits = typename vector_type::value_traits;
-    using ::std::sin;
-    using ::std::cos;
-    using ::std::acos;
-
-    vector_type s{start};
-    auto s_mag = s.magnitude();
-    s /= s_mag; // Normalize
-    vector_type e{end};
-    auto e_mag = e.magnitude();
-    e /= e_mag; // Normalize
-    // Lerp magnitude
-    auto res_mag = s_mag + (e_mag - s_mag) * percent;
-
-    auto dot = dot_product(s, e);
-    if (value_traits::eq(dot, 0)) {
-        // Perpendicular vectors
-        auto theta = acos(dot) * percent;
-        auto res = s * cos(theta) + e * sin(theta);
-        return res * res_mag;
-    } else if (value_traits::eq(dot, 1)) {
-        // Collinear vectors same direction
-        return lerp(start, end, percent);
-    } else if (value_traits::eq(dot, -1)) {
-        // Collinear vectors opposite direction
-        throw ::std::runtime_error("Slerp for opposite vectors is undefined");
-    } else {
-        // Generic formula
-        auto omega = acos(dot);
-        auto sin_o = sin(omega);
-        auto res = (s * sin((1-percent) * omega) +
-                e * sin(percent * omega)) / sin_o;
-        return res * res_mag;
-    }
-}
 
 } // namespace math
 }  /* namespace psst */

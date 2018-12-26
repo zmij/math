@@ -15,6 +15,8 @@ namespace psst {
 namespace math {
 namespace expr {
 
+inline namespace v {
+
 namespace detail {
 
 template < ::std::size_t N, typename LHS, typename RHS>
@@ -52,7 +54,7 @@ struct vector_expression_cmp {
 
 template <typename LHS, typename RHS>
 struct vector_cmp
-        : scalar_expression<vector_cmp<LHS, RHS>, int>,
+        : binary_scalar_expression<vector_cmp, LHS, RHS, int>,
           binary_expression<LHS, RHS> {
 
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
@@ -71,7 +73,7 @@ struct vector_cmp
 
 template <typename LHS, typename RHS>
 struct vector_eq
-        : scalar_expression<vector_eq<LHS, RHS>, bool>,
+        : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
           binary_expression<LHS, RHS> {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
@@ -90,7 +92,7 @@ struct vector_eq
 
 template <typename LHS, typename RHS>
 struct vector_less
-        : scalar_expression<vector_less<LHS, RHS>, bool>,
+        : binary_scalar_expression<vector_less, LHS, RHS, bool>,
           binary_expression<LHS, RHS> {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
@@ -106,11 +108,11 @@ struct vector_less
     }
 };
 
-template <typename LHS, typename RHS, typename Result>
+template <typename LHS, typename RHS>
 struct vector_sum
-        : vector_expression< vector_sum<LHS, RHS, Result>, Result>,
+        : binary_vector_expression<vector_sum, LHS, RHS>,
           binary_expression<LHS, RHS> {
-    using base_type           = vector_expression< vector_sum<LHS, RHS, Result>, Result>;
+    using base_type           = binary_vector_expression<vector_sum, LHS, RHS>;
     using value_type          = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -125,11 +127,11 @@ struct vector_sum
     }
 };
 
-template <typename LHS, typename RHS, typename Result>
+template <typename LHS, typename RHS>
 struct vector_diff
-        : vector_expression< vector_diff<LHS, RHS, Result>, Result>,
+        : binary_vector_expression<vector_diff, LHS, RHS>,
           binary_expression<LHS, RHS> {
-    using base_type           = vector_expression< vector_diff<LHS, RHS, Result>, Result>;
+    using base_type           = binary_vector_expression<vector_diff, LHS, RHS>;
     using value_type          = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -144,11 +146,11 @@ struct vector_diff
     }
 };
 
-template <typename LHS, typename RHS, typename Result>
+template <typename LHS, typename RHS>
 struct vector_scalar_multiply
-        : vector_expression< vector_scalar_multiply<LHS, RHS, Result>, Result >,
+        : binary_vector_expression<vector_scalar_multiply, LHS, RHS>,
           binary_expression<LHS, RHS> {
-    using base_type           = vector_expression< vector_scalar_multiply<LHS, RHS, Result>, Result >;
+    using base_type           = binary_vector_expression<vector_scalar_multiply, LHS, RHS>;
     using value_type          = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -163,11 +165,11 @@ struct vector_scalar_multiply
     }
 };
 
-template <typename LHS, typename RHS, typename Result>
+template <typename LHS, typename RHS>
 struct vector_scalar_divide
-        : vector_expression< vector_scalar_divide<LHS, RHS, Result>, Result >,
+        : binary_vector_expression<vector_scalar_divide, LHS, RHS>,
           binary_expression<LHS, RHS> {
-    using base_type           = vector_expression< vector_scalar_divide<LHS, RHS, Result>, Result >;
+    using base_type           = binary_vector_expression<vector_scalar_divide, LHS, RHS>;
     using value_type          = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -182,15 +184,15 @@ struct vector_scalar_divide
     }
 };
 
-template < typename LHS, typename Result >
+template < typename LHS >
 struct vector_element_sum
-        : scalar_expression< vector_element_sum< LHS, Result >, Result >,
+        : unary_scalar_expression< vector_element_sum, LHS >,
           unary_expression<LHS> {
-    using base_type         = scalar_expression< vector_element_sum< LHS, Result >, Result >;
-    using value_type          = typename base_type::value_type;
+    using base_type         = unary_scalar_expression< vector_element_sum, LHS >;
+    using value_type        = typename base_type::value_type;
 
-    using expression_base = unary_expression<LHS>;
-    using source_index_type   = typename expression_base::arg_type::index_sequence_type;
+    using expression_base   = unary_expression<LHS>;
+    using source_index_type = typename expression_base::arg_type::index_sequence_type;
 
     using expression_base::expression_base;
 
@@ -208,22 +210,27 @@ private:
     }
 };
 
-template <typename LHS, typename Result>
+template <typename LHS>
 struct vector_magnitude_squared
-        : scalar_expression< vector_magnitude_squared<LHS, Result>, Result >,
+        : unary_scalar_expression< vector_magnitude_squared, LHS >,
           unary_expression<LHS> {
-    using base_type         = scalar_expression< vector_magnitude_squared<LHS, Result>, Result >;
-    using value_type          = typename base_type::value_type;
+    static_assert(is_vector_expression_v<LHS>,
+        "Argument to magnitude must be a vector");
+    using base_type         = unary_scalar_expression< vector_magnitude_squared, LHS >;
+    using value_type        = typename base_type::value_type;
 
-    using expression_base = unary_expression<LHS>;
-    using source_index_type   = typename expression_base::arg_type::index_sequence_type;
+    using expression_base   = unary_expression<LHS>;
+    using source_index_type = typename std::decay_t<LHS>::index_sequence_type;
 
     using expression_base::expression_base;
 
     constexpr value_type
     value() const
     {
-        return sum(source_index_type{});
+        if (value_cache_ == nval) {
+            value_cache_ = sum(source_index_type{});
+        }
+        return value_cache_;
     }
 private:
     template <::std::size_t ... Indexes>
@@ -232,8 +239,47 @@ private:
     {
         return ((get<Indexes>(this->arg_) * get<Indexes>(this->arg_)) + ...);
     }
+    // TODO Optional
+    static constexpr value_type nval = std::numeric_limits<value_type>::min();
+    mutable value_type value_cache_ = nval;
 };
 
+template < typename LHS, typename RHS >
+struct vector_dot_product
+        : binary_scalar_expression< vector_dot_product, LHS, RHS >,
+          binary_expression<LHS, RHS> {
+    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+          "Both sides to the dot product must be vector expressions");
+    static_assert(std::decay_t<LHS>::size == std::decay_t<RHS>::size,
+          "Vector expressions must be of the same size");
+
+    using base_type         = binary_scalar_expression< vector_dot_product, LHS, RHS >;
+    using value_type        = typename base_type::value_type;
+
+    using expression_base   = binary_expression<LHS, RHS>;
+    using source_index_type = typename std::decay_t<LHS>::index_sequence_type;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        if (value_cache_ == nval) {
+            value_cache_ = sum(source_index_type{});
+        }
+        return value_cache_;
+    }
+private:
+    template <::std::size_t ... Indexes>
+    constexpr value_type
+    sum(::std::index_sequence<Indexes...>) const
+    {
+        return ((get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_)) + ...);
+    }
+    // TODO Optional
+    static constexpr value_type nval = std::numeric_limits<value_type>::min();
+    mutable value_type value_cache_ = nval;
+};
 
 template <typename LHS, typename RHS,
     typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
@@ -283,27 +329,114 @@ operator >= (LHS&& lhs, RHS&& rhs)
     return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
 }
 
-template <typename Expr, typename T>
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
 constexpr auto
-magnitude_sq(vector_expression<Expr, T> const& expr)
+magnitude_square(Expr&& expr)
 {
-    using expr_type         = vector_expression<Expr, T>;
     // TODO Special handling for non-cartesian coordinate systems
-    //using axes_names        = typename expr_type::axes_names;
-    using result_type       = typename expr_type::value_type;
-    return vector_magnitude_squared<Expr, result_type>{expr};
+    //using axes_names        = typename Expr::axes_names;
+    return make_unary_expression<vector_magnitude_squared>(std::forward<Expr>(expr));
 }
 
-template <typename Expr, typename T>
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
 constexpr auto
-magnitude(vector_expression<Expr, T> const& expr)
+magnitude(Expr&& expr)
 {
-    using expr_type         = vector_expression<Expr, T>;
     // TODO Special handling for non-cartesian coordinate systems
-    //using axes_names        = typename expr_type::axes_names;
-    using result_type       = typename expr_type::value_type;
-    return sqrt(vector_magnitude_squared<Expr, result_type>{expr});
+    //using axes_names        = typename Expr::axes_names;
+    return sqrt(magnitude_square(std::forward<Expr>(expr)));
 }
+
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
+constexpr auto
+normalize(Expr&& expr)
+{
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename Expr::axes_names;
+    return expr / magnitude(expr);
+}
+
+template <typename LHS, typename RHS,
+    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
+constexpr auto
+distance_square(LHS&& lhs, RHS&& rhs)
+{
+    return magnitude_square(lhs - rhs);
+}
+
+template <typename LHS, typename RHS,
+    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
+constexpr auto
+distance(LHS&& lhs, RHS&& rhs)
+{
+    return magnitude(lhs - rhs);
+}
+
+
+template <typename LHS, typename RHS,
+    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
+constexpr auto
+dot_product(LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression< vector_dot_product >(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
+}
+
+template <typename Start, typename End, typename U,
+    typename = ::std::enable_if_t<
+        is_vector_expression_v<Start> &&
+        is_vector_expression_v<End> &&
+        is_scalar_v<U>>>
+constexpr auto
+lerp(Start&& start, End&& end, U&& percent)
+{
+    return start + (end - start) * percent;
+}
+
+template <typename Start, typename End, typename U,
+    typename = ::std::enable_if_t<
+        is_vector_expression_v<Start> &&
+        is_vector_expression_v<End> &&
+        is_scalar_v<U>>>
+vector_expression_result_t<Start, End>
+slerp(Start&& start, End&& end, U&& percent)
+{
+    using value_traits = typename std::decay_t<Start>::traits::value_traits;
+    using ::std::sin;
+    using ::std::cos;
+    using ::std::acos;
+
+    auto s_mag = magnitude(start);
+    auto s_n = start / s_mag; // normalized
+
+    auto e_mag = magnitude(end);
+    auto e_n = end / e_mag; // normalized
+    // Lerp magnitude
+    auto res_mag = s_mag + (e_mag - s_mag) * percent;
+
+    auto dot = dot_product(s_n, e_n);
+    if (value_traits::eq(dot, 0)) {
+        // Perpendicular vectors
+        auto theta = acos(dot) * percent;
+        auto res = s_n * cos(theta) + e_n * sin(theta);
+        return res * res_mag;
+    } else if (value_traits::eq(dot, 1)) {
+        // Collinear vectors same direction
+        return lerp(start, end, percent);
+    } else if (value_traits::eq(dot, -1)) {
+        // Collinear vectors opposite direction
+        // TODO make a vector pointing to the direction of longer vector with magnitude of 1/2 of magnitude sum
+        throw ::std::runtime_error("Slerp for opposite vectors is undefined");
+    } else {
+        // Generic formula
+        auto omega = acos(dot);
+        auto sin_o = sin(omega);
+        auto res = (s_n * sin((1-percent) * omega) +
+                e_n * sin(percent * omega)) / sin_o;
+        return res * res_mag;
+    }
+}
+
+}  // namespace v
 
 }  // namespace expr
 }  // namespace math

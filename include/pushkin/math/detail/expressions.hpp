@@ -191,6 +191,7 @@ make_binary_expression(LHS&& lhs, RHS&& rhs)
     }
 }
 
+inline namespace s {
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result>
 struct scalar_expression {
@@ -215,6 +216,16 @@ private:
     rebind() && { return static_cast<expression_type&&>(*this); }
 };
 
+template <template <typename> class Expression, typename Arg,
+          typename Result = scalar_result_t<Arg> >
+using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
+template <template <typename, typename> class Expression, typename LHS, typename RHS,
+          typename Result = scalar_expression_result_t<LHS, RHS> >
+using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
+
+} // namespace s
+
+inline namespace v {
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
 struct vector_expression {
@@ -245,6 +256,10 @@ private:
     constexpr expression_type const&
     rebind() const { return static_cast<expression_type const&>(*this); }
 };
+
+template <template <typename, typename> class Expression, typename LHS, typename RHS,
+          typename Result = vector_expression_result_t<LHS, RHS>>
+using binary_vector_expression = vector_expression< Expression<LHS, RHS>, Result >;
 
 template <::std::size_t N, typename Expression, typename Result>
 constexpr auto
@@ -279,6 +294,10 @@ using vector_exression_size_t = typename vector_expression_size<T>::type;
 template < typename T >
 constexpr ::std::size_t vector_expression_size_v = vector_exression_size_t<T>::value;
 
+} // namespace v
+
+inline namespace m {
+
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
 struct matrix_expression {
@@ -307,6 +326,7 @@ private:
     constexpr expression_type const&
     rebind() const { return static_cast<expression_type const&>(*this); }
 };
+}  // namespace m
 
 }  // namespace expr
 }  // namespace math
