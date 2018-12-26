@@ -51,322 +51,258 @@ struct vector_expression_cmp {
 }  // namespace detail
 
 template <typename LHS, typename RHS>
-struct vector_cmp : scalar_expression<vector_cmp<LHS, RHS>, int> {
+struct vector_cmp
+        : scalar_expression<vector_cmp<LHS, RHS>, int>,
+          binary_expression<LHS, RHS> {
+
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
     static constexpr ::std::size_t cmp_size = utils::min_v< vector_expression_size_v<LHS>, vector_expression_size_v<RHS> >;
     using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
-    vector_cmp(LHS const& lhs, RHS const& rhs)
-      : lhs_{lhs}, rhs_{rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
+
     constexpr int
     value() const {
-        return cmp_type::cmp(lhs_, rhs_);
+        return cmp_type::cmp(this->lhs_, this->rhs_);
     }
-private:
-    LHS const& lhs_;
-    RHS const& rhs_;
 };
 
 template <typename LHS, typename RHS>
-struct vector_eq : scalar_expression<vector_eq<LHS, RHS>, bool> {
+struct vector_eq
+        : scalar_expression<vector_eq<LHS, RHS>, bool>,
+          binary_expression<LHS, RHS> {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
     static constexpr ::std::size_t cmp_size = utils::min_v< vector_expression_size_v<LHS>, vector_expression_size_v<RHS> >;
     using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
-    vector_eq(LHS const& lhs, RHS const& rhs)
-      : lhs_{lhs}, rhs_{rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
+
     constexpr bool
     value() const {
-        return cmp_type::cmp(lhs_, rhs_) == 0;
+        return cmp_type::cmp(this->lhs_, this->rhs_) == 0;
     }
-private:
-    LHS const& lhs_;
-    RHS const& rhs_;
 };
 
 
 template <typename LHS, typename RHS>
-struct vector_less : scalar_expression<vector_less<LHS, RHS>, bool> {
+struct vector_less
+        : scalar_expression<vector_less<LHS, RHS>, bool>,
+          binary_expression<LHS, RHS> {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
     static constexpr ::std::size_t cmp_size = utils::min_v< vector_expression_size_v<LHS>, vector_expression_size_v<RHS> >;
     using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
-    vector_less(LHS const& lhs, RHS const& rhs)
-      : lhs_{lhs}, rhs_{rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
+
     constexpr bool
     value() const {
-        return cmp_type::cmp(lhs_, rhs_) < 1;
+        return cmp_type::cmp(this->lhs_, this->rhs_) < 1;
     }
-private:
-    LHS const& lhs_;
-    RHS const& rhs_;
 };
 
 template <typename LHS, typename RHS, typename Result>
 struct vector_sum
-      : vector_expression< vector_sum<LHS, RHS, Result>, Result> {
+        : vector_expression< vector_sum<LHS, RHS, Result>, Result>,
+          binary_expression<LHS, RHS> {
     using base_type           = vector_expression< vector_sum<LHS, RHS, Result>, Result>;
     using value_type          = typename base_type::value_type;
-    using left_arg_type       = LHS;
-    using right_arg_type      = RHS;
 
-    constexpr vector_sum(left_arg_type const& lhs,
-        right_arg_type const& rhs)
-      : lhs_{&lhs}, rhs_{&rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
 
     template < ::std::size_t N >
     constexpr value_type
-    at() const { return lhs_->template at<N>() + rhs_->template at<N>(); }
-private:
-    left_arg_type const* lhs_;
-    right_arg_type const* rhs_;
+    at() const
+    {
+        static_assert(N < base_type::size, "Vector sum element index is out of range");
+        return this->lhs_.template at<N>() + this->rhs_.template at<N>();
+    }
 };
 
 template <typename LHS, typename RHS, typename Result>
 struct vector_diff
-      : vector_expression< vector_diff<LHS, RHS, Result>, Result> {
+        : vector_expression< vector_diff<LHS, RHS, Result>, Result>,
+          binary_expression<LHS, RHS> {
     using base_type           = vector_expression< vector_diff<LHS, RHS, Result>, Result>;
     using value_type          = typename base_type::value_type;
-    using left_arg_type       = LHS;
-    using right_arg_type      = RHS;
 
-    constexpr vector_diff(left_arg_type const& lhs,
-        right_arg_type const& rhs)
-      : lhs_{&lhs}, rhs_{&rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
 
     template < ::std::size_t N >
     constexpr value_type
-    at() const { return lhs_->template at<N>() - rhs_->template at<N>(); }
-private:
-    left_arg_type const* lhs_;
-    right_arg_type const* rhs_;
+    at() const
+    {
+        static_assert(N < base_type::size, "Vector difference element index is out of range");
+        return this->lhs_.template at<N>() - this->rhs_.template at<N>();
+    }
 };
 
 template <typename LHS, typename RHS, typename Result>
-struct vector_scalar_multiply : vector_expression< vector_scalar_multiply<LHS, RHS, Result>, Result > {
+struct vector_scalar_multiply
+        : vector_expression< vector_scalar_multiply<LHS, RHS, Result>, Result >,
+          binary_expression<LHS, RHS> {
     using base_type           = vector_expression< vector_scalar_multiply<LHS, RHS, Result>, Result >;
     using value_type          = typename base_type::value_type;
-    using expr_arg_type       = LHS;
-    using scalar_arg_type     = RHS;
 
-    static_assert(!is_expression_v<scalar_arg_type>,
-          "Use vector_scalar_exp_multiply for scalar expressions");
-
-    constexpr vector_scalar_multiply(expr_arg_type const& lhs, scalar_arg_type rhs)
-        : lhs_{&lhs}, rhs_{rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
 
     template < ::std::size_t N >
     constexpr value_type
     at() const
     {
-        return lhs_->template at<N>() * rhs_;
+        static_assert(N < base_type::size, "Vector multiply element index is out of range");
+        return this->lhs_.template at<N>() * this->rhs_;
     }
-private:
-    expr_arg_type const* lhs_;
-    scalar_arg_type rhs_;
 };
 
 template <typename LHS, typename RHS, typename Result>
-struct vector_scalar_exp_multiply : vector_expression< vector_scalar_exp_multiply<LHS, RHS, Result>, Result > {
-    using base_type           = vector_expression< vector_scalar_exp_multiply<LHS, RHS, Result>, Result >;
-    using value_type          = typename base_type::value_type;
-    using expr_arg_type       = LHS;
-    using scalar_arg_type     = RHS;
-
-    static_assert(is_expression_v<scalar_arg_type>,
-          "Use vector_scalar_multiply for scalar values");
-
-    constexpr vector_scalar_exp_multiply(expr_arg_type const& lhs, scalar_arg_type const& rhs)
-        : lhs_{lhs}, rhs_{rhs} {}
-
-    template < ::std::size_t N >
-    constexpr value_type
-    at() const
-    {
-        return lhs_.template at<N>() * rhs_.value();
-    }
-private:
-    expr_arg_type const& lhs_;
-    scalar_arg_type const& rhs_;
-};
-
-
-template <typename LHS, typename RHS, typename Result>
-struct vector_scalar_divide : vector_expression< vector_scalar_divide<LHS, RHS, Result>, Result > {
+struct vector_scalar_divide
+        : vector_expression< vector_scalar_divide<LHS, RHS, Result>, Result >,
+          binary_expression<LHS, RHS> {
     using base_type           = vector_expression< vector_scalar_divide<LHS, RHS, Result>, Result >;
     using value_type          = typename base_type::value_type;
-    using expr_arg_type       = LHS;
-    using scalar_arg_type     = RHS;
 
-    static_assert(!is_expression_v<scalar_arg_type>,
-          "Use vector_scalar_exp_divide for scalar expressions");
-
-    constexpr vector_scalar_divide(expr_arg_type const& lhs, scalar_arg_type rhs)
-        : lhs_{&lhs}, rhs_{rhs} {}
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
 
     template < ::std::size_t N >
     constexpr value_type
     at() const
     {
-        return lhs_->template at<N>() / rhs_;
+        static_assert(N < base_type::size, "Vector divide element index is out of range");
+        return this->lhs_.template at<N>() / this->rhs_;
     }
-private:
-    expr_arg_type const* lhs_;
-    scalar_arg_type rhs_;
 };
 
-template <typename LHS, typename RHS, typename Result>
-struct vector_scalar_exp_divide : vector_expression< vector_scalar_exp_divide<LHS, RHS, Result>, Result > {
-    using base_type           = vector_expression< vector_scalar_exp_divide<LHS, RHS, Result>, Result >;
+template < typename LHS, typename Result >
+struct vector_element_sum
+        : scalar_expression< vector_element_sum< LHS, Result >, Result >,
+          unary_expression<LHS> {
+    using base_type         = scalar_expression< vector_element_sum< LHS, Result >, Result >;
     using value_type          = typename base_type::value_type;
-    using expr_arg_type       = LHS;
-    using scalar_arg_type     = RHS;
 
-    static_assert(is_expression_v<scalar_arg_type>,
-          "Use vector_scalar_exp_divide for scalar expressions");
+    using expression_base = unary_expression<LHS>;
+    using source_index_type   = typename expression_base::arg_type::index_sequence_type;
 
-    constexpr vector_scalar_exp_divide(expr_arg_type const& lhs, scalar_arg_type rhs)
-        : lhs_{lhs}, rhs_{rhs} {}
+    using expression_base::expression_base;
 
-    template < ::std::size_t N >
     constexpr value_type
-    at() const
+    value() const
     {
-        return lhs_.template at<N>() / rhs_.value();
+        return sum(source_index_type{});
     }
 private:
-    expr_arg_type const& lhs_;
-    scalar_arg_type const& rhs_;
+    template <::std::size_t ... Indexes>
+    constexpr value_type
+    sum(::std::index_sequence<Indexes...>) const
+    {
+        return (get<Indexes>(this->arg_) + ...);
+    }
+};
+
+template <typename LHS, typename Result>
+struct vector_magnitude_squared
+        : scalar_expression< vector_magnitude_squared<LHS, Result>, Result >,
+          unary_expression<LHS> {
+    using base_type         = scalar_expression< vector_magnitude_squared<LHS, Result>, Result >;
+    using value_type          = typename base_type::value_type;
+
+    using expression_base = unary_expression<LHS>;
+    using source_index_type   = typename expression_base::arg_type::index_sequence_type;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        return sum(source_index_type{});
+    }
+private:
+    template <::std::size_t ... Indexes>
+    constexpr value_type
+    sum(::std::index_sequence<Indexes...>) const
+    {
+        return ((get<Indexes>(this->arg_) * get<Indexes>(this->arg_)) + ...);
+    }
 };
 
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator == (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator == (LHS&& lhs, RHS&& rhs)
 {
-    return vector_eq<LHS, RHS>{lhs, rhs};
+    return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator != (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator != (LHS&& lhs, RHS&& rhs)
 {
-    return !vector_eq<LHS, RHS>{lhs, rhs};
+    return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator < (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator < (LHS&& lhs, RHS&& rhs)
 {
-    return vector_less<LHS, RHS>{lhs, rhs};
+    return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator <= (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator <= (LHS&& lhs, RHS&& rhs)
 {
-    return !vector_less<RHS, LHS>{rhs, lhs};
+    return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator > (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator > (LHS&& lhs, RHS&& rhs)
 {
-    return vector_less<RHS, LHS>{rhs, lhs};
+  return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename LHS, typename RHS,
+    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
 constexpr auto
-operator >= (vector_expression<LHS, T> const& lhs,
-             vector_expression<RHS, U> const& rhs)
+operator >= (LHS&& lhs, RHS&& rhs)
 {
-    return !vector_less<LHS, RHS>{lhs, rhs};
+    return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
 }
 
-
-template <typename LHS, typename RHS, typename T, typename U>
+template <typename Expr, typename T>
 constexpr auto
-operator + (vector_expression<LHS, T> const& lhs,
-            vector_expression<RHS, U> const& rhs)
-{
-    using lhs_type          = vector_expression<LHS, T>;
-    using rhs_type          = vector_expression<RHS, U>;
-    using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_sum< LHS, RHS, result_type >{lhs, rhs};
-}
-template <typename LHS, typename RHS, typename T, typename U>
-constexpr auto
-operator - (vector_expression<LHS, T> const& lhs,
-            vector_expression<RHS, U> const& rhs)
-{
-    using lhs_type          = vector_expression<LHS, T>;
-    using rhs_type          = vector_expression<RHS, U>;
-    using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_diff< LHS, RHS, result_type >{lhs, rhs};
-}
-
-template <typename Expr, typename T, typename U>
-constexpr auto
-operator * (vector_expression<Expr, T> const& expr, U scalar)
+magnitude_sq(vector_expression<Expr, T> const& expr)
 {
     using expr_type         = vector_expression<Expr, T>;
-    using result_type       = vector_expression_result_t<expr_type, U>;
-    return vector_scalar_multiply< Expr, U, result_type>{expr, scalar};
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename expr_type::axes_names;
+    using result_type       = typename expr_type::value_type;
+    return vector_magnitude_squared<Expr, result_type>{expr};
 }
 
-template <typename Expr, typename T, typename U>
+template <typename Expr, typename T>
 constexpr auto
-operator * (U scalar, vector_expression<Expr, T> const& expr)
-{
-    return expr * scalar;
-}
-
-template <typename RHS, typename LHS, typename T, typename U>
-constexpr auto
-operator * (vector_expression<LHS, T> const& lhs,
-            scalar_expression<RHS, U> const& rhs)
-{
-    using lhs_type          = vector_expression<LHS, T>;
-    using rhs_type          = scalar_expression<RHS, U>;
-    using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_scalar_exp_multiply< LHS, RHS, result_type>{lhs, rhs};
-}
-
-template <typename RHS, typename LHS, typename T, typename U>
-constexpr auto
-operator * (scalar_expression<LHS, T> const& lhs,
-            vector_expression<RHS, U> const& rhs)
-{
-    return rhs * lhs;
-}
-
-
-template <typename Expr, typename T, typename U>
-constexpr auto
-operator / (vector_expression<Expr, T> const& expr, U scalar)
+magnitude(vector_expression<Expr, T> const& expr)
 {
     using expr_type         = vector_expression<Expr, T>;
-    using result_type       = vector_expression_result_t<expr_type, U>;
-    return vector_scalar_divide< Expr, U, result_type>{expr, scalar};
-}
-
-template <typename RHS, typename LHS, typename T, typename U>
-constexpr auto
-operator / (vector_expression<LHS, T> const& lhs,
-            scalar_expression<RHS, U> const& rhs)
-{
-    using lhs_type          = vector_expression<LHS, T>;
-    using rhs_type          = scalar_expression<RHS, U>;
-    using result_type       = vector_expression_result_t<lhs_type, rhs_type>;
-    return vector_scalar_exp_divide< LHS, RHS, result_type>{lhs, rhs};
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename expr_type::axes_names;
+    using result_type       = typename expr_type::value_type;
+    return sqrt(vector_magnitude_squared<Expr, result_type>{expr});
 }
 
 }  // namespace expr
@@ -375,3 +311,4 @@ operator / (vector_expression<LHS, T> const& lhs,
 
 
 #endif /* PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_ */
+

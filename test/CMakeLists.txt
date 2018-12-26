@@ -18,7 +18,7 @@ set(
     test_program_SRCS
     # Add your sources here
     vector_test.cpp
-    matrix_test.cpp
+    #matrix_test.cpp
 )
 add_executable(test-psst-math ${test_program_SRCS})
 target_link_libraries(

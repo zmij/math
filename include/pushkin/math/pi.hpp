@@ -15,10 +15,10 @@ namespace math {
 
 template < typename T >
 struct pi {
-    static constexpr T value = ::std::atan((T)1) * 4;
+    static const T value;
 };
 
-template < typename T > constexpr T pi<T>::value;
+template < typename T > const T pi<T>::value = ::std::atan((T)1) * 4;
 
 }  /* namespace math */
 }  /* namespace psst */

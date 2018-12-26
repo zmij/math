@@ -20,7 +20,7 @@ namespace math {
  * @tparam CC column count;
  */
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
+struct matrix : //expr::matrix_expression<matrix<T, RC, CC, Axes>>,
             detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T, CC, Axes>> {
 
     using this_type             = matrix< T, RC, CC, Axes >;

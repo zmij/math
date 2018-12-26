@@ -208,19 +208,8 @@ TEST(Vector, Magnitude)
 
 TEST(Vector, Expression)
 {
-  vector3df v1 {1, 1, 1}, v2 {1, 0, 1}, expected { 3.75, 0.75, 3.75 };
-  std::cout << "Sum " << (v1 + v2 + expected) << "\n";
-  std::cout << "Mul " << (v1 * 2 * 2) << "\n";
-  std::cout << "Div " << (v2 / 2 / 2) << "\n";
-  //auto mul1 = v1 * .5;
-  //std::cout << "Itermediate result " << mul1 << "\n";
-//  auto mul2 = v2 * 2;
-  //std::cout << "Itermediate result " << mul2 << "\n";
-  auto sum = v1 / 2 + v2 / 2;
-  std::cout << "Itermediate result " << sum << "\n";
-  auto exp = sum * 4;
-  std::cout << "Itermediate result " << exp << "\n";
-  vector3df res = exp * 3;
+  vector3df v1 {1, 1, 1}, v2 {1, 0, 1}, expected { 2.5, 1, 2.5 };
+  vector3df res = (v1 * 2 + v2 * 3) / 4 * 2;
   EXPECT_EQ(expected, res);
 }
 

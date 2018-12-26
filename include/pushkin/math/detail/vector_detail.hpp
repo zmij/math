@@ -10,7 +10,7 @@
 
 #include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/value_traits.hpp>
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <pushkin/math/detail/expression_ops.hpp>
 
 #include <type_traits>
 #include <utility>
