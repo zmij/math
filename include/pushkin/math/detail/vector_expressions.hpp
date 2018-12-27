@@ -17,6 +17,8 @@ namespace expr {
 
 inline namespace v {
 
+//@{
+/** @name Compare vector expressions */
 namespace detail {
 
 template < ::std::size_t N, typename LHS, typename RHS>
@@ -59,7 +61,10 @@ struct vector_cmp
 
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
-    static constexpr ::std::size_t cmp_size = utils::min_v< vector_expression_size_v<LHS>, vector_expression_size_v<RHS> >;
+    static constexpr ::std::size_t cmp_size
+            = utils::min_v<
+                  vector_expression_size_v<LHS>,
+                  vector_expression_size_v<RHS> >;
     using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -70,7 +75,17 @@ struct vector_cmp
         return cmp_type::cmp(this->lhs_, this->rhs_);
     }
 };
+template <typename LHS, typename RHS,
+    typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+cmp(LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression<vector_cmp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
+}
+//@}
 
+//@{
+/** @name Check two vector expressions equality */
 template <typename LHS, typename RHS>
 struct vector_eq
         : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
@@ -89,7 +104,25 @@ struct vector_eq
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator == (LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
+}
 
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator != (LHS&& lhs, RHS&& rhs)
+{
+    return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
+}
+//@}
+
+//@{
+/** @name Vector comparison */
 template <typename LHS, typename RHS>
 struct vector_less
         : binary_scalar_expression<vector_less, LHS, RHS, bool>,
@@ -104,10 +137,45 @@ struct vector_less
 
     constexpr bool
     value() const {
-        return cmp_type::cmp(this->lhs_, this->rhs_) < 1;
+        return cmp_type::cmp(this->lhs_, this->rhs_) < 0;
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator < (LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
+}
+
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator <= (LHS&& lhs, RHS&& rhs)
+{
+    return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
+}
+
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator > (LHS&& lhs, RHS&& rhs)
+{
+  return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
+}
+
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator >= (LHS&& lhs, RHS&& rhs)
+{
+    return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
+}
+//@}
+
+//@{
+/** @name Sum of two vectors */
 template <typename LHS, typename RHS>
 struct vector_sum
         : binary_vector_expression<vector_sum, LHS, RHS>,
@@ -127,6 +195,19 @@ struct vector_sum
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator + (LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression<vector_sum>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
+
+//@{
+/** @name Substraction of two vectors */
 template <typename LHS, typename RHS>
 struct vector_diff
         : binary_vector_expression<vector_diff, LHS, RHS>,
@@ -146,6 +227,19 @@ struct vector_diff
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+operator - (LHS&& lhs, RHS&& rhs)
+{
+    return make_binary_expression<vector_diff>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
+
+//@{
+/** @name Multiplication of a vector by scalar expression */
 template <typename LHS, typename RHS>
 struct vector_scalar_multiply
         : binary_vector_expression<vector_scalar_multiply, LHS, RHS>,
@@ -165,6 +259,28 @@ struct vector_scalar_multiply
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            (is_vector_expression_v<LHS> && is_scalar_v<RHS>) ||
+            (is_scalar_v<LHS> && is_vector_expression_v<RHS>)
+          >>
+constexpr auto
+operator * (LHS&& lhs, RHS&& rhs)
+{
+    if constexpr (is_vector_expression_v<LHS> && is_scalar_v<RHS>) {
+        return s::detail::wrap_non_expression_args<vector_scalar_multiply>(
+              ::std::forward<LHS>(lhs), ::std::forward<RHS>(rhs)
+            );
+    } else if constexpr (is_scalar_v<LHS> && is_vector_expression_v<RHS>) {
+        return s::detail::wrap_non_expression_args<vector_scalar_multiply>(
+              ::std::forward<RHS>(rhs), ::std::forward<LHS>(lhs)
+            );
+    }
+}
+//@}
+
+//@{
+/** @name Division of a vector by a scalar expression */
 template <typename LHS, typename RHS>
 struct vector_scalar_divide
         : binary_vector_expression<vector_scalar_divide, LHS, RHS>,
@@ -183,7 +299,20 @@ struct vector_scalar_divide
         return this->lhs_.template at<N>() / this->rhs_;
     }
 };
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            is_vector_expression_v<LHS> && is_scalar_v<RHS>
+          >>
+constexpr auto
+operator / (LHS&& lhs, RHS&& rhs)
+{
+    return s::detail::wrap_non_expression_args<vector_scalar_divide>(
+          ::std::forward<LHS>(lhs), ::std::forward<RHS>(rhs)
+        );
+}
+//@}
 
+//@{
 template < typename LHS >
 struct vector_element_sum
         : unary_scalar_expression< vector_element_sum, LHS >,
@@ -209,7 +338,10 @@ private:
         return (get<Indexes>(this->arg_) + ...);
     }
 };
+//@}
 
+//@{
+/** @name Vector magnitude (squared and not) */
 template <typename LHS>
 struct vector_magnitude_squared
         : unary_scalar_expression< vector_magnitude_squared, LHS >,
@@ -244,6 +376,52 @@ private:
     mutable value_type value_cache_ = nval;
 };
 
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
+constexpr auto
+magnitude_square(Expr&& expr)
+{
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename Expr::axes_names;
+    return make_unary_expression<vector_magnitude_squared>(std::forward<Expr>(expr));
+}
+
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
+constexpr auto
+magnitude(Expr&& expr)
+{
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename Expr::axes_names;
+    return sqrt(magnitude_square(std::forward<Expr>(expr)));
+}
+
+template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
+constexpr auto
+normalize(Expr&& expr)
+{
+    // TODO Special handling for non-cartesian coordinate systems
+    //using axes_names        = typename Expr::axes_names;
+    return expr / magnitude(expr);
+}
+
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+distance_square(LHS&& lhs, RHS&& rhs)
+{
+    return magnitude_square(lhs - rhs);
+}
+
+template <typename LHS, typename RHS,
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
+constexpr auto
+distance(LHS&& lhs, RHS&& rhs)
+{
+    return magnitude(lhs - rhs);
+}
+//@}
+
+//@{
+/** @name Dot product of two vectors */
 template < typename LHS, typename RHS >
 struct vector_dot_product
         : binary_scalar_expression< vector_dot_product, LHS, RHS >,
@@ -282,104 +460,13 @@ private:
 };
 
 template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator == (LHS&& lhs, RHS&& rhs)
-{
-    return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
-}
-
-template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator != (LHS&& lhs, RHS&& rhs)
-{
-    return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
-}
-
-template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator < (LHS&& lhs, RHS&& rhs)
-{
-    return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
-}
-
-template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator <= (LHS&& lhs, RHS&& rhs)
-{
-    return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
-}
-
-template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator > (LHS&& lhs, RHS&& rhs)
-{
-  return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
-}
-
-template <typename LHS, typename RHS,
-    typename = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>>
-constexpr auto
-operator >= (LHS&& lhs, RHS&& rhs)
-{
-    return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
-}
-
-template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
-constexpr auto
-magnitude_square(Expr&& expr)
-{
-    // TODO Special handling for non-cartesian coordinate systems
-    //using axes_names        = typename Expr::axes_names;
-    return make_unary_expression<vector_magnitude_squared>(std::forward<Expr>(expr));
-}
-
-template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
-constexpr auto
-magnitude(Expr&& expr)
-{
-    // TODO Special handling for non-cartesian coordinate systems
-    //using axes_names        = typename Expr::axes_names;
-    return sqrt(magnitude_square(std::forward<Expr>(expr)));
-}
-
-template <typename Expr, typename = std::enable_if_t< is_vector_expression_v<Expr> >>
-constexpr auto
-normalize(Expr&& expr)
-{
-    // TODO Special handling for non-cartesian coordinate systems
-    //using axes_names        = typename Expr::axes_names;
-    return expr / magnitude(expr);
-}
-
-template <typename LHS, typename RHS,
-    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
-constexpr auto
-distance_square(LHS&& lhs, RHS&& rhs)
-{
-    return magnitude_square(lhs - rhs);
-}
-
-template <typename LHS, typename RHS,
-    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
-constexpr auto
-distance(LHS&& lhs, RHS&& rhs)
-{
-    return magnitude(lhs - rhs);
-}
-
-
-template <typename LHS, typename RHS,
-    typename = ::std::enable_if_t< is_vector_expression_v<LHS> && is_vector_expression_v<RHS> >>
+          typename = enable_if_both_vector_expressions<LHS, RHS>>
 constexpr auto
 dot_product(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression< vector_dot_product >(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
+//@}
 
 template <typename Start, typename End, typename U,
     typename = ::std::enable_if_t<

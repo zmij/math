@@ -10,6 +10,7 @@
 
 #include <pushkin/math/vector.hpp>
 #include <pushkin/math/matrix_fwd.hpp>
+#include <pushkin/math/detail/expression_ops.hpp>
 
 namespace psst {
 namespace math {

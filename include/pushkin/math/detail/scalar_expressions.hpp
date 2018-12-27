@@ -16,6 +16,8 @@ namespace psst {
 namespace math {
 namespace expr {
 
+inline namespace s {
+
 template < typename T >
 struct scalar_constant
       : scalar_expression< scalar_constant<T>, std::decay_t<T> > {
@@ -83,6 +85,8 @@ wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 
 }  // namespace detail
 
+//@{
+/** @name Inverse expression result */
 template < typename Expression >
 struct not_ : unary_scalar_expression<not_, Expression, bool>,
               unary_expression<Expression> {
@@ -96,6 +100,18 @@ struct not_ : unary_scalar_expression<not_, Expression, bool>,
     { return !this->arg_.value(); }
 };
 
+template < typename Expression,
+    typename = std::enable_if_t<
+                    is_scalar_expression_v<std::decay_t<Expression>>>>
+constexpr auto
+operator ! (Expression&& exp)
+{
+    return make_unary_expression<not_>(std::forward<Expression>(exp));
+}
+//@}
+
+//@{
+/** @name Sum two scalar expressions */
 template < typename LHS, typename RHS >
 struct scalar_value_sum
         : binary_scalar_expression<scalar_value_sum, LHS, RHS>,
@@ -113,6 +129,22 @@ struct scalar_value_sum
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            is_scalar_v<LHS> && is_scalar_v<RHS> &&
+            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
+          >>
+constexpr auto
+operator + (LHS&& lhs, RHS&& rhs)
+{
+    return detail::wrap_non_expression_args<scalar_value_sum>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
+
+//@{
+/** @name Subtract one scalar expression from  */
 template < typename LHS, typename RHS >
 struct scalar_value_diff
         : binary_scalar_expression<scalar_value_diff, LHS, RHS>,
@@ -130,6 +162,22 @@ struct scalar_value_diff
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            is_scalar_v<LHS> && is_scalar_v<RHS> &&
+            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
+          >>
+constexpr auto
+operator - (LHS&& lhs, RHS&& rhs)
+{
+    return detail::wrap_non_expression_args<scalar_value_sum>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
+
+//@{
+/** @name Multiply two scalar expressions */
 template < typename LHS, typename RHS >
 struct scalar_value_multiply
         : binary_scalar_expression<scalar_value_multiply, LHS, RHS>,
@@ -147,6 +195,22 @@ struct scalar_value_multiply
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            is_scalar_v<LHS> && is_scalar_v<RHS> &&
+            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
+          >>
+constexpr auto
+operator * (LHS&& lhs, RHS&& rhs)
+{
+    return detail::wrap_non_expression_args<scalar_value_multiply>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
+
+//@{
+/** @name Divide one scalar expression by another */
 template < typename LHS, typename RHS >
 struct scalar_value_divide
         : binary_scalar_expression<scalar_value_divide, LHS, RHS>,
@@ -164,7 +228,22 @@ struct scalar_value_divide
     }
 };
 
+template <typename LHS, typename RHS,
+          typename = std::enable_if_t<
+            is_scalar_v<LHS> && is_scalar_v<RHS> &&
+            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
+          >>
+constexpr auto
+operator / (LHS&& lhs, RHS&& rhs)
+{
+    return detail::wrap_non_expression_args<scalar_value_divide>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
+        );
+}
+//@}
 
+//@{
+/** @name Square root expression */
 template < typename Expression >
 struct square_root : unary_scalar_expression<square_root, Expression >,
                      unary_expression<Expression> {
@@ -191,14 +270,6 @@ private:
     mutable value_type value_cache_ = nval;
 };
 
-template < typename Expression,
-    typename = std::enable_if_t<
-                    is_scalar_expression_v<std::decay_t<Expression>>>>
-constexpr auto
-operator ! (Expression&& exp)
-{
-    return make_unary_expression<not_>(std::forward<Expression>(exp));
-}
 
 template <typename Expression,
         typename = std::enable_if_t<
@@ -208,6 +279,9 @@ sqrt(Expression&& ex)
 {
     return make_unary_expression<square_root>(std::forward<Expression>(ex));
 }
+//@}
+
+}  // namespace s
 
 }  // namespace expr
 }  // namespace math

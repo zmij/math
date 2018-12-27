@@ -215,9 +215,11 @@ struct matrix_traits;
 template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
 struct matrix_traits<matrix<T, RC, CC, Axes>> {
     using matrix_type           = matrix<T, RC, CC, Axes>;
+    using transposed_type       = matrix<T, CC, RC, Axes>;
     using type                  = matrix_type;
     using value_tag             = tag::matrix;
     using row_type              = vector<T, CC, Axes>;
+    using col_type              = vector<T, RC, Axes>;
     using size_type             = matrix_size<RC, CC>;
     using axes_names            = Axes;
     using element_type          = T;
@@ -328,6 +330,10 @@ template <typename T>
 using is_vector_expression_t = typename is_vector_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
+
+template <typename LHS, typename RHS>
+using enable_if_both_vector_expressions
+      = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>;
 //@}
 
 //@{
@@ -344,6 +350,12 @@ template <typename T>
 using is_matrix_expression_t = typename is_matrix_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_matrix_expression_v = is_matrix_expression_t<T>::value;
+
+template <typename T>
+using enable_if_matrix_expression = std::enable_if_t<is_matrix_expression_v<T>>;
+template <typename LHS, typename RHS>
+using enable_if_both_matrix_expressions
+      = std::enable_if_t<is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>>;
 //@}
 
 //@{

@@ -296,37 +296,6 @@ constexpr ::std::size_t vector_expression_size_v = vector_exression_size_t<T>::v
 
 } // namespace v
 
-inline namespace m {
-
-//----------------------------------------------------------------------------
-template <typename Expression, typename Result = Expression>
-struct matrix_expression {
-    static_assert(is_matrix_v<Result>,
-        "Result of vector expression must be a vector");
-    using expression_type       = Expression;
-    using result_type           = Result;
-    using traits                = value_traits_t<Result>;
-    using value_type            = typename traits::value_type;
-    using value_tag             = typename traits::value_tag;
-    using axes_names            = typename traits::axes_names;
-
-    static constexpr auto rows  = traits::rows;
-    static constexpr auto cols  = traits::cols;
-    static constexpr auto size  = traits::size;
-
-    template <::std::size_t R, ::std::size_t C>
-    constexpr value_type
-    element() const
-    {
-        static_assert(R < rows, "Invalid matrix expression row index");
-        static_assert(C < cols, "Invalid matrix expression col index");
-        return rebind().template element<R, C>();
-    }
-private:
-    constexpr expression_type const&
-    rebind() const { return static_cast<expression_type const&>(*this); }
-};
-}  // namespace m
 
 }  // namespace expr
 }  // namespace math

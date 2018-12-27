@@ -82,7 +82,7 @@ struct vector_calculus {
     magnitude_type
     magnitude_square() const
     {
-        return detail::dot_product< Size - 1, vector_type >()(rebind(), rebind());
+        return expr::magnitude_square(rebind());
     }
 
     magnitude_type
