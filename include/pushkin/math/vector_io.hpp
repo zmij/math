@@ -9,7 +9,9 @@
 #define PUSHKIN_MATH_VECTOR_IO_HPP_
 
 #include <pushkin/math/vector.hpp>
+
 #include <iostream>
+#include <iomanip>
 
 namespace psst {
 namespace math {
@@ -22,6 +24,8 @@ public:
 public:
     using char_type     = CharT;
     using string_type   = ::std::basic_string<CharT>;
+
+    static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
     vector_facet()
         : facet{}
@@ -69,6 +73,10 @@ public:
     offset() const
     { return offset_; }
 
+    std::size_t
+    col_width() const
+    { return col_width_; }
+
     vector_facet*
     make_pretty(bool val) const
     {
@@ -85,6 +93,14 @@ public:
         fct->end_ = end;
         return fct;
     }
+
+    vector_facet*
+    set_col_width(std::size_t w) const
+    {
+        vector_facet* fct = new vector_facet{*this};
+        fct->col_width_ = w;
+        return fct;
+    }
 private:
     bool pretty_            = false;
     char_type start_        = '{';
@@ -93,6 +109,8 @@ private:
     char_type separator_    = ' ';
     string_type row_sep_    = "\n";
     string_type offset_     = "  ";
+
+    std::size_t col_width_  = npos;
 };
 
 template < typename CharT >
@@ -183,9 +201,7 @@ struct basic_set_braces {
     using char_type = CharT;
 
     basic_set_braces(char_type start, char_type end)
-        : start_{start}, end_{end}
-    {
-    }
+        : start_{start}, end_{end} {}
 
     void
     apply(::std::basic_ostream<CharT>& os) const
@@ -198,15 +214,43 @@ private:
     char_type end_;
 };
 
-template < typename CharT >
+using set_braces = basic_set_braces<char>;
+
+struct set_col_width {
+    set_col_width(std::size_t col_w) : col_width_{col_w} {}
+
+    template < typename CharT >
+    void
+    apply(std::basic_ostream<CharT>& os) const
+    {
+        auto const& fct = get_facet(os);
+        add_facet(os, fct.set_col_width(col_width_));
+    }
+private:
+    std::size_t col_width_;
+};
+
+
+template <typename T, typename CharT, typename = utils::void_t<>>
+struct is_omanip : std::false_type {};
+template <typename T, typename CharT>
+struct is_omanip<T, CharT,
+    utils::void_t<
+      decltype(std::declval<T const&>().apply(std::declval<std::basic_ostream<CharT>&>())) >> : std::true_type {};
+template <typename T, typename CharT>
+using is_omanip_t = typename is_omanip<T, CharT>::type;
+template <typename T, typename CharT>
+constexpr bool is_omanip_v = is_omanip_t<T, CharT>::value;
+template <typename T, typename CharT>
+using enable_for_omanip = std::enable_if_t<is_omanip_v<T, CharT>>;
+
+template < typename CharT, typename T, typename = enable_for_omanip<T, CharT> >
 ::std::basic_ostream<CharT>&
-operator << (::std::basic_ostream<CharT>& os, basic_set_braces<CharT> const& v)
+operator << (::std::basic_ostream<CharT>& os, T const& v)
 {
     v.apply(os);
     return os;
 }
-
-using set_braces = basic_set_braces<char>;
 
 }  /* namespace io */
 
@@ -225,6 +269,10 @@ struct vector_output {
         os << fct.delim();
         if (fct.pretty()) {
             os << fct.separator();
+            if (fct.col_width() != io::vector_facet<char>::npos) {
+                os << std::setw(fct.col_width()) << std::setfill(' ')
+                   << std::setprecision(fct.col_width() - 2);
+            }
         }
         os << get<N>(v);
     }
@@ -235,6 +283,13 @@ struct vector_output<0, Vector> {
     static void
     output(std::ostream& os, Vector const& v)
     {
+      auto const& fct = io::get_facet(os);
+      if (fct.pretty()) {
+          if (fct.col_width() != io::vector_facet<char>::npos) {
+              os << std::setw(fct.col_width()) << std::setfill(' ')
+                 << std::setprecision(fct.col_width() - 2);
+          }
+      }
         os << get<0>(v);
     }
 };

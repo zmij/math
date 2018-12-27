@@ -25,6 +25,7 @@ endif()
 
 option(PSST_MATH_BUILD_TESTS "Build tests for ${lib_name} library" ON)
 option(PSST_MATH_BUILD_BENCHMARKS "Build benchmarks for ${lib_name} library" ON)
+option(PSST_MATH_BUILD_EXAMPLES "Build examples for ${lib_name} library" ON)
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
@@ -64,4 +65,8 @@ endif()
 if (PSST_MATH_BUILD_BENCHMARKS)
     enable_testing()
     add_subdirectory(benchmark)
+endif()
+
+if (PSST_MATH_BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
