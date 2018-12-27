@@ -5,14 +5,13 @@
  *      Author: zmij
  */
 
-#include <benchmark/benchmark.h>
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/matrix.hpp>
-
-#include <pushkin/math/vector_io.hpp>
-#include <pushkin/math/matrix_io.hpp>
-
 #include "make_test_data.hpp"
+#include <pushkin/math/matrix.hpp>
+#include <pushkin/math/matrix_io.hpp>
+#include <pushkin/math/vector.hpp>
+#include <pushkin/math/vector_io.hpp>
+
+#include <benchmark/benchmark.h>
 
 namespace psst {
 namespace math {
@@ -21,155 +20,155 @@ namespace bench {
 //----------------------------------------------------------------------------
 //  Benchmarks
 //----------------------------------------------------------------------------
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixEq(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
-        Matrix m2 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
+        Matrix m2
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 == m2);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixCmp(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
-        Matrix m2 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
+        Matrix m2
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 < m2);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixAdd(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 += m1);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixSub(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 -= m1);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixNeg(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 = -m1);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixScalarMul(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 *= 100500);
     }
     state.SetComplexityN(traits_type::size);
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixScalarDiv(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1 /= 100500);
     }
     state.SetComplexityN(traits_type::size);
 }
 
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixTranspose(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
     while (state.KeepRunning()) {
-        Matrix m1 = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+        Matrix m1
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         benchmark::DoNotOptimize(m1.transpose());
     }
     state.SetComplexityN(traits_type::size);
 }
 
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixColMultiply(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
-    while(state.KeepRunning()) {
-        Matrix m = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+    while (state.KeepRunning()) {
+        Matrix m
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         auto v = make_test_vector<typename traits_type::value_type>(
-                dimension_count<traits_type::rows>{});
+            dimension_count<traits_type::rows>{});
 
         benchmark::DoNotOptimize(m * v);
     }
 }
-template < typename Matrix >
+template <typename Matrix>
 void
 MatrixRowMultiply(benchmark::State& state)
 {
     using traits_type = matrix_traits<Matrix>;
-    while(state.KeepRunning()) {
-        Matrix m = make_test_matrix<typename traits_type::value_type>(
-                typename traits_type::size_type{});
+    while (state.KeepRunning()) {
+        Matrix m
+            = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
         auto v = make_test_vector<typename traits_type::value_type>(
-                dimension_count<traits_type::cols>{});
+            dimension_count<traits_type::cols>{});
 
         benchmark::DoNotOptimize(v * m);
     }
 }
 
-template < typename LMatrix, typename RMatrix = LMatrix >
+template <typename LMatrix, typename RMatrix = LMatrix>
 void
 MatrixMultiply(benchmark::State& state)
 {
-    using left_traits = matrix_traits<LMatrix>;
+    using left_traits  = matrix_traits<LMatrix>;
     using right_traits = matrix_traits<RMatrix>;
     while (state.KeepRunning()) {
-        LMatrix lhs = make_test_matrix<typename left_traits::value_type>(
-                typename left_traits::size_type{});
+        LMatrix lhs
+            = make_test_matrix<typename left_traits::value_type>(typename left_traits::size_type{});
         RMatrix rhs = make_test_matrix<typename right_traits::value_type>(
-                typename right_traits::size_type{});
+            typename right_traits::size_type{});
         benchmark::DoNotOptimize(lhs * rhs);
     }
     state.SetComplexityN(left_traits::size * right_traits::size);
 }
 
-
 //----------------------------------------------------------------------------
+// clang-format off
 BENCHMARK_TEMPLATE(MatrixEq,                    matrix<float,   3, 3>)->Complexity();
 BENCHMARK_TEMPLATE(MatrixEq,                    matrix<double,  3, 3>)->Complexity();
 BENCHMARK_TEMPLATE(MatrixCmp,                   matrix<float,   3, 3>)->Complexity();
@@ -266,9 +265,8 @@ BENCHMARK_TEMPLATE(MatrixTranspose,             matrix<float,   10, 10>)->Comple
 BENCHMARK_TEMPLATE(MatrixColMultiply,           matrix<float,   10, 10>)->Complexity();
 BENCHMARK_TEMPLATE(MatrixRowMultiply,           matrix<float,   10, 10>)->Complexity();
 BENCHMARK_TEMPLATE(MatrixMultiply,              matrix<float,   10, 10>)->Complexity();
+// clang-format on
 
-
-}  /* namespace bench */
-}  /* namespace math */
-}  /* namespace psst */
-
+} /* namespace bench */
+} /* namespace math */
+} /* namespace psst */

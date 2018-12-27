@@ -22,40 +22,49 @@ inline namespace s {
 template <typename Expression, typename Result>
 struct scalar_expression {
     static_assert(!std::is_reference<Result>{},
-          "Result type for a scalar expression cannot be a reference");
-    using expression_type     = Expression;
-    using result_type         = Result;
-    using traits              = value_traits_t<result_type>;
-    using value_type          = typename traits::type;
-    using value_tag           = typename traits::value_tag;
+                  "Result type for a scalar expression cannot be a reference");
+    using expression_type = Expression;
+    using result_type     = Result;
+    using traits          = value_traits_t<result_type>;
+    using value_type      = typename traits::type;
+    using value_tag       = typename traits::value_tag;
 
     constexpr value_type
-    value() const { return rebind().value(); }
+    value() const
+    {
+        return rebind().value();
+    }
     constexpr operator value_type() const { return this->value(); }
 
     constexpr operator expression_type const&() const& { return rebind(); }
+
 private:
     constexpr expression_type const&
-    rebind() const& { return static_cast<expression_type const&>(*this); }
+    rebind() const&
+    {
+        return static_cast<expression_type const&>(*this);
+    }
     constexpr expression_type&&
-    rebind() && { return static_cast<expression_type&&>(*this); }
+    rebind() &&
+    {
+        return static_cast<expression_type&&>(*this);
+    }
 };
 
 template <template <typename> class Expression, typename Arg,
-          typename Result = scalar_result_t<Arg> >
+          typename Result = scalar_result_t<Arg>>
 using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
-          typename Result = scalar_expression_result_t<LHS, RHS> >
+          typename Result = scalar_expression_result_t<LHS, RHS>>
 using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
 
 //----------------------------------------------------------------------------
-template < typename T >
-struct scalar_constant
-      : scalar_expression< scalar_constant<T>, std::decay_t<T> > {
+template <typename T>
+struct scalar_constant : scalar_expression<scalar_constant<T>, std::decay_t<T>> {
     static_assert(is_scalar_v<T>, "Can use scalar const only with scalar values");
     static_assert(!is_expression_v<T>, "Can use scalar const only with scalar values");
-    using base_type       = scalar_expression< scalar_constant<T>, std::decay_t<T> >;
-    using value_type      = typename base_type::value_type;
+    using base_type  = scalar_expression<scalar_constant<T>, std::decay_t<T>>;
+    using value_type = typename base_type::value_type;
 
     scalar_constant(value_type const& arg) : arg_{arg} {}
     constexpr value_type
@@ -63,6 +72,7 @@ struct scalar_constant
     {
         return this->arg_;
     }
+
 private:
     value_type arg_;
 };
@@ -76,59 +86,50 @@ make_scalar_constant(T&& v)
 
 namespace detail {
 
-template < template< typename, typename > class ExpressionType,
-            typename LHS, typename RHS>
+template <template <typename, typename> class ExpressionType, typename LHS, typename RHS>
 constexpr auto
 wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 {
     static_assert(is_expression_v<LHS> || is_expression_v<RHS>,
-          "At least one of the arguments to a binary expression must be an expression");
+                  "At least one of the arguments to a binary expression must be an expression");
     if constexpr (is_expression_v<LHS> && is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType>(
-            std::forward<LHS>(lhs),
-            std::forward<RHS>(rhs));
+        return make_binary_expression<ExpressionType>(std::forward<LHS>(lhs),
+                                                      std::forward<RHS>(rhs));
     } else if constexpr (is_expression_v<LHS>) {
         return make_binary_expression<ExpressionType>(
-            std::forward<LHS>(lhs),
-            scalar_constant<std::decay_t<RHS>>{ std::forward<RHS>(rhs) });
+            std::forward<LHS>(lhs), scalar_constant<std::decay_t<RHS>>{std::forward<RHS>(rhs)});
     } else if constexpr (is_expression_v<RHS>) {
         return make_binary_expression<ExpressionType>(
-            scalar_constant<std::decay_t<LHS>>{ std::forward<LHS>(lhs) },
-            std::forward<RHS>(rhs));
+            scalar_constant<std::decay_t<LHS>>{std::forward<LHS>(lhs)}, std::forward<RHS>(rhs));
     }
 }
 
-
-template < template< typename, typename, typename > class ExpressionType,
-    typename Result, typename LHS, typename RHS>
+template <template <typename, typename, typename> class ExpressionType, typename Result,
+          typename LHS, typename RHS>
 constexpr auto
 wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 {
     static_assert(is_expression_v<LHS> || is_expression_v<RHS>,
-          "At least one of the arguments to a binary expression must be an expression");
+                  "At least one of the arguments to a binary expression must be an expression");
     if constexpr (is_expression_v<LHS> && is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType, Result>(
-            std::forward<LHS>(lhs),
-            std::forward<RHS>(rhs));
+        return make_binary_expression<ExpressionType, Result>(std::forward<LHS>(lhs),
+                                                              std::forward<RHS>(rhs));
     } else if constexpr (is_expression_v<LHS>) {
         return make_binary_expression<ExpressionType, Result>(
-            std::forward<LHS>(lhs),
-            scalar_constant<std::decay_t<RHS>>{ std::forward<RHS>(rhs) });
+            std::forward<LHS>(lhs), scalar_constant<std::decay_t<RHS>>{std::forward<RHS>(rhs)});
     } else if constexpr (is_expression_v<RHS>) {
         return make_binary_expression<ExpressionType, Result>(
-            scalar_constant<std::decay_t<LHS>>{ std::forward<LHS>(lhs) },
-            std::forward<RHS>(rhs));
+            scalar_constant<std::decay_t<LHS>>{std::forward<LHS>(lhs)}, std::forward<RHS>(rhs));
     }
 }
 
-}  // namespace detail
+}    // namespace detail
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Inverse expression result */
-template < typename Expression >
-struct not_ : unary_scalar_expression<not_, Expression, bool>,
-              unary_expression<Expression> {
+template <typename Expression>
+struct not_ : unary_scalar_expression<not_, Expression, bool>, unary_expression<Expression> {
     static_assert(is_scalar_v<Expression>, "Can apply not_ only to scalar expressions");
     using expression_base = unary_expression<Expression>;
 
@@ -136,14 +137,14 @@ struct not_ : unary_scalar_expression<not_, Expression, bool>,
 
     constexpr bool
     value() const
-    { return !this->arg_.value(); }
+    {
+        return !this->arg_.value();
+    }
 };
 
-template < typename Expression,
-    typename = std::enable_if_t<
-                    is_scalar_expression_v<std::decay_t<Expression>>>>
-constexpr auto
-operator ! (Expression&& exp)
+template <typename Expression,
+          typename = std::enable_if_t<is_scalar_expression_v<std::decay_t<Expression>>>>
+constexpr auto operator!(Expression&& exp)
 {
     return make_unary_expression<not_>(std::forward<Expression>(exp));
 }
@@ -152,13 +153,12 @@ operator ! (Expression&& exp)
 //----------------------------------------------------------------------------
 //@{
 /** @name Sum two scalar expressions */
-template < typename LHS, typename RHS >
-struct scalar_value_sum
-        : binary_scalar_expression<scalar_value_sum, LHS, RHS>,
-          binary_expression<LHS, RHS> {
-    using base_type         = binary_scalar_expression<scalar_value_sum, LHS, RHS>;
-    using value_type        = typename base_type::value_type;
-    using expression_base   = binary_expression<LHS, RHS>;
+template <typename LHS, typename RHS>
+struct scalar_value_sum : binary_scalar_expression<scalar_value_sum, LHS, RHS>,
+                          binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_value_sum, LHS, RHS>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = binary_expression<LHS, RHS>;
 
     using expression_base::expression_base;
 
@@ -169,30 +169,28 @@ struct scalar_value_sum
     }
 };
 
-template <typename LHS, typename RHS,
-          typename = std::enable_if_t<
-            is_scalar_v<LHS> && is_scalar_v<RHS> &&
-            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
-          >>
+template <
+    typename LHS, typename RHS,
+    typename = std::enable_if_t<
+        is_scalar_v<
+            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
 constexpr auto
-operator + (LHS&& lhs, RHS&& rhs)
+operator+(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_sum>(
-            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
-        );
+    return detail::wrap_non_expression_args<scalar_value_sum>(std::forward<LHS>(lhs),
+                                                              std::forward<RHS>(rhs));
 }
 //@}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Subtract one scalar expression from another */
-template < typename LHS, typename RHS >
-struct scalar_value_diff
-        : binary_scalar_expression<scalar_value_diff, LHS, RHS>,
-          binary_expression<LHS, RHS> {
-    using base_type         = binary_scalar_expression<scalar_value_diff, LHS, RHS>;
-    using value_type        = typename base_type::value_type;
-    using expression_base   = binary_expression<LHS, RHS>;
+template <typename LHS, typename RHS>
+struct scalar_value_diff : binary_scalar_expression<scalar_value_diff, LHS, RHS>,
+                           binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_value_diff, LHS, RHS>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = binary_expression<LHS, RHS>;
 
     using expression_base::expression_base;
 
@@ -203,30 +201,28 @@ struct scalar_value_diff
     }
 };
 
-template <typename LHS, typename RHS,
-          typename = std::enable_if_t<
-            is_scalar_v<LHS> && is_scalar_v<RHS> &&
-            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
-          >>
+template <
+    typename LHS, typename RHS,
+    typename = std::enable_if_t<
+        is_scalar_v<
+            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
 constexpr auto
-operator - (LHS&& lhs, RHS&& rhs)
+operator-(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_diff>(
-            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
-        );
+    return detail::wrap_non_expression_args<scalar_value_diff>(std::forward<LHS>(lhs),
+                                                               std::forward<RHS>(rhs));
 }
 //@}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Multiply two scalar expressions */
-template < typename LHS, typename RHS >
-struct scalar_value_multiply
-        : binary_scalar_expression<scalar_value_multiply, LHS, RHS>,
-          binary_expression<LHS, RHS> {
-    using base_type         = binary_scalar_expression<scalar_value_multiply, LHS, RHS>;
+template <typename LHS, typename RHS>
+struct scalar_value_multiply : binary_scalar_expression<scalar_value_multiply, LHS, RHS>,
+                               binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_value_multiply, LHS, RHS>;
     using value_type      = typename base_type::value_type;
-    using expression_base   = binary_expression<LHS, RHS>;
+    using expression_base = binary_expression<LHS, RHS>;
 
     using expression_base::expression_base;
 
@@ -237,30 +233,27 @@ struct scalar_value_multiply
     }
 };
 
-template <typename LHS, typename RHS,
-          typename = std::enable_if_t<
-            is_scalar_v<LHS> && is_scalar_v<RHS> &&
-            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
-          >>
-constexpr auto
-operator * (LHS&& lhs, RHS&& rhs)
+template <
+    typename LHS, typename RHS,
+    typename = std::enable_if_t<
+        is_scalar_v<
+            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
+constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_multiply>(
-            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
-        );
+    return detail::wrap_non_expression_args<scalar_value_multiply>(std::forward<LHS>(lhs),
+                                                                   std::forward<RHS>(rhs));
 }
 //@}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Divide one scalar expression by another */
-template < typename LHS, typename RHS >
-struct scalar_value_divide
-        : binary_scalar_expression<scalar_value_divide, LHS, RHS>,
-          binary_expression<LHS, RHS> {
-    using base_type         = binary_scalar_expression<scalar_value_divide, LHS, RHS>;
-    using value_type        = typename base_type::value_type;
-    using expression_base   = binary_expression<LHS, RHS>;
+template <typename LHS, typename RHS>
+struct scalar_value_divide : binary_scalar_expression<scalar_value_divide, LHS, RHS>,
+                             binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_value_divide, LHS, RHS>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = binary_expression<LHS, RHS>;
 
     using expression_base::expression_base;
 
@@ -271,53 +264,49 @@ struct scalar_value_divide
     }
 };
 
-template <typename LHS, typename RHS,
-          typename = std::enable_if_t<
-            is_scalar_v<LHS> && is_scalar_v<RHS> &&
-            (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)
-          >>
+template <
+    typename LHS, typename RHS,
+    typename = std::enable_if_t<
+        is_scalar_v<
+            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
 constexpr auto
-operator / (LHS&& lhs, RHS&& rhs)
+operator/(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_divide>(
-            std::forward<LHS>(lhs), std::forward<RHS>(rhs)
-        );
+    return detail::wrap_non_expression_args<scalar_value_divide>(std::forward<LHS>(lhs),
+                                                                 std::forward<RHS>(rhs));
 }
 //@}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Square root expression */
-template < typename Expression >
-struct square_root : unary_scalar_expression<square_root, Expression >,
+template <typename Expression>
+struct square_root : unary_scalar_expression<square_root, Expression>,
                      unary_expression<Expression> {
-    static_assert(is_scalar_v<Expression>,
-          "Can apply square_root only to scalar expressions");
-    using base_type         = unary_scalar_expression<square_root, Expression >;
-    using value_type        = typename base_type::value_type;
-    using expression_base   = unary_expression<Expression>;
+    static_assert(is_scalar_v<Expression>, "Can apply square_root only to scalar expressions");
+    using base_type       = unary_scalar_expression<square_root, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
 
     using expression_base::expression_base;
 
     constexpr value_type
     value() const
     {
-        using ::std::sqrt;
+        using std::sqrt;
         if (value_cache_ == nval) {
             value_cache_ = sqrt(this->arg_.value());
         }
         return value_cache_;
     }
+
 private:
     // TODO Optional
-    static constexpr value_type nval = std::numeric_limits<value_type>::min();
-    mutable value_type value_cache_ = nval;
+    static constexpr value_type nval         = std::numeric_limits<value_type>::min();
+    mutable value_type          value_cache_ = nval;
 };
 
-
-template <typename Expression,
-        typename = std::enable_if_t<
-            is_scalar_expression_v<Expression>>>
+template <typename Expression, typename = std::enable_if_t<is_scalar_expression_v<Expression>>>
 constexpr auto
 sqrt(Expression&& ex)
 {
@@ -325,10 +314,10 @@ sqrt(Expression&& ex)
 }
 //@}
 
-}  // namespace s
+}    // namespace s
 
-}  // namespace expr
-}  // namespace math
-}  // namespace psst
+}    // namespace expr
+}    // namespace math
+}    // namespace psst
 
 #endif /* PUSHKIN_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_ */

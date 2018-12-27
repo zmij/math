@@ -13,11 +13,10 @@
 namespace psst {
 namespace math {
 
-template < typename T, size_t RC, size_t CC, typename Axes = axes::xyzw >
+template <typename T, size_t RC, size_t CC, typename Axes = axes::xyzw>
 struct matrix;
 
-
-}  /* namespace math */
-}  /* namespace psst */
+} /* namespace math */
+} /* namespace psst */
 
 #endif /* INCLUDE_PUSHKIN_MATH_MATRIX_FWD_HPP_ */

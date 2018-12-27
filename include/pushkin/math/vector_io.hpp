@@ -10,31 +10,27 @@
 
 #include <pushkin/math/vector.hpp>
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 namespace psst {
 namespace math {
 namespace io {
 
-template < typename CharT >
-class vector_facet : public ::std::locale::facet {
+template <typename CharT>
+class vector_facet : public std::locale::facet {
 public:
-    static ::std::locale::id id;
+    static std::locale::id id;
+
 public:
-    using char_type     = CharT;
-    using string_type   = ::std::basic_string<CharT>;
+    using char_type   = CharT;
+    using string_type = std::basic_string<CharT>;
 
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
+
 public:
-    vector_facet()
-        : facet{}
-    {};
-    vector_facet(char_type start, char_type end)
-        : facet{},
-          start_{start},
-          end_{end}
-    {};
+    vector_facet() : facet{} {};
+    vector_facet(char_type start, char_type end) : facet{}, start_{start}, end_{end} {};
 
     vector_facet(vector_facet const& rhs)
         : facet{},
@@ -49,39 +45,55 @@ public:
 
     bool
     pretty() const
-    { return pretty_; }
+    {
+        return pretty_;
+    }
 
     char_type
     start() const
-    { return start_; }
+    {
+        return start_;
+    }
     char_type
     end() const
-    { return end_; }
+    {
+        return end_;
+    }
 
     char_type
     delim() const
-    { return delim_; }
+    {
+        return delim_;
+    }
 
     char_type
     separator() const
-    { return separator_; }
+    {
+        return separator_;
+    }
 
     string_type const&
     row_separator() const
-    { return row_sep_; }
+    {
+        return row_sep_;
+    }
     string_type const&
     offset() const
-    { return offset_; }
+    {
+        return offset_;
+    }
 
     std::size_t
     col_width() const
-    { return col_width_; }
+    {
+        return col_width_;
+    }
 
     vector_facet*
     make_pretty(bool val) const
     {
         vector_facet* fct = new vector_facet{*this};
-        fct->pretty_ = val;
+        fct->pretty_      = val;
         return fct;
     }
 
@@ -89,8 +101,8 @@ public:
     set_braces(char_type start, char_type end) const
     {
         vector_facet* fct = new vector_facet{*this};
-        fct->start_ = start;
-        fct->end_ = end;
+        fct->start_       = start;
+        fct->end_         = end;
         return fct;
     }
 
@@ -98,77 +110,78 @@ public:
     set_col_width(std::size_t w) const
     {
         vector_facet* fct = new vector_facet{*this};
-        fct->col_width_ = w;
+        fct->col_width_   = w;
         return fct;
     }
-private:
-    bool pretty_            = false;
-    char_type start_        = '{';
-    char_type end_          = '}';
-    char_type delim_        = ',';
-    char_type separator_    = ' ';
-    string_type row_sep_    = "\n";
-    string_type offset_     = "  ";
 
-    std::size_t col_width_  = npos;
+private:
+    bool        pretty_    = false;
+    char_type   start_     = '{';
+    char_type   end_       = '}';
+    char_type   delim_     = ',';
+    char_type   separator_ = ' ';
+    string_type row_sep_   = "\n";
+    string_type offset_    = "  ";
+
+    std::size_t col_width_ = npos;
 };
 
-template < typename CharT >
-::std::locale::id vector_facet<CharT>::id;
+template <typename CharT>
+std::locale::id vector_facet<CharT>::id;
 
-template < typename CharT >
+template <typename CharT>
 vector_facet<CharT> const&
-get_facet(::std::basic_ostream<CharT>& os)
+get_facet(std::basic_ostream<CharT>& os)
 {
     using facet_type = vector_facet<CharT>;
-    ::std::locale loc = os.getloc();
-    if (!::std::has_facet<facet_type>(loc)) {
-        os.imbue(::std::locale(loc, new facet_type{}));
+    std::locale loc  = os.getloc();
+    if (!std::has_facet<facet_type>(loc)) {
+        os.imbue(std::locale(loc, new facet_type{}));
         loc = os.getloc();
     }
-    return ::std::use_facet< facet_type >(loc);
+    return std::use_facet<facet_type>(loc);
 }
 
-template < typename CharT >
+template <typename CharT>
 void
-add_facet(::std::basic_ostream<CharT>& os, vector_facet<CharT>* fct)
+add_facet(std::basic_ostream<CharT>& os, vector_facet<CharT>* fct)
 {
-    ::std::locale loc = os.getloc();
-    os.imbue(::std::locale(loc, fct));
+    std::locale loc = os.getloc();
+    os.imbue(std::locale(loc, fct));
 }
 
-template < typename CharT >
+template <typename CharT>
 vector_facet<CharT> const&
-get_facet(::std::basic_istream<CharT>& is)
+get_facet(std::basic_istream<CharT>& is)
 {
     using facet_type = vector_facet<CharT>;
-    ::std::locale loc = is.getloc();
-    if (!::std::has_facet<facet_type>(loc)) {
-        is.imbue(::std::locale(loc, new facet_type{}));
+    std::locale loc  = is.getloc();
+    if (!std::has_facet<facet_type>(loc)) {
+        is.imbue(std::locale(loc, new facet_type{}));
         loc = is.getloc();
     }
-    return ::std::use_facet< facet_type >(loc);
+    return std::use_facet<facet_type>(loc);
 }
 
-template < typename CharT >
+template <typename CharT>
 void
-add_facet(::std::basic_istream<CharT>& is, vector_facet<CharT>* fct)
+add_facet(std::basic_istream<CharT>& is, vector_facet<CharT>* fct)
 {
-    ::std::locale loc = is.getloc();
-    is.imbue(::std::locale(loc, fct));
+    std::locale loc = is.getloc();
+    is.imbue(std::locale(loc, fct));
 }
 
 /**
  * Iostream manipulator to turn pretty-printing on
  * @code
- * ::std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
+ * std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
  * @endcode
  * @param os
  * @return
  */
-template < typename CharT >
-::std::basic_ostream<CharT>&
-pretty(::std::basic_ostream<CharT>& os)
+template <typename CharT>
+std::basic_ostream<CharT>&
+pretty(std::basic_ostream<CharT>& os)
 {
     auto const& fct = get_facet(os);
     if (!fct.pretty()) {
@@ -180,14 +193,14 @@ pretty(::std::basic_ostream<CharT>& os)
 /**
  * Iostream manipulator to turn pretty-printing off
  * @code
- * ::std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
+ * std::cout << pretty << vector3d{ 0, 1, 2 } << ugly;
  * @endcode
  * @param os
  * @return
  */
-template < typename CharT >
-::std::basic_ostream<CharT>&
-ugly(::std::basic_ostream<CharT>& os)
+template <typename CharT>
+std::basic_ostream<CharT>&
+ugly(std::basic_ostream<CharT>& os)
 {
     auto const& fct = get_facet(os);
     if (fct.pretty()) {
@@ -196,19 +209,19 @@ ugly(::std::basic_ostream<CharT>& os)
     return os;
 }
 
-template < typename CharT >
+template <typename CharT>
 struct basic_set_braces {
     using char_type = CharT;
 
-    basic_set_braces(char_type start, char_type end)
-        : start_{start}, end_{end} {}
+    basic_set_braces(char_type start, char_type end) : start_{start}, end_{end} {}
 
     void
-    apply(::std::basic_ostream<CharT>& os) const
+    apply(std::basic_ostream<CharT>& os) const
     {
         auto const& fct = get_facet(os);
         add_facet(os, fct.set_braces(start_, end_));
     }
+
 private:
     char_type start_;
     char_type end_;
@@ -219,24 +232,24 @@ using set_braces = basic_set_braces<char>;
 struct set_col_width {
     set_col_width(std::size_t col_w) : col_width_{col_w} {}
 
-    template < typename CharT >
+    template <typename CharT>
     void
     apply(std::basic_ostream<CharT>& os) const
     {
         auto const& fct = get_facet(os);
         add_facet(os, fct.set_col_width(col_width_));
     }
+
 private:
     std::size_t col_width_;
 };
-
 
 template <typename T, typename CharT, typename = utils::void_t<>>
 struct is_omanip : std::false_type {};
 template <typename T, typename CharT>
 struct is_omanip<T, CharT,
-    utils::void_t<
-      decltype(std::declval<T const&>().apply(std::declval<std::basic_ostream<CharT>&>())) >> : std::true_type {};
+                 utils::void_t<decltype(std::declval<T const&>().apply(
+                     std::declval<std::basic_ostream<CharT>&>()))>> : std::true_type {};
 template <typename T, typename CharT>
 using is_omanip_t = typename is_omanip<T, CharT>::type;
 template <typename T, typename CharT>
@@ -244,15 +257,15 @@ constexpr bool is_omanip_v = is_omanip_t<T, CharT>::value;
 template <typename T, typename CharT>
 using enable_for_omanip = std::enable_if_t<is_omanip_v<T, CharT>>;
 
-template < typename CharT, typename T, typename = enable_for_omanip<T, CharT> >
-::std::basic_ostream<CharT>&
-operator << (::std::basic_ostream<CharT>& os, T const& v)
+template <typename CharT, typename T, typename = enable_for_omanip<T, CharT>>
+std::basic_ostream<CharT>&
+operator<<(std::basic_ostream<CharT>& os, T const& v)
 {
     v.apply(os);
     return os;
 }
 
-}  /* namespace io */
+} /* namespace io */
 
 namespace expr {
 inline namespace v {
@@ -283,22 +296,22 @@ struct vector_output<0, Vector> {
     static void
     output(std::ostream& os, Vector const& v)
     {
-      auto const& fct = io::get_facet(os);
-      if (fct.pretty()) {
-          if (fct.col_width() != io::vector_facet<char>::npos) {
-              os << std::setw(fct.col_width()) << std::setfill(' ')
-                 << std::setprecision(fct.col_width() - 2);
-          }
-      }
+        auto const& fct = io::get_facet(os);
+        if (fct.pretty()) {
+            if (fct.col_width() != io::vector_facet<char>::npos) {
+                os << std::setw(fct.col_width()) << std::setfill(' ')
+                   << std::setprecision(fct.col_width() - 2);
+            }
+        }
         os << get<0>(v);
     }
 };
 
-}  // namespace detail
+}    // namespace detail
 
-template < typename Expression, typename Result >
+template <typename Expression, typename Result>
 std::ostream&
-operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
+operator<<(std::ostream& os, vector_expression<Expression, Result> const& v)
 {
     using expression_type = vector_expression<Expression, Result>;
     std::ostream::sentry s(os);
@@ -315,9 +328,9 @@ operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
     return os;
 }
 
-}  // namespace v
+}    // namespace v
 
-}  // namespace expr
+}    // namespace expr
 
 namespace detail {
 
@@ -330,10 +343,10 @@ struct data_input {
         data_input<N - 1, Vector>::input(is, v);
         char c = '\0';
         if (!(is >> c))
-          return;
+            return;
         if (c != fct.delim()) {
-          is.setstate(std::ios::failbit);
-          return;
+            is.setstate(std::ios::failbit);
+            return;
         }
         is >> get<N>(v);
     }
@@ -348,16 +361,16 @@ struct data_input<0, Vector> {
     }
 };
 
-}  // namespace detail
+}    // namespace detail
 
-template < typename T, std::size_t Size, typename Axes >
+template <typename T, std::size_t Size, typename Axes>
 std::istream&
-operator >> (std::istream& is, vector<T, Size, Axes>& v)
+operator>>(std::istream& is, vector<T, Size, Axes>& v)
 {
     std::istream::sentry s(is);
     if (s) {
         auto const& fct = io::get_facet(is);
-        char c = '\0';
+        char        c   = '\0';
         if (!(is >> c)) {
             return is;
         }
@@ -377,7 +390,7 @@ operator >> (std::istream& is, vector<T, Size, Axes>& v)
     return is;
 }
 
-} // namespace math
-}  /* namespace psst */
+}    // namespace math
+} /* namespace psst */
 
 #endif /* PUSHKIN_MATH_VECTOR_IO_HPP_ */

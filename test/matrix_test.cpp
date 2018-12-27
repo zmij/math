@@ -5,14 +5,13 @@
  *      Author: ser-fedorov
  */
 
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/matrix.hpp>
-
 #include "test_printing.hpp"
-
-#include <iostream>
+#include <pushkin/math/matrix.hpp>
+#include <pushkin/math/vector.hpp>
 
 #include <gtest/gtest.h>
+
+#include <iostream>
 
 namespace psst {
 namespace math {
@@ -25,19 +24,21 @@ using matrix3x3 = matrix<double, 3, 3>;
 TEST(Matrix, ConstructDefault)
 {
     matrix3x3 m1;
-    EXPECT_EQ(sizeof(double)*9, sizeof(m1));
-    for (auto const& v: m1) {
+    EXPECT_EQ(sizeof(double) * 9, sizeof(m1));
+    for (auto const& v : m1) {
         EXPECT_EQ(0, v);
     }
 }
 
 TEST(Matrix, ConstructInitList)
 {
+    // clang-format off
     matrix3x3 m1 {
         { 11, 12, 13 },
         { 21, 22, 23 },
         { 31, 32, 33 }
     };
+    // clang-format on
 
     EXPECT_EQ(11, m1[0][0]);
     EXPECT_EQ(12, m1[0][1]);
@@ -72,11 +73,13 @@ TEST(Matrix, ConstructInitList)
 
 TEST(Matrix, ConstructPlainArray)
 {
+    // clang-format off
     double vals[]{
         11, 12, 13,
         21, 22, 23,
         31, 32, 33
     };
+    // clang-format on
 
     matrix3x3 m1{vals};
     EXPECT_EQ(11, m1[0][0]);
@@ -94,11 +97,13 @@ TEST(Matrix, ConstructPlainArray)
 
 TEST(Matrix, Construct2DimArray)
 {
+    // clang-format off
     double vals[][3]{
         { 11, 12, 13 },
         { 21, 22, 23 },
         { 31, 32, 33 }
     };
+    // clang-format on
     matrix3x3 m1{vals};
     EXPECT_EQ(11, m1[0][0]);
     EXPECT_EQ(12, m1[0][1]);
@@ -131,11 +136,13 @@ TEST(Matrix, ConstructSingleValue)
 
 TEST(Matrix, IO)
 {
+    // clang-format off
     matrix3x3 m1 {
        { 1.1, 1.2, 1.3 },
        { 2.1, 2.2, 3.3 },
        { 3.1, 3.2, 3.3 }
     };
+    // clang-format on
 
     matrix3x3 m2;
 
@@ -159,13 +166,15 @@ TEST(Matrix, IO)
 
 TEST(Matrix, Iteration)
 {
+    // clang-format off
     matrix3x3 m1 {
         { 11, 12, 13 },
         { 21, 22, 23 },
         { 31, 32, 33 }
     };
+    // clang-format on
     auto it = m1.begin();
-    auto e = m1.end();
+    auto e  = m1.end();
     for (int i = 1; i < 4 && it != e; ++i) {
         for (int j = 1; j < 4 && it != e; ++j) {
             EXPECT_EQ(i * 10 + j, *it);
@@ -176,6 +185,7 @@ TEST(Matrix, Iteration)
 
 TEST(Matrix, Add)
 {
+    // clang-format off
     matrix3x3 m1{
         { 11, 12, 13 },
         { 21, 22, 23 },
@@ -192,11 +202,13 @@ TEST(Matrix, Add)
         { 42, 44, 46 },
         { 62, 64, 66 }
     }), m1 + m2);
+    // clang-format on
     EXPECT_EQ(matrix3x3{}, m1 - m2);
 }
 
 TEST(Matrix, ScalarMultiply)
 {
+    // clang-format off
     matrix3x3 initial{
         { 11, 12, 13 },
         { 21, 22, 23 },
@@ -207,8 +219,8 @@ TEST(Matrix, ScalarMultiply)
         { 42, 44, 46 },
         { 62, 64, 66 }
     };
-    EXPECT_EQ(expected, initial * 2)
-        << "Not equal " << expected << " and " << initial * 2;
+    // clang-format on
+    EXPECT_EQ(expected, initial * 2) << "Not equal " << expected << " and " << initial * 2;
     EXPECT_EQ(0, cmp(expected, initial * 2));
     EXPECT_EQ(0, cmp(expr::row<0>(expected), expr::row<0>(initial * 2)))
         << "Not equal " << expr::row<0>(expected) << " and " << expr::row<0>(initial * 2);
@@ -217,19 +229,20 @@ TEST(Matrix, ScalarMultiply)
     EXPECT_EQ(0, cmp(expr::row<2>(expected), expr::row<2>(initial * 2)))
         << "Not equal " << expr::row<2>(expected) << " and " << expr::row<2>(initial * 2);
 
-    EXPECT_EQ(initial, expected / 2)
-        << "Not equal " << initial << " and " << expected / 2;
+    EXPECT_EQ(initial, expected / 2) << "Not equal " << initial << " and " << expected / 2;
     EXPECT_EQ(0, cmp(initial, expected / 2));
 }
 
 TEST(Matrix, VectorMultiply)
 {
+    // clang-format off
     matrix3x3 initial{
         { 11, 12, 13 },
         { 21, 22, 23 },
         { 31, 32, 33 }
     };
-    vector3d expected{ 74, 134, 194 };
+    // clang-format on
+    vector3d expected{74, 134, 194};
     vector3d vec{1, 2, 3};
     EXPECT_EQ(as_col_matrix(expected), initial * vec)
         << "Not equal " << as_col_matrix(expected) << " and " << initial * vec;
@@ -237,6 +250,7 @@ TEST(Matrix, VectorMultiply)
 
 TEST(Matrix, MatrixMultiply)
 {
+    // clang-format off
     matrix3x3 initial{
         { 11, 12, 13 },
         { 21, 22, 23 },
@@ -247,12 +261,14 @@ TEST(Matrix, MatrixMultiply)
         { 1406, 1472, 1538 },
         { 2036, 2132, 2228 }
     };
+    // clang-format on
     auto mul = initial * initial;
     EXPECT_EQ(expected, mul) << "Invalid result " << mul;
 }
 
 TEST(Matrix, RectMatrixAdd)
 {
+    // clang-format off
     matrix<float, 3, 4> initial{
         { 11, 12, 13, 14 },
         { 21, 22, 23, 24 },
@@ -263,9 +279,10 @@ TEST(Matrix, RectMatrixAdd)
         { 42, 44, 46, 48 },
         { 62, 64, 66, 68 }
     };
+    // clang-format on
     EXPECT_EQ(expected, initial + initial);
 }
 
-}  /* namespace test */
-}  /* namespace math */
-}  /* namespace psst */
+} /* namespace test */
+} /* namespace math */
+} /* namespace psst */

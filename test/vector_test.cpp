@@ -5,19 +5,19 @@
  *      Author: zmij
  */
 
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/matrix.hpp>
-
 #include "test_printing.hpp"
+#include <pushkin/math/matrix.hpp>
+#include <pushkin/math/vector.hpp>
 
 #include <gtest/gtest.h>
+
 #include <sstream>
 
 namespace psst {
 namespace math {
 namespace test {
 
-using vector3d = vector<double, 3>;
+using vector3d  = vector<double, 3>;
 using vector3df = vector<float, 3>;
 
 using rgba_col = vector<float, 4, axes::rgba>;
@@ -26,9 +26,9 @@ using argb_col = vector<float, 4, axes::argb>;
 TEST(Scalar, Compare)
 {
     using traits = scalar_value_traits<float>;
-    auto i_val = 42;
-    auto d_val = 42.0;
-    auto ds_val = expr::make_scalar_constant(42.0);
+    auto i_val   = 42;
+    auto d_val   = 42.0;
+    auto ds_val  = expr::make_scalar_constant(42.0);
 
     EXPECT_EQ(i_val, d_val);
     EXPECT_EQ(i_val, ds_val);
@@ -50,17 +50,17 @@ TEST(Scalar, Compare)
 
 TEST(Vector, TypeTraits)
 {
-  EXPECT_TRUE(::std::is_standard_layout<vector3d>::value);
-  EXPECT_TRUE(::std::is_trivially_copyable<vector3d>::value);
-  //EXPECT_TRUE(::std::is_trivially_default_constructible<vector3d>::value);
-  //EXPECT_TRUE(::std::is_trivial<vector3d>::value);
-  EXPECT_TRUE(::std::is_trivially_copy_constructible<vector3d>::value);
-  //EXPECT_TRUE(::std::is_pod<vector3d>::value);
+    EXPECT_TRUE(std::is_standard_layout<vector3d>::value);
+    EXPECT_TRUE(std::is_trivially_copyable<vector3d>::value);
+    // EXPECT_TRUE(std::is_trivially_default_constructible<vector3d>::value);
+    // EXPECT_TRUE(std::is_trivial<vector3d>::value);
+    EXPECT_TRUE(std::is_trivially_copy_constructible<vector3d>::value);
+    // EXPECT_TRUE(std::is_pod<vector3d>::value);
 }
 
 TEST(Vector, ConstructDefault)
 {
-    vector3d v1 {};
+    vector3d v1{};
     EXPECT_EQ(0, v1[0]);
     EXPECT_EQ(0, v1[1]);
     EXPECT_EQ(0, v1[2]);
@@ -70,7 +70,7 @@ TEST(Vector, ConstructDefault)
     EXPECT_EQ(0, v1.y());
     EXPECT_EQ(0, v1.z());
 
-    EXPECT_EQ(sizeof(double)*3, sizeof(v1))
+    EXPECT_EQ(sizeof(double) * 3, sizeof(v1))
         << "Size of vector is equal to sizes of it's components";
 
     vector3d::base_expression_type const& be = v1;
@@ -81,17 +81,16 @@ TEST(Vector, ConstructDefault)
     EXPECT_EQ(0, v2[0]);
     EXPECT_EQ(0, v2[1]);
     EXPECT_EQ(0, v2[2]);
-
 }
 
 TEST(Vector, ConstructSingleValue)
 {
     // Single value
-    vector3d v1 (42);
+    vector3d v1(42);
     EXPECT_EQ(42, v1[0]);
     EXPECT_EQ(42, v1[1]);
     EXPECT_EQ(42, v1[2]);
-    EXPECT_EQ(sizeof(float)*3, sizeof(vector3df))
+    EXPECT_EQ(sizeof(float) * 3, sizeof(vector3df))
         << "Size of vector is equal to sizes of it's components";
 }
 
@@ -159,7 +158,7 @@ TEST(Vector, ConstructRGB)
 
 TEST(Vector, IO)
 {
-    vector3d v1{0.1, 0.2, 0.3, 0.4}, v2{};
+    vector3d              v1{0.1, 0.2, 0.3, 0.4}, v2{};
     std::ostringstream os;
     os << v1;
     std::istringstream is(os.str());
@@ -200,14 +199,14 @@ TEST(Vector, Modify)
 
 TEST(Vector, Add)
 {
-    vector3d v1{2,5,8}, v2{4,6,9};
+    vector3d v1{2, 5, 8}, v2{4, 6, 9};
     {
         vector3d expected{6, 11, 17};
-        auto res = v1 + v2;
+        auto     res = v1 + v2;
         EXPECT_EQ(expected, res) << "Unexpected result " << res << "\n";
     }
     {
-        auto res = v1 - v2;
+        auto     res = v1 - v2;
         vector3d expected{-2, -1, -1};
         EXPECT_EQ(expected, res) << "Unexpected result " << res << "\n";
     }
@@ -215,8 +214,8 @@ TEST(Vector, Add)
 
 TEST(Vector, Multiply)
 {
-    vector3d initial{1,2,3}, expected{5, 10, 15};
-    auto res1 = initial * 5;
+    vector3d initial{1, 2, 3}, expected{5, 10, 15};
+    auto     res1 = initial * 5;
     EXPECT_EQ(expected, res1) << "Unexpected result " << res1 << "\n";
     auto res2 = expected / 5;
     EXPECT_EQ(initial, res2) << "Unexpected result " << res2 << "\n";
@@ -224,7 +223,7 @@ TEST(Vector, Multiply)
 
 TEST(Vector, Magnitude)
 {
-    vector3d v1 {1, 1, 1};
+    vector3d v1{1, 1, 1};
     EXPECT_EQ(3, v1.magnitude_square());
     EXPECT_FALSE(v1.is_unit());
     EXPECT_FALSE(v1.is_zero());
@@ -232,18 +231,19 @@ TEST(Vector, Magnitude)
 
 TEST(Vector, Expression)
 {
-  vector3df v1 {1, 1, 1}, v2 {1, 0, 1}, expected { 2.5, 1, 2.5 };
-  vector3df res = (v1 * 2 + v2 * 3) / 4 * 2;
-  EXPECT_EQ(expected, res);
+    vector3df v1{1, 1, 1}, v2{1, 0, 1}, expected{2.5, 1, 2.5};
+    vector3df res = (v1 * 2 + v2 * 3) / 4 * 2;
+    EXPECT_EQ(expected, res);
 }
 
 TEST(Vector, Normalize)
 {
-    vector3d v1 {10, 0, 0};
+    vector3d v1{10, 0, 0};
     EXPECT_FALSE(v1.is_zero());
     EXPECT_FALSE(v1.is_unit());
     v1.normalize();
-    EXPECT_TRUE(v1.is_unit()) << "Expected magnitude == 1 " << v1 << " mag_sq=" << v1.magnitude_square();
+    EXPECT_TRUE(v1.is_unit()) << "Expected magnitude == 1 " << v1
+                              << " mag_sq=" << v1.magnitude_square();
 }
 
 TEST(Vector, Unit)
@@ -265,7 +265,7 @@ TEST(Vector, Unit)
 TEST(Vector, Iteration)
 {
     vector3d v1{1, 2, 3};
-    int idx = 0;
+    int      idx = 0;
     for (auto v : v1) {
         EXPECT_EQ(idx + 1, v);
         ++idx;
@@ -284,7 +284,7 @@ TEST(Vector, Slerp)
 {
     vector3d v1{1, 0, 0};
     vector3d v2{0, 1, 0};
-    double v = 1 / ::std::sqrt(2);
+    double   v = 1 / std::sqrt(2);
     EXPECT_EQ((vector3d{v, v, 0}), slerp(v1, v2, 0.5))
         << "Unexpected lerp result " << slerp(v1, v2, 0.5);
 }
@@ -294,7 +294,7 @@ TEST(Vector, PolarCvt)
     using vector2d    = vector<double, 2, axes::xyzw>;
     using polar_coord = vector<double, 2, axes::polar>;
 
-    vector2d v{1, 0};
+    vector2d    v{1, 0};
     polar_coord pc{1, 0};
 
     EXPECT_EQ(pc, convert<polar_coord>(v));
@@ -304,8 +304,6 @@ TEST(Vector, PolarCvt)
     EXPECT_EQ(v, pc.convert<axes::xyzw>());
 }
 
-}  /* namespace test */
-}  /* namespace math */
-}  /* namespace psst */
-
-
+} /* namespace test */
+} /* namespace math */
+} /* namespace psst */

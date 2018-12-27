@@ -5,14 +5,13 @@
  *      Author: sergey.fedorov
  */
 
-#include <benchmark/benchmark.h>
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/matrix.hpp>
-
-#include <pushkin/math/vector_io.hpp>
-#include <pushkin/math/matrix_io.hpp>
-
 #include "make_test_data.hpp"
+#include <pushkin/math/matrix.hpp>
+#include <pushkin/math/matrix_io.hpp>
+#include <pushkin/math/vector.hpp>
+#include <pushkin/math/vector_io.hpp>
+
+#include <benchmark/benchmark.h>
 
 namespace psst {
 namespace math {
@@ -21,7 +20,7 @@ namespace bench {
 //----------------------------------------------------------------------------
 //  Cmp ops
 //----------------------------------------------------------------------------
-template < typename V >
+template <typename V>
 void
 Compare(benchmark::State& state)
 {
@@ -35,203 +34,178 @@ Compare(benchmark::State& state)
 //----------------------------------------------------------------------------
 //  Vector
 //----------------------------------------------------------------------------
-template < typename Vector >
+template <typename Vector>
 void
-VectorEq( benchmark::State& state )
+VectorEq(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
-        auto v2 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+        auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 == v2);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorCmp( benchmark::State& state )
+VectorCmp(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
-        auto v2 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+        auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 < v2);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorAdd( benchmark::State& state )
+VectorAdd(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(v2 += v1);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorAddAssign( benchmark::State& state )
+VectorAddAssign(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        decltype (v1) v3;
+        decltype(v1) v3;
         benchmark::DoNotOptimize(v3 = v1 + v2);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorSum( benchmark::State& state )
+VectorSum(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v3 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v3 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        decltype (v1) v4;
+        decltype(v1) v4;
         benchmark::DoNotOptimize(v4 = v1 + v2 + v3);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorSub( benchmark::State& state )
+VectorSub(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
         benchmark::DoNotOptimize(v2 -= v1);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorSubAssign( benchmark::State& state )
+VectorSubAssign(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        decltype (v1) v3;
+        decltype(v1) v3;
         benchmark::DoNotOptimize(v3 = v1 - v2);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorScalarMul( benchmark::State& state )
+VectorScalarMul(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 *= 100500);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorScalarDiv( benchmark::State& state )
+VectorScalarDiv(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1 /= 100500);
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorDot( benchmark::State& state )
+VectorDot(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize( dot_product(v1, v2) );
+        benchmark::DoNotOptimize(dot_product(v1, v2));
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorCross( benchmark::State& state )
+VectorCross(benchmark::State& state)
 {
-    auto v1 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
-    auto v2 = make_test_vector<typename Vector::value_type>(
-            dimension_count<Vector::size>{});
+    auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
+    auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize( cross(v1, v2) );
+        benchmark::DoNotOptimize(cross(v1, v2));
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorMagSQ( benchmark::State& state )
+VectorMagSQ(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.magnitude_square());
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorMag( benchmark::State& state )
+VectorMag(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.magnitude());
     }
 }
-template < typename Vector >
+template <typename Vector>
 void
-VectorNorm( benchmark::State& state )
+VectorNorm(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         benchmark::DoNotOptimize(v1.normalize());
     }
 }
 
-template < typename Vector >
+template <typename Vector>
 void
-VectorLerp( benchmark::State& state )
+VectorLerp(benchmark::State& state)
 {
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<typename Vector::value_type>(
-                dimension_count<Vector::size>{});
+        auto v1 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
         decltype(v1) v2 = v1 * 2;
         benchmark::DoNotOptimize(lerp(v1, v2, 0.5));
     }
 }
 
-template < typename Vector >
+template <typename Vector>
 void
-VectorSlerp( benchmark::State& state )
+VectorSlerp(benchmark::State& state)
 {
     using value_type = typename Vector::value_type;
     while (state.KeepRunning()) {
-        auto v1 = make_test_vector<value_type>(
-                dimension_count<Vector::size>{});
+        auto         v1 = make_test_vector<value_type>(dimension_count<Vector::size>{});
         decltype(v1) v2 = v1 * 2;
         benchmark::DoNotOptimize(slerp(v1, v2, value_type{0.5}));
     }
 }
 
 //----------------------------------------------------------------------------
+// clang-format off
 BENCHMARK_TEMPLATE(Compare,             float);
 BENCHMARK_TEMPLATE(Compare,             double);
 
@@ -314,9 +288,10 @@ BENCHMARK_TEMPLATE(VectorDot,           vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorMagSQ,         vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorMag,           vector<float,   10>);
 BENCHMARK_TEMPLATE(VectorNorm,          vector<float,   10>);
+// clang-format on
 
-}  /* namespace bench */
-}  /* namespace math */
-}  /* namespace psst */
+} /* namespace bench */
+} /* namespace math */
+} /* namespace psst */
 
 BENCHMARK_MAIN();

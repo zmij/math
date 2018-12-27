@@ -1,8 +1,8 @@
-#include <iostream>
-#include <cstring>
-
 #include <pushkin/math/vector.hpp>
 #include <pushkin/math/vector_io.hpp>
+
+#include <cstring>
+#include <iostream>
 
 /// Read vectors of size 3 from standard input and output their dot product
 
@@ -12,11 +12,11 @@ int
 main(int argc, char* argv[])
 {
     if (argc > 1) {
-      if (std::strcmp(argv[1], "--pretty") == 0) {
-          std::cout << psst::math::io::pretty << psst::math::io::set_col_width(8);
-      }
+        if (std::strcmp(argv[1], "--pretty") == 0) {
+            std::cout << psst::math::io::pretty << psst::math::io::set_col_width(8);
+        }
     }
-    while(std::cin) {
+    while (std::cin) {
         vec3f v1;
         if (!(std::cin >> v1))
             break;

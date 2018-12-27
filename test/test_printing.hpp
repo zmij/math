@@ -8,8 +8,8 @@
 #ifndef TEST_PRINTING_HPP_
 #define TEST_PRINTING_HPP_
 
-#include <pushkin/math/vector_io.hpp>
 #include <pushkin/math/matrix_io.hpp>
+#include <pushkin/math/vector_io.hpp>
 
 namespace psst {
 namespace math {
@@ -19,28 +19,26 @@ inline namespace v {
 
 template <typename E, typename R>
 void
-PrintTo(vector_expression<E, R> const& exp, ::std::ostream* os)
+PrintTo(vector_expression<E, R> const& exp, std::ostream* os)
 {
     *os << io::pretty << exp << io::ugly;
 }
 
-}  // namespace v
+}    // namespace v
 
 inline namespace m {
 
-template < typename E, typename R >
+template <typename E, typename R>
 void
-PrintTo(matrix_expression<E, R> const& mtx, ::std::ostream* os)
+PrintTo(matrix_expression<E, R> const& mtx, std::ostream* os)
 {
     *os << "\n" << io::pretty << mtx << io::ugly;
 }
 
-}  // namespace m
+}    // namespace m
 
-}  // namespace expr
-}  // namespace math
-}  // namespace psst
-
-
+}    // namespace expr
+}    // namespace math
+}    // namespace psst
 
 #endif /* TEST_PRINTING_HPP_ */

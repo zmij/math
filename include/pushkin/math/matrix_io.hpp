@@ -21,12 +21,12 @@ inline namespace m {
 
 namespace detail {
 
-template < ::std::size_t N, typename Matrix >
+template <std::size_t N, typename Matrix>
 struct matrix_output {
     static void
     output(std::ostream& os, Matrix const& m)
     {
-        matrix_output< N - 1, Matrix >::output(os, m);
+        matrix_output<N - 1, Matrix>::output(os, m);
         auto const& fct = io::get_facet(os);
         os << fct.delim();
         if (fct.pretty())
@@ -35,8 +35,8 @@ struct matrix_output {
     }
 };
 
-template < typename Matrix >
-struct matrix_output< 0, Matrix > {
+template <typename Matrix>
+struct matrix_output<0, Matrix> {
     static void
     output(std::ostream& out, Matrix const& m)
     {
@@ -44,11 +44,11 @@ struct matrix_output< 0, Matrix > {
     }
 };
 
-} // namespace detail
+}    // namespace detail
 
-template < typename Expression, typename Result >
+template <typename Expression, typename Result>
 std::ostream&
-operator << (std::ostream& os, matrix_expression<Expression, Result> const& m)
+operator<<(std::ostream& os, matrix_expression<Expression, Result> const& m)
 {
     using expression_type = matrix_expression<Expression, Result>;
     std::ostream::sentry s(os);
@@ -57,7 +57,7 @@ operator << (std::ostream& os, matrix_expression<Expression, Result> const& m)
         os << fct.start();
         if (fct.pretty())
             os << fct.row_separator() << fct.offset();
-        detail::matrix_output< expression_type::rows - 1, expression_type >::output(os, m);
+        detail::matrix_output<expression_type::rows - 1, expression_type>::output(os, m);
         if (fct.pretty())
             os << fct.row_separator();
         os << fct.end();
@@ -65,38 +65,38 @@ operator << (std::ostream& os, matrix_expression<Expression, Result> const& m)
     return os;
 }
 
-}  // namespace m
+}    // namespace m
 
-}  // namespace expr
+}    // namespace expr
 
-template < typename T, std::size_t RC, std::size_t CC, typename Axes >
+template <typename T, std::size_t RC, std::size_t CC, typename Axes>
 std::istream&
-operator >> (std::istream& is, matrix<T, RC, CC, Axes>& mtx)
+operator>>(std::istream& is, matrix<T, RC, CC, Axes>& mtx)
 {
-  std::istream::sentry s(is);
-  if (s) {
-      auto const& fct = io::get_facet(is);
-      char c = '\0';
-      if (!(is >> c)) {
-          return is;
-      }
-      if (c != fct.start()) {
-          is.setstate(std::ios::failbit);
-          return is;
-      }
-      detail::data_input<RC - 1, matrix<T, RC, CC, Axes>>::input(is, mtx);
-      if (!(is >> c)) {
-          return is;
-      }
-      if (c != fct.end()) {
-          is.setstate(std::ios::failbit);
-          return is;
-      }
-  }
-  return is;
+    std::istream::sentry s(is);
+    if (s) {
+        auto const& fct = io::get_facet(is);
+        char        c   = '\0';
+        if (!(is >> c)) {
+            return is;
+        }
+        if (c != fct.start()) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+        detail::data_input<RC - 1, matrix<T, RC, CC, Axes>>::input(is, mtx);
+        if (!(is >> c)) {
+            return is;
+        }
+        if (c != fct.end()) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+    }
+    return is;
 }
 
-} // namespace math
-}  /* namespace psst */
+}    // namespace math
+} /* namespace psst */
 
 #endif /* PUSHKIN_MATH_MATRIX_IO_HPP_ */

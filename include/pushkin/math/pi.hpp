@@ -13,14 +13,15 @@
 namespace psst {
 namespace math {
 
-template < typename T >
+template <typename T>
 struct pi {
     static const T value;
 };
 
-template < typename T > const T pi<T>::value = ::std::atan((T)1) * 4;
+template <typename T>
+const T pi<T>::value = std::atan((T)1) * 4;
 
-}  /* namespace math */
-}  /* namespace psst */
+} /* namespace math */
+} /* namespace psst */
 
 #endif /* PUSHKIN_MATH_PI_HPP_ */
