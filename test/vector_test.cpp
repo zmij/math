@@ -8,34 +8,12 @@
 #include <pushkin/math/vector.hpp>
 #include <pushkin/math/matrix.hpp>
 
-#include <pushkin/math/vector_io.hpp>
-#include <pushkin/math/matrix_io.hpp>
-
-#include <iostream>
+#include "test_printing.hpp"
 
 #include <gtest/gtest.h>
 
 namespace psst {
 namespace math {
-
-template <typename T, ::std::size_t N>
-void
-PrintTo(vector<T, N> const& vec, ::std::ostream* os)
-{
-    *os << io::pretty << vec << io::ugly;
-}
-
-namespace expr {
-
-template <typename Exp, typename Res>
-void
-PrintTo(vector_expression<Exp, Res> const& exp, ::std::ostream* os)
-{
-    *os << io::pretty << exp << io::ugly;
-}
-
-}  // namespace expr
-
 namespace test {
 
 using vector3d = vector<double, 3>;
@@ -43,6 +21,31 @@ using vector3df = vector<float, 3>;
 
 using rgba_col = vector<float, 4, axes::rgba>;
 using argb_col = vector<float, 4, axes::argb>;
+
+TEST(Scalar, Compare)
+{
+    using traits = scalar_value_traits<float>;
+    auto i_val = 42;
+    auto d_val = 42.0;
+    auto ds_val = expr::make_scalar_constant(42.0);
+
+    EXPECT_EQ(i_val, d_val);
+    EXPECT_EQ(i_val, ds_val);
+    EXPECT_EQ(ds_val, d_val);
+
+    EXPECT_EQ(0, traits::cmp(i_val, d_val));
+
+    EXPECT_EQ(0, traits::cmp(ds_val, i_val));
+    EXPECT_EQ(0, traits::cmp(i_val, ds_val));
+    EXPECT_EQ(0, traits::cmp(i_val, ds_val.value()));
+
+    EXPECT_EQ(0, traits::cmp(ds_val, d_val));
+    EXPECT_EQ(0, traits::cmp(d_val, ds_val));
+    EXPECT_EQ(0, traits::cmp(d_val, ds_val.value()));
+
+    EXPECT_EQ(0, traits::cmp(ds_val, ds_val));
+    EXPECT_EQ(0, traits::cmp(ds_val, ds_val.value()));
+}
 
 TEST(Vector, TypeTraits)
 {
@@ -252,7 +255,8 @@ TEST(Vector, Lerp)
 {
     vector3d v1{1, 1, 1};
     vector3d v2{3, 3, 3};
-    EXPECT_EQ((vector3d{2, 2, 2}), lerp(v1, v2, 0.5));
+    EXPECT_EQ((vector3d{2, 2, 2}), lerp(v1, v2, 0.5))
+        << "Unexpected lerp result " << lerp(v1, v2, 0.5);
 }
 
 TEST(Vector, Slerp)
@@ -260,7 +264,8 @@ TEST(Vector, Slerp)
     vector3d v1{1, 0, 0};
     vector3d v2{0, 1, 0};
     double v = 1 / ::std::sqrt(2);
-    EXPECT_EQ((vector3d{v, v, 0}), slerp(v1, v2, 0.5));
+    EXPECT_EQ((vector3d{v, v, 0}), slerp(v1, v2, 0.5))
+        << "Unexpected lerp result " << slerp(v1, v2, 0.5);
 }
 
 TEST(Vector, PolarCvt)

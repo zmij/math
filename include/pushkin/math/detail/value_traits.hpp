@@ -135,21 +135,21 @@ struct compare_traits_impl<T, true> {
     static bool
     eq(T const& lhs, U const& rhs)
     {
-        auto diff = rhs - lhs;
+        T diff = rhs - lhs;
         return -iota_type::value <= diff && diff <= iota_type::value;
     }
     template < typename U >
     static bool
     less(T const& lhs, U const& rhs)
     {
-        auto diff = rhs - lhs;
+        T diff = rhs - lhs;
         return diff > iota_type::value;
     }
     template < typename U >
     static int
     cmp(T const& lhs, U const& rhs)
     {
-        auto diff = rhs - lhs;
+        T diff = rhs - lhs;
         return diff > iota_type::value ? -1 : diff >= -iota_type::value ? 0 : 1;
     }
 };
@@ -331,6 +331,9 @@ using is_vector_expression_t = typename is_vector_expression<std::decay_t<T>>::t
 template <typename T>
 constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
 
+template <typename T>
+using enable_if_vector_expression
+      = std::enable_if_t<is_vector_expression_v<T>>;
 template <typename LHS, typename RHS>
 using enable_if_both_vector_expressions
       = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>;

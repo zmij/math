@@ -17,6 +17,94 @@ namespace expr {
 
 inline namespace v {
 
+//----------------------------------------------------------------------------
+template <typename Expression, typename Result = Expression>
+struct vector_expression {
+    static_assert(is_vector_v<Result>,
+        "Result of vector expression must be a vector");
+    using expression_type       = Expression;
+    using result_type           = Result;
+    using traits                = value_traits_t<result_type>;
+    using value_type            = typename traits::value_type;
+    using value_tag             = typename traits::value_tag;
+    using axes_names            = typename traits::axes_names;
+    using index_sequence_type   = typename traits::index_sequence_type;
+
+    static constexpr auto size  = traits::size;
+
+    template < ::std::size_t N >
+    constexpr value_type
+    at() const
+    {
+        static_assert(N < size, "Invalid vector expression index");
+        return rebind().template at<N>();
+    }
+    constexpr result_type
+    value() const { return result_type(rebind()); }
+
+    constexpr operator expression_type const&() const { return rebind(); }
+private:
+    constexpr expression_type const&
+    rebind() const { return static_cast<expression_type const&>(*this); }
+};
+
+template <template <typename, typename> class Expression, typename LHS, typename RHS,
+          typename Result = vector_expression_result_t<LHS, RHS>>
+using binary_vector_expression = vector_expression< Expression<LHS, RHS>, Result >;
+
+template <::std::size_t N, typename Expression, typename Result>
+constexpr auto
+get(vector_expression<Expression, Result> const& exp)
+{
+    return exp.template at<N>();
+}
+
+template <typename Expression, typename Result>
+constexpr ::std::size_t size_of(vector_expression<Expression, Result> const&)
+{
+    return vector_expression<Expression, Result>::size;
+}
+
+template <typename Vector>
+struct vector_fill : vector_expression<vector_fill<Vector>, typename std::decay_t<Vector>::result_type> {
+    static_assert(is_vector_expression_v<Vector>, "Template argument must be a vector expression");
+    using base_type = vector_expression<vector_fill<Vector>, typename std::decay_t<Vector>::result_type>;
+    using value_type = typename base_type::value_type;
+
+    vector_fill(value_type v) : arg_{v} {}
+
+    template <std::size_t N>
+    constexpr value_type
+    at() const
+    {
+        return arg_;
+    }
+private:
+    value_type arg_;
+};
+
+namespace detail {
+
+template <typename T>
+constexpr ::std::size_t
+vector_expression_size()
+{
+    static_assert(is_vector_expression_v<T>, "The exression is not vector type");
+    return std::decay_t<T>::size;
+}
+
+}  // namespace detail
+
+template < typename T >
+struct vector_expression_size
+    : ::std::integral_constant<::std::size_t, detail::vector_expression_size<T>()> {};
+template < typename T >
+using vector_exression_size_t = typename vector_expression_size<T>::type;
+template < typename T >
+constexpr ::std::size_t vector_expression_size_v = vector_exression_size_t<T>::value;
+
+
+//----------------------------------------------------------------------------
 //@{
 /** @name Compare vector expressions */
 namespace detail {
@@ -28,9 +116,12 @@ template < typename LHS, typename RHS >
 struct vector_expression_cmp<0, LHS, RHS> {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
-    using traits_type = value_traits_t< typename LHS::value_type >;
+    using lhs_type      = std::decay_t<LHS>;
+    using rhs_type      = std::decay_t<RHS>;
+    using traits_type   = value_traits_t< typename lhs_type::value_type >;
 
-    constexpr static int cmp(LHS const& lhs, RHS const& rhs)
+    constexpr static int
+    cmp(lhs_type const& lhs, rhs_type const& rhs)
     {
         return traits_type::cmp(lhs.template at<0>(), rhs.template at<0>());
     }
@@ -40,9 +131,12 @@ template < ::std::size_t N, typename LHS, typename RHS >
 struct vector_expression_cmp {
     static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
           "Both sides to the comparison must be vector expressions");
-    using prev_element = vector_expression_cmp< N - 1, LHS, RHS >;
-    using traits_type  = typename prev_element::traits_type;
-    constexpr static int cmp(LHS const& lhs, RHS const& rhs)
+    using prev_element  = vector_expression_cmp< N - 1, LHS, RHS >;
+    using lhs_type      = typename prev_element::lhs_type;
+    using rhs_type      = typename prev_element::rhs_type;
+    using traits_type   = typename prev_element::traits_type;
+    constexpr static int
+    cmp(lhs_type const& lhs, rhs_type const& rhs)
     {
         auto res = prev_element::cmp(lhs, rhs);
         if (res == 0) {
@@ -77,13 +171,14 @@ struct vector_cmp
 };
 template <typename LHS, typename RHS,
     typename = enable_if_both_vector_expressions<LHS, RHS>>
-constexpr auto
+constexpr int
 cmp(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<vector_cmp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Check two vector expressions equality */
 template <typename LHS, typename RHS>
@@ -121,6 +216,7 @@ operator != (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Vector comparison */
 template <typename LHS, typename RHS>
@@ -174,6 +270,7 @@ operator >= (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Sum of two vectors */
 template <typename LHS, typename RHS>
@@ -206,6 +303,7 @@ operator + (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Substraction of two vectors */
 template <typename LHS, typename RHS>
@@ -238,6 +336,7 @@ operator - (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Multiplication of a vector by scalar expression */
 template <typename LHS, typename RHS>
@@ -279,6 +378,7 @@ operator * (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Division of a vector by a scalar expression */
 template <typename LHS, typename RHS>
@@ -312,6 +412,7 @@ operator / (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 template < typename LHS >
 struct vector_element_sum
@@ -340,6 +441,7 @@ private:
 };
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Vector magnitude (squared and not) */
 template <typename LHS>
@@ -420,6 +522,7 @@ distance(LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Dot product of two vectors */
 template < typename LHS, typename RHS >
@@ -468,6 +571,7 @@ dot_product(LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 template <typename Start, typename End, typename U,
     typename = ::std::enable_if_t<
         is_vector_expression_v<Start> &&
@@ -479,6 +583,7 @@ lerp(Start&& start, End&& end, U&& percent)
     return start + (end - start) * percent;
 }
 
+//----------------------------------------------------------------------------
 template <typename Start, typename End, typename U,
     typename = ::std::enable_if_t<
         is_vector_expression_v<Start> &&

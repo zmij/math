@@ -92,7 +92,7 @@ private:
     char_type delim_        = ',';
     char_type separator_    = ' ';
     string_type row_sep_    = "\n";
-    string_type offset_     = "\t";
+    string_type offset_     = "  ";
 };
 
 template < typename CharT >
@@ -189,66 +189,57 @@ using set_braces = basic_set_braces<char>;
 
 }  /* namespace io */
 
+namespace expr {
+inline namespace v {
+
 namespace detail {
 
-template< ::std::size_t, typename T >
-struct vector_output;
-
-template< ::std::size_t N, typename T, ::std::size_t Size, typename Axes >
-struct vector_output< N, vector< T, Size, Axes > > {
-    using vector_type = vector< T, Size, Axes >;
+template <std::size_t N, typename Vector>
+struct vector_output {
     static void
-    output(std::ostream& os, vector_type const& v)
+    output(std::ostream& os, Vector const& v)
     {
-        vector_output< N - 1, vector_type >::output(os, v);
+        vector_output<N - 1, Vector>::output(os, v);
         auto const& fct = io::get_facet(os);
         os << fct.delim();
         if (fct.pretty()) {
             os << fct.separator();
         }
-        os << v.template at< N >();
+        os << get<N>(v);
     }
 };
 
-template< typename T, ::std::size_t Size, typename Axes >
-struct vector_output< 0, vector< T, Size, Axes > > {
-    using vector_type = vector< T, Size, Axes >;
+template <typename Vector>
+struct vector_output<0, Vector> {
     static void
-    output(std::ostream& out, vector_type const& v)
+    output(std::ostream& os, Vector const& v)
     {
-        out << v.template at< 0 >();
+        os << get<0>(v);
     }
 };
 
-} // namespace detail
+}  // namespace detail
 
-template < typename T, ::std::size_t Size, typename Axes >
+template < typename Expression, typename Result >
 std::ostream&
-operator << (std::ostream& os, vector<T, Size, Axes> const& v)
+operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
 {
+    using expression_type = vector_expression<Expression, Result>;
     std::ostream::sentry s(os);
     if (s) {
         auto const& fct = io::get_facet(os);
         os << fct.start();
         if (fct.pretty())
             os << fct.separator();
-        detail::vector_output< Size - 1, vector<T, Size, Axes> >::output(os, v);
+        detail::vector_output<expression_type::size - 1, expression_type>::output(os, v);
         if (fct.pretty())
             os << fct.separator();
         os << fct.end();
     }
     return os;
 }
-namespace expr {
 
-template < typename Expression, typename Result >
-std::ostream&
-operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
-{
-    Result res = v;
-    os << res;
-    return os;
-}
+}  // namespace v
 
 }  // namespace expr
 } // namespace math

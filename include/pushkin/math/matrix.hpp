@@ -8,7 +8,7 @@
 #ifndef PUSHKIN_MATH_MATRIX_HPP_
 #define PUSHKIN_MATH_MATRIX_HPP_
 
-#include <pushkin/math/detail/matrix_detail.hpp>
+#include <pushkin/math/detail/matrix_expressions.hpp>
 
 namespace psst {
 namespace math {
@@ -68,6 +68,11 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
 
     constexpr matrix(init_list const& args)
         : matrix(args, row_indexes_type{}) {}
+
+    template <typename Expression, typename Result>
+    constexpr matrix(expr::matrix_expression<Expression, Result> const& rhs)
+        : matrix(rhs,
+            utils::make_min_index_sequence<rows, expr::matrix_expression<Expression, Result>::rows>{}) {}
 
     pointer
     data()
@@ -153,6 +158,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
         return data_[idx];
     }
 
+    // TODO Make it an expression
     this_type
     operator - ()
     {
@@ -165,42 +171,34 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
     this_type&
     operator += (matrix<U, RC, CC, Axes> const& rhs)
     {
-        detail::matrix_addition< RC - 1, this_type, matrix<U, RC, CC, Axes> >{}(*this, rhs);
-        return *this;
+        return *this = *this + rhs;
     }
 
     template < typename U >
     this_type&
     operator -= (matrix<U, RC, CC, Axes> const& rhs)
     {
-        detail::matrix_subtraction<RC - 1, this_type, matrix<U, RC, CC, Axes>>{}(*this, rhs);
-        return *this;
+        return *this = *this - rhs;
     }
 
     template < typename U >
     this_type&
     operator *= (U s)
     {
-        detail::matrix_scalar_multiplication< RC - 1, this_type >()(*this, s);
-        return *this;
+        return *this = *this * s;
     }
 
     template < typename U >
     this_type&
     operator /= (U s)
     {
-        detail::matrix_scalar_division< RC - 1, this_type >()(*this, s);
-        return *this;
+        return *this = *this / s;
     }
 
     transposed_type
     transpose() const
     {
-        transposed_type res;
-
-        detail::matrix_transpose< RC - 1, this_type >()(res, *this);
-
-        return res;
+        return expr::transpose(*this);
     }
 
     /**
@@ -215,11 +213,10 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
     { return data(); }
 
     template < typename U = T >
-    static typename ::std::enable_if< RC == CC, matrix<U, RC, CC, Axes> >::type const&
+    constexpr static typename ::std::enable_if< RC == CC, matrix<U, RC, CC, Axes> >::type const&
     identity()
     {
-        static this_type _identity(detail::identity_matrix< RC - 1, this_type >::build_matrix());
-        return _identity;
+        return expr::identity<this_type>();
     }
 private:
     template < ::std::size_t... RI >
@@ -234,212 +231,15 @@ private:
     template < ::std::size_t... RI >
     constexpr matrix(const_multi_dim_ptr p, ::std::index_sequence<RI...>)
         : data_({ row_type(p[RI]) ... }) {}
+    template < typename Expr, typename Result, std::size_t... RI >
+    constexpr matrix(expr::matrix_expression<Expr, Result> const& rhs, std::index_sequence<RI...>)
+        : data_( { expr::row<RI>(rhs)... } ) {}
 private:
     using data_type     = ::std::array<row_type, rows>;
     data_type data_;
 };
 
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-bool
-operator == (matrix<T, RC, CC, Axes> const& lhs, matrix<U, RC, CC, Axes> const& rhs)
-{
-    using left_side     = matrix<T, RC, CC, Axes>;
-    using right_side    = matrix<U, RC, CC, Axes>;
-    return detail::matrix_cmp<RC - 1, left_side, right_side>::eq(lhs, rhs);
-}
-
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-bool
-operator != (matrix<T, RC, CC, Axes> const& lhs, matrix<U, RC, CC, Axes> const& rhs)
-{
-    return !(lhs == rhs);
-}
-
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-bool
-operator < (matrix<T, RC, CC, Axes> const& lhs, matrix<U, RC, CC, Axes> const& rhs)
-{
-    using left_side     = matrix<T, RC, CC, Axes>;
-    using right_side    = matrix<U, RC, CC, Axes>;
-    return detail::matrix_cmp<RC - 1, left_side, right_side>::less(lhs, rhs);
-}
-
-template <typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-matrix< T, RC, CC, Axes >
-operator + (matrix<T, RC, CC, Axes> const& lhs, matrix<U, RC, CC, Axes> const& rhs)
-{
-    matrix< T, RC, CC, Axes > res(lhs);
-    res += rhs;
-    return res;
-}
-
-template <typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-matrix< T, RC, CC, Axes >
-operator - (matrix<T, RC, CC, Axes> const& lhs, matrix<U, RC, CC, Axes> const& rhs)
-{
-    matrix< T, RC, CC, Axes > res(lhs);
-    res -= rhs;
-    return res;
-}
-
-/**
- * Matrix scalar multiplication
- */
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-matrix< T, RC, CC, Axes >
-operator * (matrix<T, RC, CC, Axes> const& lhs, U rhs)
-{
-    matrix<T, RC, CC, Axes> res(lhs);
-    res *= rhs;
-    return res;
-}
-
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-matrix< T, RC, CC, Axes >
-operator * (U lhs, matrix<T, RC, CC, Axes> const& rhs)
-{
-    matrix<T, RC, CC, Axes> res(rhs);
-    res *= lhs;
-    return res;
-}
-
-/**
- * Matrix scalar division
- */
-template < typename T, typename U, ::std::size_t RC, ::std::size_t CC, typename Axes >
-matrix< T, RC, CC, Axes >
-operator / (matrix<T, RC, CC, Axes> const& lhs, U rhs)
-{
-    matrix<T, RC, CC, Axes> res(lhs);
-    res /= rhs;
-    return res;
-}
-
-/**
- * Multiplication of two matrices
- * @param lhs
- * @param rhs
- * @return
- */
-template < typename T, typename U, ::std::size_t R1, ::std::size_t C1, ::std::size_t C2, typename Axes >
-matrix< T, R1, C2, Axes >
-operator * (matrix< T, R1, C1, Axes > const& lhs, matrix< U, C1, C2, Axes > const& rhs )
-{
-    using left_side_type = matrix< T, R1, C1, Axes >;
-    using right_side_type = matrix< U, C1, C2, Axes >;
-    matrix< T, R1, C2, Axes > res;
-
-    detail::matrix_row_multiply< R1 - 1, left_side_type,  right_side_type >()(res, lhs, rhs.transpose());
-
-    return res;
-}
-
-/**
- * Multiplication of a square matrix and a vector.
- * Vector is considered a column matrix.
- */
-template < typename T, typename U, ::std::size_t C, typename Axes >
-vector< T, C, Axes >
-operator * (matrix< T, C, C, Axes > const& m, vector< U, C, Axes > const& v)
-{
-    using multiplicator = detail::matrix_vector_multiply< C -1,
-                            matrix< T, C, C, Axes >, vector< U, C, Axes > >;
-    using result_type   = vector< T, C, Axes >;
-
-    result_type res;
-
-    multiplicator()(res, m, v);
-
-    return res;
-}
-
-/**
- * Multiplication of a vector and a matrix.
- * Vector is considered a row matrix.
- * @param v
- * @param m
- * @return
- */
-template < typename T, typename U, ::std::size_t C, typename Axes >
-vector< T, C, Axes >
-operator * (vector< U, C, Axes > const& v, matrix< T, C, C, Axes > const& m)
-{
-    return m.transpose() * v;
-}
-
-// TODO matrix minor
-// TODO matrix cofactor
-// TODO matrix determinant
-
-
 } // namespace math
 }  /* namespace psst */
-
-//
-//template < typename T, ::std::size_t Rows, ::std::size_t Cols >
-//Matrix< T, Rows - 1, Cols - 1 >
-//minor( Matrix< T, Rows, Cols> const& m, ::std::size_t r, ::std::size_t c )
-//{
-//    Matrix< T, Rows - 1, Cols - 1 > res;
-//
-//    ::std::size_t rr = 0;
-//    for (::std::size_t i = 0; i < Rows; ++i) {
-//        if (i == r)
-//            continue;
-//        ::std::size_t rc = 0;
-//        for (::std::size_t j = 0; j < Cols; ++j) {
-//            if (j == c)
-//                continue;
-//            res[rr][rc] = m[i][j];
-//            ++rc;
-//        }
-//        ++rr;
-//    }
-//
-//    return res;
-//}
-//
-//template < typename T >
-//T
-//determinant( Matrix< T, 1, 1> const& m )
-//{
-//    return m[0][0];
-//}
-//
-//template < typename T >
-//T
-//determinant( Matrix< T, 2, 2> const& m )
-//{
-//    return m[0][0] * m[1][1] - m[0][1] * m [1][0];
-//}
-//
-//template < typename T >
-//T
-//cofactor( Matrix< T, 1, 1> const& )
-//{
-//    return 0;
-//}
-//
-//template < typename T, ::std::size_t Size >
-//T
-//cofactor( Matrix<T, Size, Size> const& m, ::std::size_t r, ::std::size_t c )
-//{
-//    // sign == -1 ^ (r + c)
-//    int sign = ((r + c) % 2) ? -1 : 1;
-//
-//    return sign * determinant( minor(m, r, c) );
-//}
-//
-//template < typename T, ::std::size_t Size >
-//T
-//determinant( Matrix< T, Size, Size > const& m )
-//{
-//    T det = 0;
-//    for (::std::size_t i = 0; i < Size; ++i) {
-//        det += m[0][i] * cofactor(m, 0, i);
-//    }
-//    return det;
-//}
-//
 
 #endif /* PUSHKIN_MATRIX_HPP_ */

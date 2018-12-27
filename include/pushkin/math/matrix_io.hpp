@@ -15,52 +15,49 @@
 
 namespace psst {
 namespace math {
+namespace expr {
+
+inline namespace m {
 
 namespace detail {
 
-template < ::std::size_t, typename T >
-struct matrix_output;
-
-template < ::std::size_t N, typename T,
-    ::std::size_t RC, ::std::size_t CC,
-    typename Axes >
-struct matrix_output< N, matrix< T, RC, CC, Axes > > {
-    using matrix_type = matrix< T, RC, CC, Axes >;
+template < ::std::size_t N, typename Matrix >
+struct matrix_output {
     static void
-    output(std::ostream& os, matrix_type const& m)
+    output(std::ostream& os, Matrix const& m)
     {
-        matrix_output< N - 1, matrix_type >::output(os, m);
+        matrix_output< N - 1, Matrix >::output(os, m);
         auto const& fct = io::get_facet(os);
         os << fct.delim();
         if (fct.pretty())
             os << fct.row_separator() << fct.offset();
-        os << m.template at< N >();
+        os << row<N>(m);
     }
 };
 
-template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
-struct matrix_output< 0, matrix< T, RC, CC, Axes > > {
-    using matrix_type = matrix< T, RC, CC, Axes >;
+template < typename Matrix >
+struct matrix_output< 0, Matrix > {
     static void
-    output(std::ostream& out, matrix_type const& m)
+    output(std::ostream& out, Matrix const& m)
     {
-        out << m.template at< 0 >();
+        out << row<0>(m);
     }
 };
 
 } // namespace detail
 
-template < typename T, ::std::size_t RC, ::std::size_t CC, typename Axes >
+template < typename Expression, typename Result >
 std::ostream&
-operator << (std::ostream& os, matrix< T, RC, CC, Axes > const& m)
+operator << (std::ostream& os, matrix_expression<Expression, Result> const& m)
 {
+    using expression_type = matrix_expression<Expression, Result>;
     std::ostream::sentry s(os);
     if (s) {
         auto const& fct = io::get_facet(os);
         os << fct.start();
         if (fct.pretty())
             os << fct.row_separator() << fct.offset();
-        detail::matrix_output< RC - 1, matrix< T, RC, CC, Axes > >::output(os, m);
+        detail::matrix_output< expression_type::rows - 1, expression_type >::output(os, m);
         if (fct.pretty())
             os << fct.row_separator();
         os << fct.end();
@@ -68,6 +65,9 @@ operator << (std::ostream& os, matrix< T, RC, CC, Axes > const& m)
     return os;
 }
 
+}  // namespace m
+
+}  // namespace expr
 
 } // namespace math
 }  /* namespace psst */

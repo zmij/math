@@ -16,54 +16,7 @@ namespace expr {
 
 inline namespace m {
 
-template < typename MatrixExpression, std::size_t RN >
-struct nth_row
-    : vector_expression< nth_row< MatrixExpression, RN >, typename MatrixExpression::row_type >,
-      unary_expression<MatrixExpression> {
-
-    using matrix_traits = typename MatrixExpression::traits;
-    static_assert(RN < matrix_traits::rows,
-        "Invalid row index");
-
-    using base_type = vector_expression< nth_row< MatrixExpression, RN >, typename MatrixExpression::row_type >;
-    using value_type          = typename base_type::value_type;
-
-    using expression_base = unary_expression<MatrixExpression>;
-    using expression_base::expression_base;
-
-    template < std::size_t CN >
-    constexpr auto
-    at() const
-    {
-        static_assert(CN < matrix_traits::cols, "Invalid column index");
-        return this->arg_.template element<RN, CN>();
-    }
-};
-
-template < typename MatrixExpression, std::size_t CN >
-struct nth_col
-    : vector_expression< nth_col< MatrixExpression, CN >, typename MatrixExpression::col_type >,
-      unary_expression<MatrixExpression> {
-
-    using matrix_traits = typename MatrixExpression::traits;
-    static_assert(CN < matrix_traits::cols,
-        "Invalid col index");
-
-    using base_type = vector_expression< nth_row< MatrixExpression, CN >, typename MatrixExpression::col_type >;
-    using value_type          = typename base_type::value_type;
-
-    using expression_base = unary_expression<MatrixExpression>;
-    using expression_base::expression_base;
-
-    template < std::size_t RN >
-    constexpr auto
-    at() const
-    {
-        static_assert(RN < matrix_traits::rows, "Invalid row index");
-        return this->arg_.template element<RN, CN>();
-    }
-};
-
+//----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
 struct matrix_expression {
     static_assert(is_matrix_v<Result>,
@@ -84,32 +37,310 @@ struct matrix_expression {
     static constexpr auto size  = traits::size;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
         static_assert(R < rows, "Invalid matrix expression row index");
         static_assert(C < cols, "Invalid matrix expression col index");
         return rebind().template element<R, C>();
     }
-
-    template <std::size_t R>
-    constexpr auto
-    row() const
-    {
-        return nth_row<expression_type, R>{ rebind() };
-    }
-
-    template <std::size_t C>
-    constexpr auto
-    col() const
-    {
-        return nth_col<expression_type, C>{ rebind() };
-    }
 private:
     constexpr expression_type const&
     rebind() const { return static_cast<expression_type const&>(*this); }
 };
 
+//----------------------------------------------------------------------------
+template < typename Matrix >
+struct identity_matrix : matrix_expression<identity_matrix<Matrix>, Matrix> {
+    using base_type = matrix_expression<identity_matrix<Matrix>, Matrix>;
+    using value_type = typename base_type::value_type;
+
+    static_assert( base_type::cols == base_type::rows,
+        "Identity matrix is defined only for square matrices");
+
+    template <std::size_t R, std::size_t C>
+    constexpr value_type
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        if constexpr (R == C) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+};
+
+template < typename Matrix, typename = enable_if_matrix_expression<Matrix> >
+constexpr auto
+identity()
+{
+    return identity_matrix< std::decay_t<Matrix> >{};
+}
+
+template < typename Matrix, typename = enable_if_matrix_expression<Matrix> >
+constexpr auto
+identity(Matrix&& m)
+{
+    return identity_matrix< std::decay_t<Matrix> >{};
+}
+
+//----------------------------------------------------------------------------
+//@{
+/** @name Vector as row matrix */
+template < typename Vector >
+struct vector_to_row_matrix {
+    static_assert(is_vector_expression_v<Vector>,
+        "Argument to the expression must be a vector");
+    using traits    = typename std::decay_t<Vector>::traits;
+    using type      = matrix<typename traits::value_type, 1, traits::size, typename traits::axes_names>;
+};
+template < typename Vector >
+using vector_to_row_matrix_t = typename vector_to_row_matrix<Vector>::type;
+
+template < typename Vector >
+struct vector_as_row_matrix
+        : matrix_expression< vector_as_row_matrix<Vector>, vector_to_row_matrix_t<Vector> >,
+          unary_expression<Vector> {
+
+    using base_type = matrix_expression< vector_as_row_matrix<Vector>, vector_to_row_matrix_t<Vector> >;
+
+    using expression_base = unary_expression<Vector>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return get<C>(this->arg_);
+    }
+};
+
+template < typename Vector, typename = enable_if_vector_expression<Vector> >
+constexpr auto
+as_row_matrix(Vector&& vec)
+{
+    return make_unary_expression<vector_as_row_matrix>(std::forward<Vector>(vec));
+}
+//@}
+
+//----------------------------------------------------------------------------
+//@{
+/** @name Vector as column matrix */
+template < typename Vector >
+struct vector_to_col_matrix {
+    static_assert(is_vector_expression_v<Vector>,
+        "Argument to the expression must be a vector");
+    using traits    = typename std::decay_t<Vector>::traits;
+    using type      = matrix<typename traits::value_type, traits::size, 1, typename traits::axes_names>;
+};
+template < typename Vector >
+using vector_to_col_matrix_t = typename vector_to_col_matrix<Vector>::type;
+
+template < typename Vector >
+struct vector_as_col_matrix
+        : matrix_expression< vector_as_col_matrix<Vector>, vector_to_col_matrix_t<Vector> >,
+          unary_expression<Vector> {
+
+    using base_type = matrix_expression< vector_as_col_matrix<Vector>, vector_to_col_matrix_t<Vector> >;
+
+    using expression_base = unary_expression<Vector>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return get<R>(this->arg_);
+    }
+};
+
+template < typename Vector, typename = enable_if_vector_expression<Vector> >
+constexpr auto
+as_col_matrix(Vector&& vec)
+{
+    return make_unary_expression<vector_as_col_matrix>(std::forward<Vector>(vec));
+}
+//@}
+
+//----------------------------------------------------------------------------
+template < typename Matrix, std::size_t RN >
+struct nth_row
+        : vector_expression< nth_row< Matrix, RN >, typename std::decay_t<Matrix>::row_type >,
+          unary_expression<Matrix> {
+
+    using matrix_traits = typename std::decay_t<Matrix>::traits;
+    static_assert(RN < matrix_traits::rows, "Invalid row index");
+
+    using base_type = vector_expression< nth_row< Matrix, RN >, typename std::decay_t<Matrix>::row_type >;
+    using value_type          = typename base_type::value_type;
+
+    using expression_base = unary_expression<Matrix>;
+    using expression_base::expression_base;
+
+    template < std::size_t CN >
+    constexpr auto
+    at() const
+    {
+        static_assert(CN < matrix_traits::cols, "Invalid column index");
+        return this->arg_.template element<RN, CN>();
+    }
+};
+
+template <std::size_t R, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+row(Matrix&& mtx)
+{
+    return make_unary_expression<nth_row, R>(std::forward<Matrix>(mtx));
+}
+
+//----------------------------------------------------------------------------
+template < typename Matrix, std::size_t CN >
+struct nth_col
+    : vector_expression< nth_col< Matrix, CN >, typename std::decay_t<Matrix>::col_type >,
+      unary_expression<Matrix> {
+
+    using matrix_traits = typename std::decay_t<Matrix>::traits;
+    static_assert(CN < matrix_traits::cols,
+        "Invalid col index");
+
+    using base_type = vector_expression< nth_row< Matrix, CN >, typename std::decay_t<Matrix>::col_type >;
+    using value_type          = typename base_type::value_type;
+
+    using expression_base = unary_expression<Matrix>;
+    using expression_base::expression_base;
+
+    template < std::size_t RN >
+    constexpr auto
+    at() const
+    {
+        static_assert(RN < matrix_traits::rows, "Invalid row index");
+        return this->arg_.template element<RN, CN>();
+    }
+};
+
+template <std::size_t C, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+col(Matrix&& mtx)
+{
+    return make_unary_expression<nth_col, C>(std::forward<Matrix>(mtx));
+}
+
+template <typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+as_vector(Matrix&& mtx)
+{
+    using matrix_type = std::decay_t<Matrix>;
+    static_assert(matrix_type::rows == 1 || matrix_type::cols == 1,
+        "Can treat a matrix as a vector only if there is one row or one column");
+
+    if constexpr (matrix_type::rows == 1) {
+        return row<0>(std::forward<Matrix>(mtx));
+    } else if constexpr (matrix_type::cols == 1) {
+        return col<0>(std::forward<Matrix>(mtx));
+    }
+}
+
+//----------------------------------------------------------------------------
+//@{
+/** @name Remove Nth matrix row */
+template <typename Matrix>
+struct remove_row_result {
+    using original_matrix_type    = typename std::decay_t<Matrix>::matrix_type;
+    using value_type              = typename original_matrix_type::value_type;
+    using axes_names              = typename original_matrix_type::axes_names;
+    static_assert(original_matrix_type::rows > 0, "Matrix is empty");
+    static constexpr auto rows    = original_matrix_type::rows - 1;
+    static constexpr auto cols    = original_matrix_type::cols;
+    using type                    = matrix< value_type, rows, cols, axes_names >;
+};
+
+template <typename Matrix>
+using remove_row_result_t = typename remove_row_result<Matrix>::type;
+
+template <typename Matrix, std::size_t RN>
+struct remove_nth_row
+        : matrix_expression<remove_nth_row<Matrix, RN>, remove_row_result_t<Matrix>>,
+          unary_expression<Matrix> {
+    using base_type = matrix_expression<remove_nth_row<Matrix, RN>, remove_row_result_t<Matrix>>;
+    using expression_base = unary_expression<Matrix>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        if constexpr (R < RN) {
+            return this->arg_.template element<R, C>();
+        } else {
+            return this->arg_.template element<R + 1, C>();
+        }
+    }
+};
+
+template <std::size_t R, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+remove_row(Matrix&& mtx)
+{
+    return make_unary_expression<remove_nth_row, R>(std::forward<Matrix>(mtx));
+}
+//@}
+
+//----------------------------------------------------------------------------
+//@{
+/** @name Remove Nth matrix column */
+template <typename Matrix>
+struct remove_col_result {
+    using original_matrix_type    = typename std::decay_t<Matrix>::matrix_type;
+    using value_type              = typename original_matrix_type::value_type;
+    using axes_names              = typename original_matrix_type::axes_names;
+    static_assert(original_matrix_type::cols > 0, "Matrix is empty");
+    static constexpr auto rows    = original_matrix_type::rows;
+    static constexpr auto cols    = original_matrix_type::cols - 1;
+    using type                    = matrix< value_type, rows, cols, axes_names >;
+};
+
+template <typename Matrix>
+using remove_col_result_t = typename remove_col_result<Matrix>::type;
+
+template <typename Matrix, std::size_t CN>
+struct remove_nth_col
+        : matrix_expression<remove_nth_col<Matrix, CN>, remove_col_result_t<Matrix>>,
+          unary_expression<Matrix> {
+    using base_type = matrix_expression<remove_nth_col<Matrix, CN>, remove_col_result_t<Matrix>>;
+    using expression_base = unary_expression<Matrix>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        if constexpr (C < CN) {
+            return this->arg_.template element<R, C>();
+        } else {
+            return this->arg_.template element<R, C + 1>();
+        }
+    }
+};
+
+template <std::size_t C, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+remove_col(Matrix&& mtx)
+{
+    return make_unary_expression<remove_nth_col, C>(std::forward<Matrix>(mtx));
+}
+//@}
+
+//----------------------------------------------------------------------------
 //@{
 /** @name Compare two matrix expressions */
 namespace detail {
@@ -121,10 +352,12 @@ template <typename LHS, typename RHS>
 struct matrix_expression_cmp<0, LHS, RHS> {
     static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
           "Both sides to the comparison must be matrix expressions");
-    constexpr static auto
-    cmp(LHS const& lhs, RHS const& rhs)
+    using lhs_type      = std::decay_t<LHS>;
+    using rhs_type      = std::decay_t<RHS>;
+    constexpr static int
+    cmp(lhs_type const& lhs, rhs_type const& rhs)
     {
-        return cmp(lhs.template row<0>(), rhs.template row<0>());
+        return v::cmp(row<0>(lhs), row<0>(rhs));
     }
 };
 
@@ -132,12 +365,15 @@ template <std::size_t R, typename LHS, typename RHS>
 struct matrix_expression_cmp {
     static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
           "Both sides to the comparison must be matrix expressions");
-    using prev_element = matrix_expression_cmp< R - 1, LHS, RHS >;
-    constexpr static auto cmp(LHS const& lhs, RHS const& rhs)
+    using prev_element  = matrix_expression_cmp< R - 1, LHS, RHS >;
+    using lhs_type      = std::decay_t<LHS>;
+    using rhs_type      = std::decay_t<RHS>;
+    constexpr static int
+    cmp(lhs_type const& lhs, rhs_type const& rhs)
     {
         auto res = prev_element::cmp(lhs, rhs);
         if (res == 0) {
-            return cmp(lhs.template row<R>(), rhs.template row<R>());
+            return v::cmp(row<R>(lhs), row<R>(rhs));
         }
         return res;
     }
@@ -151,14 +387,16 @@ struct matrix_cmp
           binary_expression<LHS, RHS> {
     static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
           "Both sides to the comparison must be matrix expressions");
+    using lhs_type = std::decay_t<LHS>;
+    using rhs_type = std::decay_t<RHS>;
     static constexpr std::size_t cmp_size
-          = utils::min_v< LHS::rows, RHS::rows >;
+          = utils::min_v< lhs_type::rows, rhs_type::rows >;
     using cmp_type = detail::matrix_expression_cmp<cmp_size - 1, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
 
-    constexpr auto
+    constexpr int
     value() const {
         return cmp_type::cmp(this->lhs_, this->rhs_);
     }
@@ -175,6 +413,7 @@ cmp(LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix equality */
 template <typename LHS, typename RHS>
@@ -213,6 +452,7 @@ operator != (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix inequality */
 template <typename LHS, typename RHS>
@@ -267,6 +507,7 @@ operator >= (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 template <typename Expr>
 struct matrix_transpose
@@ -282,7 +523,7 @@ struct matrix_transpose
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -300,6 +541,7 @@ transpose(Expr&& expr)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrices sum */
 template <typename LHS, typename RHS>
@@ -329,9 +571,11 @@ struct matrix_sum
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() + this->rhs_.template element<R, C>();
     }
 };
@@ -345,6 +589,7 @@ operator + (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix difference */
 template <typename LHS, typename RHS>
@@ -358,9 +603,11 @@ struct matrix_diff
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() - this->rhs_.template element<R, C>();
     }
 };
@@ -374,6 +621,7 @@ operator - (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix by scalar multiplication */
 template <typename LHS, typename RHS>
@@ -401,14 +649,17 @@ struct matrix_scalar_multiply
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() * this->rhs_;
     }
 };
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix by scalar division */
 template <typename LHS, typename RHS>
@@ -422,9 +673,11 @@ struct matrix_scalar_divide
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr value_type
+    constexpr auto
     element() const
     {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() / this->rhs_;
     }
 };
@@ -442,6 +695,7 @@ operator / (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Matrix-matrix multiplication */
 template < typename LHS, typename RHS >
@@ -473,15 +727,20 @@ struct matrix_matrix_multiply
     constexpr auto
     element() const
     {
-        return dot_product(this->lhs_.template row<R>(), this->rhs_.template col<C>());
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return dot_product(row<R>(this->lhs_), col<C>(this->rhs_));
     }
 };
 
+//----------------------------------------------------------------------------
 template <typename LHS, typename RHS,
           typename = std::enable_if_t<
             (is_matrix_expression_v<LHS> && is_scalar_v<RHS>) ||
             (is_scalar_v<LHS> && is_matrix_expression_v<RHS>) ||
-            (is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>)
+            (is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>) ||
+            (is_matrix_expression_v<LHS> && is_vector_expression_v<RHS>) ||
+            (is_vector_expression_v<LHS> && is_matrix_expression_v<RHS>)
           >>
 constexpr auto
 operator * (LHS&& lhs, RHS&& rhs)
@@ -498,6 +757,10 @@ operator * (LHS&& lhs, RHS&& rhs)
         return make_binary_expression<matrix_matrix_multiply>(\
               ::std::forward<LHS>(lhs), ::std::forward<RHS>(rhs)
             );
+    } else if constexpr (is_matrix_expression_v<LHS> && is_vector_expression_v<RHS>) {
+        return std::forward<LHS>(lhs) * as_col_matrix(std::forward<RHS>(rhs));
+    } else if constexpr (is_vector_expression_v<LHS> && is_matrix_expression_v<RHS>) {
+        return as_row_matrix(std::forward<LHS>(lhs)) * std::forward<RHS>(rhs);
     }
 }
 //@}

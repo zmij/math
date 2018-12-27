@@ -70,6 +70,21 @@ make_unary_expression(Argument&& arg)
         static_cast<expression_type const&>(arg)};
   }
 }
+
+template <template <typename, std::size_t> class ExpressionType,
+              std::size_t N, typename Argument>
+constexpr auto
+make_unary_expression(Argument&& arg)
+{
+  using expression_type = extract_expression_type_t< Argument >;
+  if constexpr (std::is_rvalue_reference<Argument&&>{}) {
+      return ExpressionType<expression_type&&, N>{
+        static_cast<expression_type&&>(arg)};
+  } else {
+      return ExpressionType<expression_type, N>{
+        static_cast<expression_type const&>(arg)};
+  }
+}
 //----------------------------------------------------------------------------
 template <typename LHS, typename RHS>
 struct binary_expression {
@@ -190,112 +205,6 @@ make_binary_expression(LHS&& lhs, RHS&& rhs)
               static_cast<rhs_expression_type const&>(rhs) };
     }
 }
-
-inline namespace s {
-//----------------------------------------------------------------------------
-template <typename Expression, typename Result>
-struct scalar_expression {
-    static_assert(!std::is_reference<Result>{},
-          "Result type for a scalar expression cannot be a reference");
-    using expression_type     = Expression;
-    using result_type         = Result;
-    using traits              = value_traits_t<result_type>;
-    using value_type          = typename traits::type;
-    using value_tag           = typename traits::value_tag;
-
-    constexpr value_type
-    value() const { return rebind().value(); }
-    constexpr operator value_type() const { return this->value(); }
-
-    constexpr operator expression_type const&() const& { return rebind(); }
-//    constexpr operator expression_type&&() && { return rebind(); }
-private:
-    constexpr expression_type const&
-    rebind() const& { return static_cast<expression_type const&>(*this); }
-    constexpr expression_type&&
-    rebind() && { return static_cast<expression_type&&>(*this); }
-};
-
-template <template <typename> class Expression, typename Arg,
-          typename Result = scalar_result_t<Arg> >
-using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
-template <template <typename, typename> class Expression, typename LHS, typename RHS,
-          typename Result = scalar_expression_result_t<LHS, RHS> >
-using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
-
-} // namespace s
-
-inline namespace v {
-//----------------------------------------------------------------------------
-template <typename Expression, typename Result = Expression>
-struct vector_expression {
-    static_assert(is_vector_v<Result>,
-        "Result of vector expression must be a vector");
-    using expression_type       = Expression;
-    using result_type           = Result;
-    using traits                = value_traits_t<result_type>;
-    using value_type            = typename traits::value_type;
-    using value_tag             = typename traits::value_tag;
-    using axes_names            = typename traits::axes_names;
-    using index_sequence_type   = typename traits::index_sequence_type;
-
-    static constexpr auto size  = traits::size;
-
-    template < ::std::size_t N >
-    constexpr value_type
-    at() const
-    {
-        static_assert(N < size, "Invalid vector expression index");
-        return rebind().template at<N>();
-    }
-    constexpr result_type
-    value() const { return result_type(rebind()); }
-
-    constexpr operator expression_type const&() const { return rebind(); }
-private:
-    constexpr expression_type const&
-    rebind() const { return static_cast<expression_type const&>(*this); }
-};
-
-template <template <typename, typename> class Expression, typename LHS, typename RHS,
-          typename Result = vector_expression_result_t<LHS, RHS>>
-using binary_vector_expression = vector_expression< Expression<LHS, RHS>, Result >;
-
-template <::std::size_t N, typename Expression, typename Result>
-constexpr auto
-get(vector_expression<Expression, Result> const& exp)
-{
-    return exp.template at<N>();
-}
-
-template <typename Expression, typename Result>
-constexpr ::std::size_t size_of(vector_expression<Expression, Result> const&)
-{
-    return vector_expression<Expression, Result>::size;
-}
-
-namespace detail {
-
-template <typename T>
-constexpr ::std::size_t
-vector_expression_size()
-{
-    static_assert(is_vector_expression_v<T>, "The exression is not vector type");
-    return T::size;
-}
-
-}  // namespace detail
-
-template < typename T >
-struct vector_expression_size
-    : ::std::integral_constant<::std::size_t, detail::vector_expression_size<T>()> {};
-template < typename T >
-using vector_exression_size_t = typename vector_expression_size<T>::type;
-template < typename T >
-constexpr ::std::size_t vector_expression_size_v = vector_exression_size_t<T>::value;
-
-} // namespace v
-
 
 }  // namespace expr
 }  // namespace math

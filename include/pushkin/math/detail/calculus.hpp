@@ -8,7 +8,7 @@
 #ifndef INCLUDE_PUSHKIN_MATH_DETAIL_CALCULUS_HPP_
 #define INCLUDE_PUSHKIN_MATH_DETAIL_CALCULUS_HPP_
 
-#include <pushkin/math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/vector_expressions.hpp>
 #include <pushkin/math/pi.hpp>
 #include <type_traits>
 
@@ -106,8 +106,7 @@ struct vector_calculus {
     vector_type&
     zero()
     {
-        detail::set_all_elements< Size - 1, vector_type >()(rebind(), 0);
-        return rebind();
+        return rebind() = expr::vector_fill<vector_type>(0);
     }
 
     vector_type&
@@ -184,8 +183,7 @@ struct nonvector_calculus<T, 2, axes::polar> {
     vector_type&
     zero()
     {
-        detail::set_all_elements< 1, vector_type >()(rebind(), 0);
-        return rebind();
+        return rebind() = expr::vector_fill<vector_type>(0);
     }
 
     /**

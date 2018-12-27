@@ -8,8 +8,7 @@
 #include <pushkin/math/vector.hpp>
 #include <pushkin/math/matrix.hpp>
 
-#include <pushkin/math/vector_io.hpp>
-#include <pushkin/math/matrix_io.hpp>
+#include "test_printing.hpp"
 
 #include <iostream>
 
@@ -17,14 +16,6 @@
 
 namespace psst {
 namespace math {
-
-template < typename T, ::std::size_t RC, ::std::size_t CC >
-void
-PrintTo(matrix<T, RC, CC> const& mtx, ::std::ostream* os)
-{
-    *os << "\n" << io::pretty << mtx << io::ugly;
-}
-
 namespace test {
 
 using vector3d  = vector<double, 3>;
@@ -188,8 +179,19 @@ TEST(Matrix, ScalarMultiply)
         { 42, 44, 46 },
         { 62, 64, 66 }
     };
-    EXPECT_EQ(expected, initial * 2);
-    EXPECT_EQ(initial, expected / 2);
+    EXPECT_EQ(expected, initial * 2)
+        << "Not equal " << expected << " and " << initial * 2;
+    EXPECT_EQ(0, cmp(expected, initial * 2));
+    EXPECT_EQ(0, cmp(expr::row<0>(expected), expr::row<0>(initial * 2)))
+        << "Not equal " << expr::row<0>(expected) << " and " << expr::row<0>(initial * 2);
+    EXPECT_EQ(0, cmp(expr::row<1>(expected), expr::row<1>(initial * 2)))
+        << "Not equal " << expr::row<1>(expected) << " and " << expr::row<1>(initial * 2);
+    EXPECT_EQ(0, cmp(expr::row<2>(expected), expr::row<2>(initial * 2)))
+        << "Not equal " << expr::row<2>(expected) << " and " << expr::row<2>(initial * 2);
+
+    EXPECT_EQ(initial, expected / 2)
+        << "Not equal " << initial << " and " << expected / 2;
+    EXPECT_EQ(0, cmp(initial, expected / 2));
 }
 
 TEST(Matrix, VectorMultiply)
@@ -201,7 +203,8 @@ TEST(Matrix, VectorMultiply)
     };
     vector3d expected{ 74, 134, 194 };
     vector3d vec{1, 2, 3};
-    EXPECT_EQ(expected, initial * vec);
+    EXPECT_EQ(as_col_matrix(expected), initial * vec)
+        << "Not equal " << as_col_matrix(expected) << " and " << initial * vec;
 }
 
 TEST(Matrix, MatrixMultiply)
@@ -216,7 +219,8 @@ TEST(Matrix, MatrixMultiply)
         { 1406, 1472, 1538 },
         { 2036, 2132, 2228 }
     };
-    EXPECT_EQ(expected, initial * initial);
+    auto mul = initial * initial;
+    EXPECT_EQ(expected, mul) << "Invalid result " << mul;
 }
 
 TEST(Matrix, RectMatrixAdd)

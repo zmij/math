@@ -14,7 +14,8 @@
 #include <assert.h>
 #include <cmath>
 
-#include <pushkin/math/detail/vector_detail.hpp>
+#include <pushkin/math/detail/vector_expressions.hpp>
+#include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/calculus.hpp>
 

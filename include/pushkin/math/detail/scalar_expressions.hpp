@@ -18,6 +18,37 @@ namespace expr {
 
 inline namespace s {
 
+//----------------------------------------------------------------------------
+template <typename Expression, typename Result>
+struct scalar_expression {
+    static_assert(!std::is_reference<Result>{},
+          "Result type for a scalar expression cannot be a reference");
+    using expression_type     = Expression;
+    using result_type         = Result;
+    using traits              = value_traits_t<result_type>;
+    using value_type          = typename traits::type;
+    using value_tag           = typename traits::value_tag;
+
+    constexpr value_type
+    value() const { return rebind().value(); }
+    constexpr operator value_type() const { return this->value(); }
+
+    constexpr operator expression_type const&() const& { return rebind(); }
+private:
+    constexpr expression_type const&
+    rebind() const& { return static_cast<expression_type const&>(*this); }
+    constexpr expression_type&&
+    rebind() && { return static_cast<expression_type&&>(*this); }
+};
+
+template <template <typename> class Expression, typename Arg,
+          typename Result = scalar_result_t<Arg> >
+using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
+template <template <typename, typename> class Expression, typename LHS, typename RHS,
+          typename Result = scalar_expression_result_t<LHS, RHS> >
+using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
+
+//----------------------------------------------------------------------------
 template < typename T >
 struct scalar_constant
       : scalar_expression< scalar_constant<T>, std::decay_t<T> > {
@@ -35,6 +66,13 @@ struct scalar_constant
 private:
     value_type arg_;
 };
+
+template <typename T>
+constexpr auto
+make_scalar_constant(T&& v)
+{
+    return make_unary_expression<scalar_constant>(std::forward<T>(v));
+}
 
 namespace detail {
 
@@ -85,6 +123,7 @@ wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 
 }  // namespace detail
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Inverse expression result */
 template < typename Expression >
@@ -110,6 +149,7 @@ operator ! (Expression&& exp)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Sum two scalar expressions */
 template < typename LHS, typename RHS >
@@ -143,8 +183,9 @@ operator + (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
-/** @name Subtract one scalar expression from  */
+/** @name Subtract one scalar expression from another */
 template < typename LHS, typename RHS >
 struct scalar_value_diff
         : binary_scalar_expression<scalar_value_diff, LHS, RHS>,
@@ -170,12 +211,13 @@ template <typename LHS, typename RHS,
 constexpr auto
 operator - (LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_sum>(
+    return detail::wrap_non_expression_args<scalar_value_diff>(
             std::forward<LHS>(lhs), std::forward<RHS>(rhs)
         );
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Multiply two scalar expressions */
 template < typename LHS, typename RHS >
@@ -209,6 +251,7 @@ operator * (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Divide one scalar expression by another */
 template < typename LHS, typename RHS >
@@ -242,6 +285,7 @@ operator / (LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 /** @name Square root expression */
 template < typename Expression >
