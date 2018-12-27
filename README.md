@@ -1,9 +1,9 @@
 pushkin-math
 ====
 
-Small C++11 template library for vector and matrix computations.
+Small C++17 template library for vector and matrix computations.
 
-Library provides easy syntax for declaring, assigning vectors and matrices and making calculations. The `vector` and `matrix` classes are designed to have a memory layout as C++ arrays of respective elements, and can be passed to rendering libraries where pointers to floats (for example) are required.
+Library provides easy syntax for declaring, assigning vectors and matrices and making calculations. The `vector` and `matrix` classes are designed to have a memory layout as C++ arrays of respective elements, and can be passed to rendering libraries where pointers to floats (for example) are required. The library uses lazy expression templates for calcutations.
 
 #### Usage Synopsis
 
@@ -33,13 +33,15 @@ using affine_matrix = ::psst::math::matrix<float, 4, 4>;
 affine_matrix
 rotate_x( float a )
 {
-    return
-    {
-        {    1,        0,           0,              0    },
-        {    0,        std::cos(a), -std::sin(a),   0    },
-        {    0,        std::sin(a), std::cos(a),    0    },
-        {    0,        0,           0,              1    }
-    };
+  using std::cos;
+  using std::sin;
+  return
+  {
+    {  1  ,     0   ,      0  ,   0  },
+    {  0  , cos(a)  , -sin(a) ,   0  },
+    {  0  , sin(a)  ,  cos(a) ,   0  },
+    {  0  ,     0   ,      0  ,   1  }
+  };
 }
 ```
 
@@ -105,7 +107,7 @@ v3 = perpendicular( v1, v2 ); // vector that is perpendicular to v1, such as v3 
 std::pair< vector3d, vector3d > pair = project( v1, v2 ); // a pair of projection of v2 onto v1 and a perpendicular to v1
 
 auto s = distance_square(v1, v2); // returns squared magnitude of vectors difference. Semantic sugar when vectors are treated as coordinates
-s = distance( v1, v2 );   // magnitude of vectors difference
+s = distance( v1, v2 );           // magnitude of vectors difference
 
 // Matrix
 matrix3x3
@@ -120,13 +122,13 @@ m2 {
   { 3,  2,  1 }
 };
 
-auto m3 = m1 + m2; // matrix sum
-m3 = m1 - m2; // matrix difference
-m3 = m1 * 5; // matrix scalar multiplication
+auto m3 = m1 + m2;              // matrix sum
+m3 = m1 - m2;                   // matrix difference
+m3 = m1 * 5;                    // matrix scalar multiplication
 m3 *= 4;
-m3 = m2 / 8; // matrix scalar division
+m3 = m2 / 8;                    // matrix scalar division
 m3 /= 3;
-matrix3x3 i = matrix3x3::identity(); // identity matrix
+auto i = matrix3x3::identity(); // identity matrix
 
 // Rectangular matrices
 using matrix4x3 = ::psst::math::matrix<float, 4, 3>;
@@ -144,10 +146,10 @@ matrix3x4 r2 {
   { 1, 2, 3, 4 }
 };
 
-matrix3x4 t = r1.transpose(); // matrix transposition
-matrix3x3 m4 = r1 * r2; // matrix multiplication
-vector3d v4 = m1 * v1; // matrix by vector multiplication (vector is considered a 1 column matrix)
-vector3d v5 = v1 * m1; // vector by matrix multiplication (vector is considered a 1 row matrix)
+matrix3x4 t = transpose(r1);          // matrix transposition
+matrix3x3 m4 = r1 * r2;               // matrix multiplication
+vector3d v4 = m1 * as_col_matrix(v1); // matrix by vector multiplication
+vector3d v5 = as_row_matrix(v1) * m1; // vector by matrix multiplication
 ```
 
 ##### Output
