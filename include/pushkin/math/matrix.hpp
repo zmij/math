@@ -249,4 +249,33 @@ get(matrix<T, RC, CC, Axes>& mtx)
 } // namespace math
 }  /* namespace psst */
 
+#ifdef __METASHELL
+// Some definitions for debugging templates, not to input them
+// every time the metashell starts
+using namespace psst::math;
+
+using mtx_3x3f = matrix<float, 3, 3>;
+using mtx_3x3d = matrix<double, 3, 3>;
+
+using mtx_4x4f = matrix<float, 4, 4>;
+using mtx_4x4d = matrix<double, 4, 4>;
+
+using mtx_3x4f = matrix<float, 3, 4>;
+using mtx_3x4d = matrix<double, 3, 4>;
+using mtx_4x3f = matrix<float, 4, 3>;
+using mtx_4x3d = matrix<double, 4, 3>;
+
+mtx_3x3f m3x3f_1, m3x3f_2;
+mtx_3x3d m3x3d_1, m3x3d_2;
+
+mtx_4x4f m4x4f_1, m4x4f_2;
+mtx_4x4d m4x4d_1, m4x4d_2;
+
+mtx_3x4f m3x4f_1;
+mtx_3x4d m3x4d_1;
+mtx_4x3f m4x3f_1;
+mtx_4x3d m4x3d_1;
+
+#endif
+
 #endif /* PUSHKIN_MATRIX_HPP_ */

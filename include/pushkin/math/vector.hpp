@@ -273,4 +273,23 @@ project( vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v )
 } // namespace math
 }  /* namespace psst */
 
+#ifdef __METASHELL
+// Some definitions for debugging templates, not to input them
+// every time the metashell starts
+using namespace psst::math;
+
+using vec_3f = vector<float, 3>;
+using vec_3d = vector<double, 3>;
+
+using vec_4f = vector<float, 4>;
+using vec_4d = vector<double, 4>;
+
+vec_3f v3f_1, v3f_2;
+vec_4f v4f_1, v4f_2;
+
+vec_3d v3d_1, v3d_2;
+vec_4d v4d_1, v4d_2;
+
+#endif
+
 #endif /* PUSHKIN_MATH_VECTOR_HPP_ */
