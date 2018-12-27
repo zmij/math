@@ -213,7 +213,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
     { return data(); }
 
     template < typename U = T >
-    constexpr static typename ::std::enable_if< RC == CC, matrix<U, RC, CC, Axes> >::type const&
+    constexpr static typename ::std::enable_if< RC == CC, matrix<U, RC, CC, Axes> >::type
     identity()
     {
         return expr::identity<this_type>();
@@ -238,6 +238,13 @@ private:
     using data_type     = ::std::array<row_type, rows>;
     data_type data_;
 };
+
+template <std::size_t R, typename T, ::std::size_t RC, ::std::size_t CC, typename Axes>
+constexpr auto&
+get(matrix<T, RC, CC, Axes>& mtx)
+{
+    return mtx.template at<R>();
+}
 
 } // namespace math
 }  /* namespace psst */

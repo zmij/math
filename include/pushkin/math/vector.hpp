@@ -157,6 +157,12 @@ private:
     data_type data_;
 };
 
+template <std::size_t N, typename T, std::size_t Size, typename Axes>
+constexpr auto&
+get(vector<T, Size, Axes>& v)
+{
+    return v.template at<N>();
+}
 
 /**
  * Dot product operator

@@ -69,6 +69,33 @@ operator << (std::ostream& os, matrix_expression<Expression, Result> const& m)
 
 }  // namespace expr
 
+template < typename T, std::size_t RC, std::size_t CC, typename Axes >
+std::istream&
+operator >> (std::istream& is, matrix<T, RC, CC, Axes>& mtx)
+{
+  std::istream::sentry s(is);
+  if (s) {
+      auto const& fct = io::get_facet(is);
+      char c = '\0';
+      if (!(is >> c)) {
+          return is;
+      }
+      if (c != fct.start()) {
+          is.setstate(std::ios::failbit);
+          return is;
+      }
+      detail::data_input<RC - 1, matrix<T, RC, CC, Axes>>::input(is, mtx);
+      if (!(is >> c)) {
+          return is;
+      }
+      if (c != fct.end()) {
+          is.setstate(std::ios::failbit);
+          return is;
+      }
+  }
+  return is;
+}
+
 } // namespace math
 }  /* namespace psst */
 

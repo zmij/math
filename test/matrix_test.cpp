@@ -129,6 +129,34 @@ TEST(Matrix, ConstructSingleValue)
     EXPECT_EQ(42, m1[2][2]);
 }
 
+TEST(Matrix, IO)
+{
+    matrix3x3 m1 {
+       { 1.1, 1.2, 1.3 },
+       { 2.1, 2.2, 3.3 },
+       { 3.1, 3.2, 3.3 }
+    };
+
+    matrix3x3 m2;
+
+    std::ostringstream os;
+    os << m1;
+    std::istringstream is(os.str());
+    is >> m2;
+    EXPECT_TRUE(is.good());
+    EXPECT_EQ(m1, m2);
+
+    os.str("");
+    os << io::pretty << m1 << io::ugly;
+    m2 = matrix3x3::identity();
+
+    EXPECT_NE(m1, m2);
+    is.str(os.str());
+    is >> m2;
+    EXPECT_TRUE(is.good());
+    EXPECT_EQ(m1, m2);
+}
+
 TEST(Matrix, Iteration)
 {
     matrix3x3 m1 {

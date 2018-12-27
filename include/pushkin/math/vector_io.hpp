@@ -99,7 +99,7 @@ template < typename CharT >
 ::std::locale::id vector_facet<CharT>::id;
 
 template < typename CharT >
-vector_facet<char> const&
+vector_facet<CharT> const&
 get_facet(::std::basic_ostream<CharT>& os)
 {
     using facet_type = vector_facet<CharT>;
@@ -117,6 +117,27 @@ add_facet(::std::basic_ostream<CharT>& os, vector_facet<CharT>* fct)
 {
     ::std::locale loc = os.getloc();
     os.imbue(::std::locale(loc, fct));
+}
+
+template < typename CharT >
+vector_facet<CharT> const&
+get_facet(::std::basic_istream<CharT>& is)
+{
+    using facet_type = vector_facet<CharT>;
+    ::std::locale loc = is.getloc();
+    if (!::std::has_facet<facet_type>(loc)) {
+        is.imbue(::std::locale(loc, new facet_type{}));
+        loc = is.getloc();
+    }
+    return ::std::use_facet< facet_type >(loc);
+}
+
+template < typename CharT >
+void
+add_facet(::std::basic_istream<CharT>& is, vector_facet<CharT>* fct)
+{
+    ::std::locale loc = is.getloc();
+    is.imbue(::std::locale(loc, fct));
 }
 
 /**
@@ -242,6 +263,65 @@ operator << (std::ostream& os, vector_expression<Expression, Result> const& v)
 }  // namespace v
 
 }  // namespace expr
+
+namespace detail {
+
+template <std::size_t N, typename Vector>
+struct data_input {
+    static void
+    input(std::istream& is, Vector& v)
+    {
+        auto const& fct = io::get_facet(is);
+        data_input<N - 1, Vector>::input(is, v);
+        char c = '\0';
+        if (!(is >> c))
+          return;
+        if (c != fct.delim()) {
+          is.setstate(std::ios::failbit);
+          return;
+        }
+        is >> get<N>(v);
+    }
+};
+
+template <typename Vector>
+struct data_input<0, Vector> {
+    static void
+    input(std::istream& is, Vector& v)
+    {
+        is >> get<0>(v);
+    }
+};
+
+}  // namespace detail
+
+template < typename T, std::size_t Size, typename Axes >
+std::istream&
+operator >> (std::istream& is, vector<T, Size, Axes>& v)
+{
+    std::istream::sentry s(is);
+    if (s) {
+        auto const& fct = io::get_facet(is);
+        char c = '\0';
+        if (!(is >> c)) {
+            return is;
+        }
+        if (c != fct.start()) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+        detail::data_input<Size - 1, vector<T, Size, Axes>>::input(is, v);
+        if (!(is >> c)) {
+            return is;
+        }
+        if (c != fct.end()) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+    }
+    return is;
+}
+
 } // namespace math
 }  /* namespace psst */
 

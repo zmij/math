@@ -11,6 +11,7 @@
 #include "test_printing.hpp"
 
 #include <gtest/gtest.h>
+#include <sstream>
 
 namespace psst {
 namespace math {
@@ -154,6 +155,26 @@ TEST(Vector, ConstructRGB)
         EXPECT_FLOAT_EQ(0.3, c.g());
         EXPECT_FLOAT_EQ(0.4, c.b());
     }
+}
+
+TEST(Vector, IO)
+{
+    vector3d v1{0.1, 0.2, 0.3, 0.4}, v2{};
+    std::ostringstream os;
+    os << v1;
+    std::istringstream is(os.str());
+    is >> v2;
+    EXPECT_TRUE(is.good());
+    EXPECT_EQ(v1, v2);
+
+    os.str("");
+    os << io::pretty << v1 << io::ugly;
+    v2.zero();
+    EXPECT_NE(v1, v2);
+    is.str(os.str());
+    is >> v2;
+    EXPECT_TRUE(is.good());
+    EXPECT_EQ(v1, v2);
 }
 
 TEST(Vector, Modify)
