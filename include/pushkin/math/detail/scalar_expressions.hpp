@@ -142,8 +142,7 @@ struct not_ : unary_scalar_expression<not_, Expression, bool>, unary_expression<
     }
 };
 
-template <typename Expression,
-          typename = std::enable_if_t<is_scalar_expression_v<std::decay_t<Expression>>>>
+template <typename Expression, typename = enable_if_scalar_expression<Expression>>
 constexpr auto operator!(Expression&& exp)
 {
     return make_unary_expression<not_>(std::forward<Expression>(exp));
@@ -169,11 +168,7 @@ struct scalar_value_sum : binary_scalar_expression<scalar_value_sum, LHS, RHS>,
     }
 };
 
-template <
-    typename LHS, typename RHS,
-    typename = std::enable_if_t<
-        is_scalar_v<
-            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
+template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -201,11 +196,7 @@ struct scalar_value_diff : binary_scalar_expression<scalar_value_diff, LHS, RHS>
     }
 };
 
-template <
-    typename LHS, typename RHS,
-    typename = std::enable_if_t<
-        is_scalar_v<
-            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
+template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -233,11 +224,7 @@ struct scalar_value_multiply : binary_scalar_expression<scalar_value_multiply, L
     }
 };
 
-template <
-    typename LHS, typename RHS,
-    typename = std::enable_if_t<
-        is_scalar_v<
-            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
+template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
     return detail::wrap_non_expression_args<scalar_value_multiply>(std::forward<LHS>(lhs),
@@ -264,11 +251,7 @@ struct scalar_value_divide : binary_scalar_expression<scalar_value_divide, LHS, 
     }
 };
 
-template <
-    typename LHS, typename RHS,
-    typename = std::enable_if_t<
-        is_scalar_v<
-            LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>>
+template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
@@ -306,7 +289,7 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Expression, typename = std::enable_if_t<is_scalar_expression_v<Expression>>>
+template <typename Expression, typename = enable_if_scalar_expression<Expression>>
 constexpr auto
 sqrt(Expression&& ex)
 {

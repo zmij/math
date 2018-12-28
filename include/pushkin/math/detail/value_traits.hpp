@@ -300,6 +300,13 @@ template <typename T>
 using is_scalar_expression_t = typename is_scalar_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_scalar_expression_v = is_scalar_expression_t<T>::value;
+
+template <typename T>
+using enable_if_scalar_expression = std::enable_if_t<is_scalar_expression_v<T>>;
+template <typename LHS, typename RHS>
+using enable_if_scalar_args = std::enable_if_t<
+    is_scalar_v<
+        LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>;
 //@}
 
 //@{
