@@ -11,6 +11,7 @@
 #include <pushkin/math/detail/utils.hpp>
 #include <pushkin/math/matrix_fwd.hpp>
 #include <pushkin/math/vector_fwd.hpp>
+
 #include <type_traits>
 
 namespace psst {

@@ -10,9 +10,9 @@
 
 #include <pushkin/math/detail/permute_macros.hpp>
 #include <pushkin/math/vector_fwd.hpp>
-#include <type_traits>
 
 #include <cstddef>
+#include <type_traits>
 
 namespace psst {
 namespace math {

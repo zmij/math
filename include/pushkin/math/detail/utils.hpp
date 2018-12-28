@@ -9,7 +9,6 @@
 #define PUSHKIN_MATH_DETAIL_UTILS_HPP_
 
 #include <type_traits>
-
 #include <utility>
 
 namespace psst {

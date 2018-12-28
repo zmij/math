@@ -10,6 +10,7 @@
 
 #include <pushkin/math/detail/vector_expressions.hpp>
 #include <pushkin/math/pi.hpp>
+
 #include <type_traits>
 
 namespace psst {

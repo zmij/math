@@ -12,13 +12,13 @@
 #include <pushkin/math/detail/calculus.hpp>
 #include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/vector_expressions.hpp>
-#include <stdexcept>
 
 #include <assert.h>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <stdexcept>
 
 namespace psst {
 namespace math {

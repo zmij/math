@@ -158,7 +158,7 @@ TEST(Vector, ConstructRGB)
 
 TEST(Vector, IO)
 {
-    vector3d              v1{0.1, 0.2, 0.3, 0.4}, v2{};
+    vector3d           v1{0.1, 0.2, 0.3, 0.4}, v2{};
     std::ostringstream os;
     os << v1;
     std::istringstream is(os.str());

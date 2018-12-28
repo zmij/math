@@ -8,8 +8,8 @@
 #ifndef PUSHKIN_MATH_MATRIX_HPP_
 #define PUSHKIN_MATH_MATRIX_HPP_
 
-#include <pushkin/math/detail/matrix_expressions.hpp>
 #include <pushkin/math/detail/axis_names.hpp>
+#include <pushkin/math/detail/matrix_expressions.hpp>
 
 #include <cassert>
 
