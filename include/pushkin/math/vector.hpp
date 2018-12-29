@@ -62,10 +62,10 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
     constexpr explicit vector(vector<U, SizeR, AxesR> const& rhs)
         : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{})
     {}
-    template <typename Expression, typename Result>
-    constexpr vector(expr::vector_expression<Expression, Result> const& rhs)
-        : vector(rhs, utils::make_min_index_sequence<
-                          Size, expr::vector_expression<Expression, Result>::size>{})
+    template <typename Expression, typename = enable_if_vector_expression<Expression>>
+    constexpr vector(Expression&& rhs)
+        : vector(std::forward<Expression>(rhs),
+                 utils::make_min_index_sequence<Size, expr::vector_expression_size_v<Expression>>{})
     {}
 
     pointer
@@ -169,10 +169,9 @@ private:
     constexpr vector(vector<U, SizeR, AxesR> const& rhs, std::index_sequence<Indexes...>)
         : data_({rhs.template at<Indexes>()...})
     {}
-    template <typename Expr, typename Result, std::size_t... Indexes>
-    constexpr vector(expr::vector_expression<Expr, Result> const& rhs,
-                     std::index_sequence<Indexes...>)
-        : data_({(value_type)rhs.template at<Indexes>()...})
+    template <typename Expr, std::size_t... Indexes>
+    constexpr vector(Expr&& rhs, std::index_sequence<Indexes...>)
+        : data_({(value_type)expr::get<Indexes>(std::forward<Expr>(rhs))...})
     {}
 
 private:

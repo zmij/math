@@ -74,9 +74,9 @@ TEST(Vector, ConstructDefault)
         << "Size of vector is equal to sizes of it's components";
 
     vector3d::base_expression_type const& be = v1;
-    EXPECT_EQ(0, be.at<0>());
-    EXPECT_EQ(0, be.at<1>());
-    EXPECT_EQ(0, be.at<2>());
+    EXPECT_EQ(0, get<0>(be));
+    EXPECT_EQ(0, get<1>(be));
+    EXPECT_EQ(0, get<2>(be));
     vector3d const& v2 = be;
     EXPECT_EQ(0, v2[0]);
     EXPECT_EQ(0, v2[1]);

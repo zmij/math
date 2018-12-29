@@ -34,23 +34,26 @@ struct matrix_expression {
     static constexpr auto rows = traits::rows;
     static constexpr auto cols = traits::cols;
     static constexpr auto size = traits::size;
-
-    template <std::size_t R, std::size_t C>
-    constexpr auto
-    element() const
-    {
-        static_assert(R < rows, "Invalid matrix expression row index");
-        static_assert(C < cols, "Invalid matrix expression col index");
-        return rebind().template element<R, C>();
-    }
-
-private:
-    constexpr expression_type const&
-    rebind() const
-    {
-        return static_cast<expression_type const&>(*this);
-    }
 };
+
+namespace detail {
+
+template <typename T>
+constexpr std::size_t
+matrix_row_count()
+{
+    static_assert(is_matrix_expression_v<T>, "The expression is not matrix type");
+    return std::decay_t<T>::rows;
+}
+
+}    // namespace detail
+
+template <typename T>
+struct matrix_row_count : std::integral_constant<std::size_t, detail::matrix_row_count<T>()> {};
+template <typename T>
+using matrix_row_count_t = typename matrix_row_count<T>::type;
+template <typename T>
+constexpr std::size_t matrix_row_count_v = matrix_row_count_t<T>::value;
 
 //----------------------------------------------------------------------------
 template <typename Matrix>

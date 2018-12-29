@@ -67,10 +67,10 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>>,
 
     constexpr matrix(init_list const& args) : matrix(args, row_indexes_type{}) {}
 
-    template <typename Expression, typename Result>
-    constexpr matrix(expr::matrix_expression<Expression, Result> const& rhs)
-        : matrix(rhs, utils::make_min_index_sequence<
-                          rows, expr::matrix_expression<Expression, Result>::rows>{})
+    template <typename Expression, typename = enable_if_matrix_expression<Expression>>
+    constexpr matrix(Expression&& rhs)
+        : matrix(std::forward<Expression>(rhs),
+                 utils::make_min_index_sequence<rows, expr::matrix_row_count_v<Expression>>{})
     {}
 
     pointer
@@ -256,9 +256,8 @@ private:
     constexpr matrix(const_multi_dim_ptr p, std::index_sequence<RI...>)
         : data_({row_type(p[RI])...})
     {}
-    template <typename Expr, typename Result, std::size_t... RI>
-    constexpr matrix(expr::matrix_expression<Expr, Result> const& rhs, std::index_sequence<RI...>)
-        : data_({expr::row<RI>(rhs)...})
+    template <typename Expr, std::size_t... RI>
+    constexpr matrix(Expr&& rhs, std::index_sequence<RI...>) : data_({expr::row<RI>(rhs)...})
     {}
 
 private:

@@ -32,46 +32,18 @@ struct vector_expression {
     using index_sequence_type = typename traits::index_sequence_type;
 
     static constexpr auto size = traits::size;
-
-    template <std::size_t N>
-    constexpr value_type
-    at() const
-    {
-        static_assert(N < size, "Invalid vector expression index");
-        return rebind().template at<N>();
-    }
-    constexpr result_type
-    value() const
-    {
-        return result_type(rebind());
-    }
-
-    constexpr operator expression_type const&() const { return rebind(); }
-
-private:
-    constexpr expression_type const&
-    rebind() const
-    {
-        return static_cast<expression_type const&>(*this);
-    }
 };
 
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
           typename Result = vector_expression_result_t<LHS, RHS>>
 using binary_vector_expression = vector_expression<Expression<LHS, RHS>, Result>;
 
-template <std::size_t N, typename Expression, typename Result>
+template <std::size_t N, typename Expression, typename = enable_if_vector_expression<Expression>>
 constexpr auto
-get(vector_expression<Expression, Result> const& exp)
+get(Expression const& exp)
 {
-    return exp.template at<N>();
-}
-
-template <typename Expression, typename Result>
-constexpr std::size_t
-size_of(vector_expression<Expression, Result> const&)
-{
-    return vector_expression<Expression, Result>::size;
+    using expression_type = extract_expression_type_t<Expression>;
+    return static_cast<expression_type const&>(exp).template at<N>();
 }
 
 template <typename Vector>
@@ -101,7 +73,7 @@ template <typename T>
 constexpr std::size_t
 vector_expression_size()
 {
-    static_assert(is_vector_expression_v<T>, "The exression is not vector type");
+    static_assert(is_vector_expression_v<T>, "The expression is not vector type");
     return std::decay_t<T>::size;
 }
 

@@ -36,18 +36,11 @@ struct scalar_expression {
     }
     constexpr operator value_type() const { return this->value(); }
 
-    constexpr operator expression_type const&() const& { return rebind(); }
-
 private:
     constexpr expression_type const&
     rebind() const&
     {
         return static_cast<expression_type const&>(*this);
-    }
-    constexpr expression_type&&
-    rebind() &&
-    {
-        return static_cast<expression_type&&>(*this);
     }
 };
 
