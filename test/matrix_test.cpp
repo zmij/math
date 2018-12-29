@@ -20,6 +20,7 @@ namespace test {
 using vector3d  = vector<double, 3>;
 using vector3df = vector<float, 3>;
 using matrix3x3 = matrix<double, 3, 3>;
+using matrix2x2 = matrix<double, 2, 2>;
 
 TEST(Matrix, ConstructDefault)
 {
@@ -295,6 +296,29 @@ TEST(Matrix, Minor)
     EXPECT_EQ((matrix2x2{{22, 23}, {32, 33}}), (expr::minor<0, 0>(init)));
     EXPECT_EQ((matrix2x2{{21, 23}, {31, 33}}), (expr::minor<0, 1>(init)));
     EXPECT_EQ((matrix2x2{{21, 22}, {31, 32}}), (expr::minor<0, 2>(init)));
+}
+
+TEST(Matrix, Determinant)
+{
+    {
+        // clang-format off
+        matrix2x2 m{
+            {1, 2},
+            {3, 4}
+        };
+        // clang-format on
+        EXPECT_EQ(-2, det(m));
+    }
+    {
+        // clang-format off
+        matrix3x3 m{
+            { 11, 12, 13 },
+            { 21, 22, 23 },
+            { 31, 32, 33 }
+        };
+        // clang-format on
+        EXPECT_EQ(0, det(m));
+    }
 }
 
 } /* namespace test */

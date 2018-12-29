@@ -783,6 +783,68 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 }
 //@}
 
+//@{
+/** @name Matrix determinant */
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+det(Expr&& mtx);
+
+template <typename Expr>
+struct matrix_determinant
+    : scalar_expression<matrix_determinant<Expr>, typename std::decay_t<Expr>::value_type>,
+      unary_expression<Expr> {
+
+    using base_type
+        = scalar_expression<matrix_determinant<Expr>, typename std::decay_t<Expr>::value_type>;
+    using matrix_type = typename std::decay_t<Expr>::matrix_type;
+    static_assert(matrix_type::cols == matrix_type::rows,
+                  "Identity matrix is defined only for square matrices");
+    using value_type       = typename base_type::value_type;
+    using col_indexes_type = typename matrix_type::col_indexes_type;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    value() const
+    {
+        if constexpr (matrix_type::rows > 1) {
+            return sum(col_indexes_type{});
+        } else if constexpr (matrix_type::rows == 1) {
+            return this->arg_.template element<0, 0>();
+        } else {
+            return value_type{};
+        }
+    }
+
+private:
+    template <std::size_t N>
+    constexpr auto
+    nth_element() const
+    {
+        if constexpr (N % 2 == 0) {
+            return this->arg_.template element<0, N>() * det(minor<0, N>(this->arg_));
+        } else {
+            return s::product(this->arg_.template element<0, N>(), det(minor<0, N>(this->arg_)),
+                              -1);
+        }
+    }
+    template <std::size_t... CI>
+    constexpr auto
+    sum(std::index_sequence<CI...>) const
+    {
+        return s::sum(this->template nth_element<CI>()...);
+    }
+};
+
+template <typename Expr, typename>
+constexpr auto
+det(Expr&& expr)
+{
+    return make_unary_expression<matrix_determinant>(std::forward<Expr>(expr));
+}
+//@}
+
 }    // namespace m
 
 }    // namespace expr
