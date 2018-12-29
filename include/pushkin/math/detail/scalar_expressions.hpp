@@ -79,22 +79,25 @@ make_scalar_constant(T&& v)
 
 namespace detail {
 
+template <typename Arg, typename = utils::void_t<>>
+struct wrap_arg {
+    using type = scalar_constant<std::decay_t<Arg>>;
+};
+
+template <typename Arg>
+struct wrap_arg<Arg, std::enable_if_t<is_expression_v<Arg>>> {
+    using type = expression_argument_t<Arg>;
+};
+
+template <typename Arg>
+using wrap_arg_t = typename wrap_arg<Arg>::type;
+
 template <template <typename, typename> class ExpressionType, typename LHS, typename RHS>
 constexpr auto
 wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 {
-    static_assert(is_expression_v<LHS> || is_expression_v<RHS>,
-                  "At least one of the arguments to a binary expression must be an expression");
-    if constexpr (is_expression_v<LHS> && is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType>(std::forward<LHS>(lhs),
-                                                      std::forward<RHS>(rhs));
-    } else if constexpr (is_expression_v<LHS>) {
-        return make_binary_expression<ExpressionType>(
-            std::forward<LHS>(lhs), scalar_constant<std::decay_t<RHS>>{std::forward<RHS>(rhs)});
-    } else if constexpr (is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType>(
-            scalar_constant<std::decay_t<LHS>>{std::forward<LHS>(lhs)}, std::forward<RHS>(rhs));
-    }
+    return make_binary_expression<ExpressionType>(wrap_arg_t<LHS&&>(std::forward<LHS>(lhs)),
+                                                  wrap_arg_t<RHS&&>(std::forward<RHS>(rhs)));
 }
 
 template <template <typename, typename, typename> class ExpressionType, typename Result,
@@ -102,18 +105,15 @@ template <template <typename, typename, typename> class ExpressionType, typename
 constexpr auto
 wrap_non_expression_args(LHS&& lhs, RHS&& rhs)
 {
-    static_assert(is_expression_v<LHS> || is_expression_v<RHS>,
-                  "At least one of the arguments to a binary expression must be an expression");
-    if constexpr (is_expression_v<LHS> && is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType, Result>(std::forward<LHS>(lhs),
-                                                              std::forward<RHS>(rhs));
-    } else if constexpr (is_expression_v<LHS>) {
-        return make_binary_expression<ExpressionType, Result>(
-            std::forward<LHS>(lhs), scalar_constant<std::decay_t<RHS>>{std::forward<RHS>(rhs)});
-    } else if constexpr (is_expression_v<RHS>) {
-        return make_binary_expression<ExpressionType, Result>(
-            scalar_constant<std::decay_t<LHS>>{std::forward<LHS>(lhs)}, std::forward<RHS>(rhs));
-    }
+    return make_binary_expression<ExpressionType, Result>(
+        wrap_arg_t<LHS&&>(std::forward<LHS>(lhs)), wrap_arg_t<RHS&&>(std::forward<RHS>(rhs)));
+}
+
+template <template <typename...> class ExpressionType, typename... Args>
+constexpr auto
+wrap_non_expression_args(Args&&... args)
+{
+    return make_n_ary_expression<ExpressionType>(wrap_arg_t<Args&&>(std::forward<Args>(args))...);
 }
 
 }    // namespace detail

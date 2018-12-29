@@ -150,7 +150,7 @@ struct vector_cmp : binary_scalar_expression<vector_cmp, LHS, RHS, int>,
         return cmp_type::cmp(this->lhs_, this->rhs_);
     }
 };
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr int
 cmp(LHS&& lhs, RHS&& rhs)
 {
@@ -180,14 +180,14 @@ struct vector_eq : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator==(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator!=(LHS&& lhs, RHS&& rhs)
 {
@@ -217,28 +217,28 @@ struct vector_less : binary_scalar_expression<vector_less, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator<(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator<=(LHS&& lhs, RHS&& rhs)
 {
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator>(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator>=(LHS&& lhs, RHS&& rhs)
 {
@@ -266,7 +266,7 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -294,7 +294,7 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -460,14 +460,14 @@ normalize(Expr&& expr)
     return expr / magnitude(expr);
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 distance_square(LHS&& lhs, RHS&& rhs)
 {
     return magnitude_square(lhs - rhs);
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 distance(LHS&& lhs, RHS&& rhs)
 {
@@ -515,7 +515,7 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 dot_product(LHS&& lhs, RHS&& rhs)
 {

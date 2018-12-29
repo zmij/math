@@ -34,13 +34,21 @@ struct value_fill {
     T value;
 };
 
-template <typename T, typename U>
-struct most_precise_type {
-    using type = decltype(std::declval<T>() / std::declval<U>());
-};
+template <typename... T>
+struct most_precise_type;
+template <typename... T>
+using most_precise_type_t = typename most_precise_type<T...>::type;
 
 template <typename T, typename U>
-using most_presize_type_t = typename most_precise_type<T, U>::type;
+struct most_precise_type<T, U> {
+    using type = decltype(std::declval<T>() / std::declval<U>());
+};
+template <typename T, typename... U>
+struct most_precise_type<T, U...> : most_precise_type<T, most_precise_type_t<U...>> {};
+template <typename T>
+struct most_precise_type<T> {
+    using type = T;
+};
 
 template <typename T, typename U>
 struct shorter_sequence;

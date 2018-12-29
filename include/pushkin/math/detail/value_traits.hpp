@@ -246,6 +246,11 @@ template <typename T>
 using is_scalar_t = typename is_scalar<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_scalar_v = is_scalar_t<T>::value;
+
+template <typename T>
+using enable_if_scalar_value = std::enable_if_t<is_scalar_v<T>>;
+template <typename... T>
+using enable_if_scalar_values = std::enable_if_t<(is_scalar_v<T> && ...)>;
 //@}
 
 //@{
@@ -304,10 +309,9 @@ constexpr bool is_scalar_expression_v = is_scalar_expression_t<T>::value;
 
 template <typename T>
 using enable_if_scalar_expression = std::enable_if_t<is_scalar_expression_v<T>>;
-template <typename LHS, typename RHS>
-using enable_if_scalar_args = std::enable_if_t<
-    is_scalar_v<
-        LHS> && is_scalar_v<RHS> && (is_scalar_expression_v<LHS> || is_scalar_expression_v<RHS>)>;
+template <typename... T>
+using enable_if_scalar_args
+    = std::enable_if_t<(is_scalar_v<T> && ...) && ((is_scalar_expression_v<T> || ...))>;
 //@}
 
 //@{
@@ -325,9 +329,8 @@ constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
 
 template <typename T>
 using enable_if_vector_expression = std::enable_if_t<is_vector_expression_v<T>>;
-template <typename LHS, typename RHS>
-using enable_if_both_vector_expressions
-    = std::enable_if_t<is_vector_expression_v<LHS> && is_vector_expression_v<RHS>>;
+template <typename... T>
+using enable_if_vector_expressions = std::enable_if_t<(is_vector_expression_v<T> && ...)>;
 //@}
 
 //@{
@@ -345,9 +348,8 @@ constexpr bool is_matrix_expression_v = is_matrix_expression_t<T>::value;
 
 template <typename T>
 using enable_if_matrix_expression = std::enable_if_t<is_matrix_expression_v<T>>;
-template <typename LHS, typename RHS>
-using enable_if_both_matrix_expressions
-    = std::enable_if_t<is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>>;
+template <typename... T>
+using enable_if_matrix_expressions = std::enable_if_t<(is_matrix_expression_v<T> && ...)>;
 //@}
 
 //@{
@@ -431,7 +433,7 @@ detect_expression_result_value_type()
 {
     using lhs_value_type = decltype(detect_expression_value_type<T>());
     using rhs_value_type = decltype(detect_expression_value_type<U>());
-    return utils::most_presize_type_t<lhs_value_type, rhs_value_type>{};
+    return utils::most_precise_type_t<lhs_value_type, rhs_value_type>{};
 }
 
 template <typename T, typename U>
@@ -466,13 +468,13 @@ struct scalar_result {
 template <typename T>
 using scalar_result_t = typename scalar_result<T>::type;
 
-template <typename T, typename U>
+template <typename... T>
 struct scalar_expression_result {
-    using type
-        = decltype(detail::detect_expression_result_value_type<std::decay_t<T>, std::decay_t<U>>());
+    using type = utils::most_precise_type_t<decltype(
+        detail::detect_expression_value_type<std::decay_t<T>>())...>;
 };
-template <typename T, typename U>
-using scalar_expression_result_t = typename scalar_expression_result<T, U>::type;
+template <typename... T>
+using scalar_expression_result_t = typename scalar_expression_result<T...>::type;
 
 template <typename T, typename U>
 struct vector_expression_result {

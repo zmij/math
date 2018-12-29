@@ -53,6 +53,8 @@ template <typename T>
 struct arg_by_value : std::integral_constant<bool, std::is_rvalue_reference<T>{}> {};
 template <typename T>
 using arg_by_value_t = typename arg_by_value<T>::type;
+template <typename T>
+constexpr bool arg_by_value_v = arg_by_value_t<T>::value;
 
 //----------------------------------------------------------------------------
 template <typename Expression>
@@ -128,6 +130,33 @@ make_binary_expression(LHS&& lhs, RHS&& rhs)
         static_cast<expression_argument_t<RHS&&>>(rhs)};
 }
 
+//----------------------------------------------------------------------------
+template <typename... T>
+struct n_ary_expression {
+    using args_storage_type = std::tuple<expression_argument_storage_t<T>...>;
+    using by_value          = std::integer_sequence<bool, arg_by_value_v<T>...>;
+
+    constexpr n_ary_expression(expression_argument_t<T>... args)
+        : args_{std::forward<expression_argument_t<T>>(args)...}
+    {}
+
+protected:
+    template <std::size_t N>
+    constexpr auto
+    arg() const
+    {
+        return std::get<N>(args_);
+    }
+    args_storage_type args_;
+};
+
+template <template <typename...> class ExpressionType, typename... Args>
+constexpr auto
+make_n_ary_expression(Args&&... args)
+{
+    return ExpressionType<expression_parameter_t<Args&&>...>{
+        static_cast<expression_argument_t<Args&&>>(args)...};
+}
 }    // namespace expr
 }    // namespace math
 }    // namespace psst
