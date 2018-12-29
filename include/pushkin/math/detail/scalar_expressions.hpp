@@ -146,9 +146,8 @@ constexpr auto operator!(Expression&& exp)
 //@{
 /** @name Sum two scalar expressions */
 template <typename LHS, typename RHS>
-struct scalar_value_sum : binary_scalar_expression<scalar_value_sum, LHS, RHS>,
-                          binary_expression<LHS, RHS> {
-    using base_type       = binary_scalar_expression<scalar_value_sum, LHS, RHS>;
+struct scalar_add : binary_scalar_expression<scalar_add, LHS, RHS>, binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_add, LHS, RHS>;
     using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
 
@@ -165,18 +164,57 @@ template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_sum>(std::forward<LHS>(lhs),
-                                                              std::forward<RHS>(rhs));
+    return detail::wrap_non_expression_args<scalar_add>(std::forward<LHS>(lhs),
+                                                        std::forward<RHS>(rhs));
 }
 //@}
+
+//----------------------------------------------------------------------------
+template <typename... T>
+struct scalar_sum : scalar_expression<scalar_sum<T...>, scalar_expression_result_t<T...>>,
+                    n_ary_expression<T...> {
+    using base_type       = scalar_expression<scalar_sum<T...>, scalar_expression_result_t<T...>>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = n_ary_expression<T...>;
+    using index_sequence_type = std::index_sequence_for<T...>;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        return sum(index_sequence_type{});
+    }
+
+private:
+    template <std::size_t... Indexes>
+    constexpr auto
+    sum(std::index_sequence<Indexes...>) const
+    {
+        return (this->template arg<Indexes>() + ...);
+    }
+};
+
+template <typename T, typename = enable_if_scalar_value<T>>
+constexpr auto
+sum(T&& arg)
+{
+    return detail::wrap_arg_t<T&&>(std::forward<T>(arg));
+}
+
+template <typename... T, typename = enable_if_scalar_values<T...>>
+constexpr auto
+sum(T&&... args)
+{
+    return detail::wrap_non_expression_args<scalar_sum>(std::forward<T>(args)...);
+}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Subtract one scalar expression from another */
 template <typename LHS, typename RHS>
-struct scalar_value_diff : binary_scalar_expression<scalar_value_diff, LHS, RHS>,
-                           binary_expression<LHS, RHS> {
-    using base_type       = binary_scalar_expression<scalar_value_diff, LHS, RHS>;
+struct scalar_sub : binary_scalar_expression<scalar_sub, LHS, RHS>, binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_sub, LHS, RHS>;
     using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
 
@@ -193,8 +231,8 @@ template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_diff>(std::forward<LHS>(lhs),
-                                                               std::forward<RHS>(rhs));
+    return detail::wrap_non_expression_args<scalar_sub>(std::forward<LHS>(lhs),
+                                                        std::forward<RHS>(rhs));
 }
 //@}
 
@@ -202,9 +240,8 @@ operator-(LHS&& lhs, RHS&& rhs)
 //@{
 /** @name Multiply two scalar expressions */
 template <typename LHS, typename RHS>
-struct scalar_value_multiply : binary_scalar_expression<scalar_value_multiply, LHS, RHS>,
-                               binary_expression<LHS, RHS> {
-    using base_type       = binary_scalar_expression<scalar_value_multiply, LHS, RHS>;
+struct scalar_mul : binary_scalar_expression<scalar_mul, LHS, RHS>, binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_mul, LHS, RHS>;
     using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
 
@@ -220,18 +257,57 @@ struct scalar_value_multiply : binary_scalar_expression<scalar_value_multiply, L
 template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_multiply>(std::forward<LHS>(lhs),
-                                                                   std::forward<RHS>(rhs));
+    return detail::wrap_non_expression_args<scalar_mul>(std::forward<LHS>(lhs),
+                                                        std::forward<RHS>(rhs));
 }
 //@}
+
+//----------------------------------------------------------------------------
+template <typename... T>
+struct scalar_product : scalar_expression<scalar_product<T...>, scalar_expression_result_t<T...>>,
+                        n_ary_expression<T...> {
+    using base_type  = scalar_expression<scalar_product<T...>, scalar_expression_result_t<T...>>;
+    using value_type = typename base_type::value_type;
+    using expression_base     = n_ary_expression<T...>;
+    using index_sequence_type = std::index_sequence_for<T...>;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        return product(index_sequence_type{});
+    }
+
+private:
+    template <std::size_t... Indexes>
+    constexpr auto
+    product(std::index_sequence<Indexes...>) const
+    {
+        return (this->template arg<Indexes>() * ...);
+    }
+};
+
+template <typename T, typename = enable_if_scalar_value<T>>
+constexpr auto
+product(T&& arg)
+{
+    return detail::wrap_arg_t<T&&>(std::forward<T>(arg));
+}
+
+template <typename... T, typename = enable_if_scalar_values<T...>>
+constexpr auto
+product(T&&... args)
+{
+    return detail::wrap_non_expression_args<scalar_product>(std::forward<T>(args)...);
+}
 
 //----------------------------------------------------------------------------
 //@{
 /** @name Divide one scalar expression by another */
 template <typename LHS, typename RHS>
-struct scalar_value_divide : binary_scalar_expression<scalar_value_divide, LHS, RHS>,
-                             binary_expression<LHS, RHS> {
-    using base_type       = binary_scalar_expression<scalar_value_divide, LHS, RHS>;
+struct scalar_div : binary_scalar_expression<scalar_div, LHS, RHS>, binary_expression<LHS, RHS> {
+    using base_type       = binary_scalar_expression<scalar_div, LHS, RHS>;
     using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
 
@@ -248,8 +324,8 @@ template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
-    return detail::wrap_non_expression_args<scalar_value_divide>(std::forward<LHS>(lhs),
-                                                                 std::forward<RHS>(rhs));
+    return detail::wrap_non_expression_args<scalar_div>(std::forward<LHS>(lhs),
+                                                        std::forward<RHS>(rhs));
 }
 //@}
 
