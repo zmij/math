@@ -92,6 +92,16 @@ make_unary_expression(Argument&& arg)
     return ExpressionType<expression_parameter_t<Argument&&>, N>{
         static_cast<expression_argument_t<Argument&&>>(arg)};
 }
+
+template <template <typename, std::size_t, std::size_t> class ExpressionType, std::size_t R,
+          std::size_t C, typename Argument>
+constexpr auto
+make_unary_expression(Argument&& arg)
+{
+    return ExpressionType<expression_parameter_t<Argument&&>, R, C>{
+        static_cast<expression_argument_t<Argument&&>>(arg)};
+}
+
 //----------------------------------------------------------------------------
 template <typename LHS, typename RHS>
 struct binary_expression {

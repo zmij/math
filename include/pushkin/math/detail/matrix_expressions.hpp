@@ -20,16 +20,18 @@ inline namespace m {
 template <typename Expression, typename Result = Expression>
 struct matrix_expression {
     static_assert(is_matrix_v<Result>, "Result of matrix expression must be a matrix");
-    using expression_type = Expression;
-    using result_type     = Result;
-    using traits          = value_traits_t<Result>;
-    using value_type      = typename traits::value_type;
-    using value_tag       = typename traits::value_tag;
-    using axes_names      = typename traits::axes_names;
-    using matrix_type     = typename traits::matrix_type;
-    using transposed_type = typename traits::transposed_type;
-    using row_type        = typename traits::row_type;
-    using col_type        = typename traits::col_type;
+    using expression_type  = Expression;
+    using result_type      = Result;
+    using traits           = value_traits_t<Result>;
+    using value_type       = typename traits::value_type;
+    using value_tag        = typename traits::value_tag;
+    using axes_names       = typename traits::axes_names;
+    using matrix_type      = typename traits::matrix_type;
+    using transposed_type  = typename traits::transposed_type;
+    using row_type         = typename traits::row_type;
+    using col_type         = typename traits::col_type;
+    using row_indexes_type = typename traits::row_indexes_type;
+    using col_indexes_type = typename traits::col_indexes_type;
 
     static constexpr auto rows = traits::rows;
     static constexpr auto cols = traits::cols;
@@ -343,6 +345,39 @@ remove_col(Matrix&& mtx)
 }
 //@}
 
+//@{
+/** @name Matrix minor */
+template <typename Matrix, std::size_t RN, std::size_t CN>
+struct matrix_minor : matrix_expression<matrix_minor<Matrix, RN, CN>,
+                                        remove_col_result_t<remove_row_result_t<Matrix>>>,
+                      unary_expression<Matrix> {
+    using base_type = matrix_expression<matrix_minor<Matrix, RN, CN>,
+                                        remove_col_result_t<remove_row_result_t<Matrix>>>;
+
+    using expression_base = unary_expression<Matrix>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        constexpr std::size_t row = R < RN ? R : R + 1;
+        constexpr std::size_t col = C < CN ? C : C + 1;
+        return this->arg_.template element<row, col>();
+    }
+};
+
+template <std::size_t R, std::size_t C, typename Matrix,
+          typename = enable_if_matrix_expression<Matrix>>
+constexpr auto
+minor(Matrix&& mtx)
+{
+    return make_unary_expression<matrix_minor, R, C>(std::forward<Matrix>(mtx));
+}
+//@}
+
 //----------------------------------------------------------------------------
 //@{
 /** @name Compare two matrix expressions */
@@ -434,14 +469,14 @@ struct matrix_eq : binary_scalar_expression<matrix_eq, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator==(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator!=(LHS&& lhs, RHS&& rhs)
 {
@@ -470,28 +505,28 @@ struct matrix_less : binary_scalar_expression<matrix_less, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator<(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator<=(LHS&& lhs, RHS&& rhs)
 {
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator>(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator>=(LHS&& lhs, RHS&& rhs)
 {
@@ -570,7 +605,7 @@ struct matrix_sum : matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -600,7 +635,7 @@ struct matrix_diff : matrix_expression<matrix_diff<LHS, RHS>, matrix_sum_result_
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_both_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {

@@ -291,6 +291,8 @@ using mtx_3x4d = matrix<double, 3, 4>;
 using mtx_4x3f = matrix<float, 4, 3>;
 using mtx_4x3d = matrix<double, 4, 3>;
 
+using mtx_10x10f = matrix<float, 10, 10>;
+
 mtx_3x3f m3x3f_1, m3x3f_2;
 mtx_3x3d m3x3d_1, m3x3d_2;
 
@@ -301,6 +303,8 @@ mtx_3x4f m3x4f_1;
 mtx_3x4d m3x4d_1;
 mtx_4x3f m4x3f_1;
 mtx_4x3d m4x3d_1;
+
+mtx_10x10f m10x10;
 
 #endif
 

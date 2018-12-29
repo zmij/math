@@ -283,6 +283,20 @@ TEST(Matrix, RectMatrixAdd)
     EXPECT_EQ(expected, initial + initial);
 }
 
+TEST(Matrix, Minor)
+{
+    // clang-format off
+    matrix3x3 init{
+        { 11, 12, 13 },
+        { 21, 22, 23 },
+        { 31, 32, 33 }
+    };
+    // clang-format on
+    EXPECT_EQ((matrix2x2{{22, 23}, {32, 33}}), (expr::minor<0, 0>(init)));
+    EXPECT_EQ((matrix2x2{{21, 23}, {31, 33}}), (expr::minor<0, 1>(init)));
+    EXPECT_EQ((matrix2x2{{21, 22}, {31, 32}}), (expr::minor<0, 2>(init)));
+}
+
 } /* namespace test */
 } /* namespace math */
 } /* namespace psst */
