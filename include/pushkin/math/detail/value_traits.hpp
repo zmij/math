@@ -326,11 +326,14 @@ template <typename T>
 using is_vector_expression_t = typename is_vector_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_vector_expression_v = is_vector_expression_t<T>::value;
-
 template <typename T>
 using enable_if_vector_expression = std::enable_if_t<is_vector_expression_v<T>>;
 template <typename... T>
-using enable_if_vector_expressions = std::enable_if_t<(is_vector_expression_v<T> && ...)>;
+constexpr bool all_vector_expressions_v = (is_vector_expression_v<T> && ...);
+template <typename... T>
+using enable_if_vector_expressions = std::enable_if_t<all_vector_expressions_v<T...>>;
+template <typename... T>
+constexpr bool contains_vector_expression_v = (is_vector_expression_v<T> || ...);
 //@}
 
 //@{
@@ -350,6 +353,145 @@ template <typename T>
 using enable_if_matrix_expression = std::enable_if_t<is_matrix_expression_v<T>>;
 template <typename... T>
 using enable_if_matrix_expressions = std::enable_if_t<(is_matrix_expression_v<T> && ...)>;
+//@}
+
+//@{
+/** @name Axes names trait */
+namespace detail {
+
+template <typename T>
+constexpr auto
+detect_axes_names()
+{
+    if constexpr (is_vector_expression_v<T> || is_matrix_expression_v<T>) {
+        return typename std::decay_t<T>::axes_names{};
+    } else {
+        return axes::none{};
+    }
+}
+
+}    // namespace detail
+template <typename T>
+struct axes_names {
+    using type = decltype(detail::detect_axes_names<T>());
+};
+template <typename T>
+using axes_names_t = typename axes_names<T>::type;
+//@}
+
+//@{
+template <typename T, typename... Axes>
+struct has_axes : utils::bool_constant<(std::is_same<axes_names_t<T>, Axes>{} || ...)> {};
+template <typename T, typename... Axes>
+using has_axes_t = typename has_axes<T, Axes...>::type;
+template <typename T, typename... Axes>
+constexpr bool has_axes_v = has_axes_t<T, Axes...>::value;
+
+template <typename T, typename... Axes>
+using enable_for_axes = std::enable_if_t<has_axes_v<T, Axes...>>;
+template <typename T, typename... Axes>
+using disable_for_axes = std::enable_if_t<!has_axes_v<T, Axes...>>;
+//@}
+//@{
+/** @name undefined_axes */
+template <typename T>
+struct undefined_axes : has_axes<T, axes::none> {};
+template <typename T>
+using undefined_axes_t = typename undefined_axes<T>::type;
+template <typename T>
+constexpr bool undefined_axes_v = undefined_axes_t<T>::value;
+//@}
+//@{
+/** @name same_axes */
+template <typename... T>
+struct same_axes : utils::is_same_t<axes_names_t<T>...> {};
+template <typename... T>
+using same_axes_t = typename same_axes<T...>::type;
+template <typename... T>
+constexpr bool same_axes_v = same_axes_t<T...>::value;
+template <typename T>
+struct same_axes<T> : std::true_type {};
+//@}
+
+//@{
+template <typename... T>
+struct compatible_axes
+    : utils::bool_constant<utils::is_same_v<axes_names_t<T>...> || ((undefined_axes_v<T> || ...))> {
+};
+template <typename... T>
+using compatible_axes_t = typename compatible_axes<T...>::type;
+template <typename... T>
+constexpr bool compatible_axes_v = compatible_axes_t<T...>::value;
+//@}
+
+//@{
+/** @name select_axes_names */
+template <typename... T>
+struct select_axes_names;
+template <typename... T>
+using select_axes_names_t = typename select_axes_names<T...>::type;
+template <typename T>
+struct select_axes_names<T> {
+    using type = T;
+};
+template <>
+struct select_axes_names<> {
+    using type = axes::none;
+};
+template <typename T, typename U>
+struct select_axes_names<T, U> {
+    using type = std::conditional_t<
+        utils::is_same_v<T, U>, T,
+        std::conditional_t<axes::undefined_v<T>, U,
+                           std::conditional_t<axes::undefined_v<U>, T, axes::none>>>;
+};
+template <typename T, typename U, typename... V>
+struct select_axes_names<T, U, V...>
+    : select_axes_names<select_axes_names_t<T, U>, select_axes_names_t<V...>> {};
+//@}
+
+//@{
+/** @name axes_names_for */
+template <typename... T>
+struct axes_names_for : select_axes_names<axes_names_t<T>...> {};
+template <typename... T>
+using axes_names_for_t = typename axes_names_for<T...>::type;
+template <typename... T>
+constexpr bool axes_names_for_v = axes_names_for_t<T...>::value;
+//@}
+
+//@{
+namespace detail {
+
+template <typename T>
+constexpr std::size_t
+vector_expression_size()
+{
+    if constexpr (is_vector_expression_v<T>) {
+        return std::decay_t<T>::size;
+    } else {
+        return utils::npos::value;
+    }
+}
+
+}    // namespace detail
+
+template <typename T>
+struct vector_expression_size : utils::size_constant<detail::vector_expression_size<T>()> {};
+template <typename T>
+using vector_exression_size_t = typename vector_expression_size<T>::type;
+template <typename T>
+constexpr std::size_t vector_expression_size_v = vector_exression_size_t<T>::value;
+//@}
+
+//@{
+/** @name min_vector_size */
+template <typename... T>
+struct min_vector_size : utils::min<vector_expression_size_v<T>...> {};
+template <typename... T>
+using min_vector_size_t = typename min_vector_size<T...>::type;
+template <typename... T>
+constexpr bool min_vector_size_v = min_vector_size_t<T...>::value;
 //@}
 
 //@{

@@ -8,7 +8,6 @@
 #ifndef PUSHKIN_MATH_VECTOR_HPP_
 #define PUSHKIN_MATH_VECTOR_HPP_
 
-#include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/calculus.hpp>
 #include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/vector_expressions.hpp>
@@ -25,8 +24,7 @@ namespace math {
 
 template <typename T, std::size_t Size, typename Axes>
 struct vector : expr::vector_expression<vector<T, Size, Axes>>,
-                detail::calculus_selector<T, Size, Axes>,
-                detail::axes_names_t<Size, Axes, vector<T, Size, Axes>, T> {
+                detail::calculus_selector<T, Size, Axes> {
 
     using this_type            = vector<T, Size, Axes>;
     using traits               = vector_traits<this_type>;
@@ -65,7 +63,7 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
     template <typename Expression, typename = enable_if_vector_expression<Expression>>
     constexpr vector(Expression&& rhs)
         : vector(std::forward<Expression>(rhs),
-                 utils::make_min_index_sequence<Size, expr::vector_expression_size_v<Expression>>{})
+                 utils::make_min_index_sequence<Size, vector_expression_size_v<Expression>>{})
     {}
 
     pointer

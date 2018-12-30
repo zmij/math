@@ -8,6 +8,7 @@
 #ifndef PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 #define PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 
+#include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/expressions.hpp>
 #include <pushkin/math/detail/scalar_expressions.hpp>
 
@@ -21,7 +22,10 @@ inline namespace v {
 
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
-struct vector_expression {
+struct vector_expression
+    : math::detail::axes_names_t<value_traits_t<Result>::size,
+                                 typename value_traits_t<Result>::axes_names, Expression,
+                                 typename value_traits_t<Result>::value_type> {
     static_assert(is_vector_v<Result>, "Result of vector expression must be a vector");
     using expression_type     = Expression;
     using result_type         = Result;
@@ -66,26 +70,6 @@ struct vector_fill
 private:
     value_type arg_;
 };
-
-namespace detail {
-
-template <typename T>
-constexpr std::size_t
-vector_expression_size()
-{
-    static_assert(is_vector_expression_v<T>, "The expression is not vector type");
-    return std::decay_t<T>::size;
-}
-
-}    // namespace detail
-
-template <typename T>
-struct vector_expression_size
-    : std::integral_constant<std::size_t, detail::vector_expression_size<T>()> {};
-template <typename T>
-using vector_exression_size_t = typename vector_expression_size<T>::type;
-template <typename T>
-constexpr std::size_t vector_expression_size_v = vector_exression_size_t<T>::value;
 
 //----------------------------------------------------------------------------
 //@{
@@ -184,6 +168,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator==(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
@@ -191,6 +177,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator!=(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
 }
 //@}
@@ -221,6 +209,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator<(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
@@ -228,6 +218,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator<=(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
@@ -235,6 +227,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator>(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
@@ -242,6 +236,8 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator>=(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
 }
 //@}
@@ -270,6 +266,10 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((!has_axes_v<LHS, axes::polar, axes::spherical, axes::cylindrical>),
+                  "Adding two polar or spherical or cylindrical coordinates is not defined");
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_sum>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
@@ -298,6 +298,10 @@ template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LH
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
+    static_assert((!has_axes_v<LHS, axes::polar, axes::spherical, axes::cylindrical>),
+                  "Subtracting two polar or spherical or cylindrical coordinates is not defined");
+    static_assert((compatible_axes_v<LHS, RHS>),
+                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_diff>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
