@@ -224,12 +224,7 @@ private:
     clamp_azumuth()
     {
         auto& az = rebind().azimuth();
-        while (az >= pi::value * 2) {
-            az -= pi::value * 2;
-        }
-        while (az <= -pi::value * 2) {
-            az += pi::value * 2;
-        }
+        az       = clamp_angle(az);
     }
 
     vector_type&
