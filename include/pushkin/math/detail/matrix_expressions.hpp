@@ -51,7 +51,7 @@ matrix_row_count()
 }    // namespace detail
 
 template <typename T>
-struct matrix_row_count : std::integral_constant<std::size_t, detail::matrix_row_count<T>()> {};
+struct matrix_row_count : utils::size_constant<detail::matrix_row_count<T>()> {};
 template <typename T>
 using matrix_row_count_t = typename matrix_row_count<T>::type;
 template <typename T>

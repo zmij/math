@@ -8,7 +8,7 @@
 #ifndef INCLUDE_PUSHKIN_MATH_MATRIX_FWD_HPP_
 #define INCLUDE_PUSHKIN_MATH_MATRIX_FWD_HPP_
 
-#include <pushkin/math/vector_fwd.hpp>
+#include <pushkin/math/axes.hpp>
 
 namespace psst {
 namespace math {

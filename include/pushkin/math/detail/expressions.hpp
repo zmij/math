@@ -50,7 +50,7 @@ template <typename T>
 using expression_argument_storage_t = typename expression_argument_storage<T>::type;
 
 template <typename T>
-struct arg_by_value : std::integral_constant<bool, std::is_rvalue_reference<T>{}> {};
+struct arg_by_value : utils::bool_constant<std::is_rvalue_reference<T>{}> {};
 template <typename T>
 using arg_by_value_t = typename arg_by_value<T>::type;
 template <typename T>
