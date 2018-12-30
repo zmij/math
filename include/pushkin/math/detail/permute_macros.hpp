@@ -8,14 +8,14 @@
 #ifndef INCLUDE_PUSHKIN_MATH_DETAIL_PERMUTE_MACROS_HPP_
 #define INCLUDE_PUSHKIN_MATH_DETAIL_PERMUTE_MACROS_HPP_
 
-#define PSST_MATH_COORD_ACCESS(name, number)                   \
-    typename base_type::lvalue_reference name()                \
-    {                                                          \
-        return base_type::rebind().template at<number>();      \
-    }                                                          \
-    constexpr typename base_type::const_reference name() const \
-    {                                                          \
-        return base_type::rebind().template at<number>();      \
+#define PSST_MATH_COORD_ACCESS(name)                                            \
+    typename base_type::lvalue_reference name()                                 \
+    {                                                                           \
+        return base_type::rebind().template at<base_type::coord_names::name>(); \
+    }                                                                           \
+    constexpr typename base_type::const_reference name() const                  \
+    {                                                                           \
+        return base_type::rebind().template at<base_type::coord_names::name>(); \
     }
 
 #define PSST_MATH_COORD_VEC2(names, a, b) \
