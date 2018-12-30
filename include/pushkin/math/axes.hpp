@@ -10,88 +10,100 @@
 #define PUSHKIN_MATH_AXES_HPP_
 
 #include <cstddef>
+#include <limits>
 
 namespace psst {
 namespace math {
 
 namespace axes {
-struct none {};
+struct none {
+    static constexpr std::size_t max_components = std::numeric_limits<std::size_t>::max();
+};
 struct xyzw {
-    static constexpr std::size_t x = 0;
-    static constexpr std::size_t y = 1;
-    static constexpr std::size_t z = 2;
-    static constexpr std::size_t w = 3;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t x              = 0;
+    static constexpr std::size_t y              = 1;
+    static constexpr std::size_t z              = 2;
+    static constexpr std::size_t w              = 3;
 };
 struct wxyz {
-    static constexpr std::size_t w = 0;
-    static constexpr std::size_t x = 1;
-    static constexpr std::size_t y = 2;
-    static constexpr std::size_t z = 3;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t w              = 0;
+    static constexpr std::size_t x              = 1;
+    static constexpr std::size_t y              = 2;
+    static constexpr std::size_t z              = 3;
 };
 
 // FIXME Calculus for non-Cartesian coordinates
 struct polar {
-    static constexpr std::size_t rho     = 0;
-    static constexpr std::size_t phi     = 1;
-    static constexpr std::size_t r       = rho;
-    static constexpr std::size_t azimuth = phi;
+    static constexpr std::size_t max_components = 2;
+    static constexpr std::size_t rho            = 0;
+    static constexpr std::size_t phi            = 1;
+    static constexpr std::size_t r              = rho;
+    static constexpr std::size_t azimuth        = phi;
 };
 struct spherical {
-    static constexpr std::size_t rho         = 0;
-    static constexpr std::size_t phi         = 1;
-    static constexpr std::size_t theta       = 2;
-    static constexpr std::size_t r           = rho;
-    static constexpr std::size_t inclination = phi;
-    static constexpr std::size_t azimuth     = theta;
+    static constexpr std::size_t max_components = 3;
+    static constexpr std::size_t rho            = 0;
+    static constexpr std::size_t phi            = 1;
+    static constexpr std::size_t theta          = 2;
+    static constexpr std::size_t r              = rho;
+    static constexpr std::size_t inclination    = phi;
+    static constexpr std::size_t azimuth        = theta;
 };
 struct cylindrical {
-    static constexpr std::size_t rho       = 0;
-    static constexpr std::size_t phi       = 1;
-    static constexpr std::size_t z         = 2;
-    static constexpr std::size_t r         = rho;
-    static constexpr std::size_t azimuth   = phi;
-    static constexpr std::size_t elevation = z;
+    static constexpr std::size_t max_components = 3;
+    static constexpr std::size_t rho            = 0;
+    static constexpr std::size_t phi            = 1;
+    static constexpr std::size_t z              = 2;
+    static constexpr std::size_t r              = rho;
+    static constexpr std::size_t azimuth        = phi;
+    static constexpr std::size_t elevation      = z;
 };
 
 struct argb {
-    static constexpr std::size_t a     = 0;
-    static constexpr std::size_t r     = 1;
-    static constexpr std::size_t g     = 2;
-    static constexpr std::size_t b     = 3;
-    static constexpr std::size_t alpha = a;
-    static constexpr std::size_t red   = r;
-    static constexpr std::size_t green = g;
-    static constexpr std::size_t blue  = b;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t a              = 0;
+    static constexpr std::size_t r              = 1;
+    static constexpr std::size_t g              = 2;
+    static constexpr std::size_t b              = 3;
+    static constexpr std::size_t alpha          = a;
+    static constexpr std::size_t red            = r;
+    static constexpr std::size_t green          = g;
+    static constexpr std::size_t blue           = b;
 };
 struct rgba {
-    static constexpr std::size_t r     = 0;
-    static constexpr std::size_t g     = 1;
-    static constexpr std::size_t b     = 2;
-    static constexpr std::size_t a     = 3;
-    static constexpr std::size_t red   = r;
-    static constexpr std::size_t green = g;
-    static constexpr std::size_t blue  = b;
-    static constexpr std::size_t alpha = a;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t r              = 0;
+    static constexpr std::size_t g              = 1;
+    static constexpr std::size_t b              = 2;
+    static constexpr std::size_t a              = 3;
+    static constexpr std::size_t red            = r;
+    static constexpr std::size_t green          = g;
+    static constexpr std::size_t blue           = b;
+    static constexpr std::size_t alpha          = a;
 };
 struct hsva {
-    static constexpr std::size_t h          = 0;
-    static constexpr std::size_t s          = 1;
-    static constexpr std::size_t v          = 2;
-    static constexpr std::size_t a          = 3;
-    static constexpr std::size_t hue        = h;
-    static constexpr std::size_t saturation = s;
-    static constexpr std::size_t value      = v;
-    static constexpr std::size_t alpha      = a;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t h              = 0;
+    static constexpr std::size_t s              = 1;
+    static constexpr std::size_t v              = 2;
+    static constexpr std::size_t a              = 3;
+    static constexpr std::size_t hue            = h;
+    static constexpr std::size_t saturation     = s;
+    static constexpr std::size_t value          = v;
+    static constexpr std::size_t alpha          = a;
 };
 struct hsla {
-    static constexpr std::size_t h          = 0;
-    static constexpr std::size_t s          = 1;
-    static constexpr std::size_t l          = 2;
-    static constexpr std::size_t a          = 3;
-    static constexpr std::size_t hue        = h;
-    static constexpr std::size_t saturation = s;
-    static constexpr std::size_t lightness  = l;
-    static constexpr std::size_t alpha      = a;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t h              = 0;
+    static constexpr std::size_t s              = 1;
+    static constexpr std::size_t l              = 2;
+    static constexpr std::size_t a              = 3;
+    static constexpr std::size_t hue            = h;
+    static constexpr std::size_t saturation     = s;
+    static constexpr std::size_t lightness      = l;
+    static constexpr std::size_t alpha          = a;
 };
 
 template <std::size_t Size>

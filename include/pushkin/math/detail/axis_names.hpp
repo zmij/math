@@ -44,8 +44,8 @@ protected:
 /**
  * Primary axis access template
  */
-template <std::size_t AxesCount, typename Axes, typename VectorType, typename T>
-struct axis_access : axis_access<AxesCount - 1, Axes, VectorType, T> {};
+template <std::size_t AxisNo, typename Axes, typename VectorType, typename T>
+struct axis_access : axis_access<AxisNo - 1, Axes, VectorType, T> {};
 
 /**
  * Terminal axis access template

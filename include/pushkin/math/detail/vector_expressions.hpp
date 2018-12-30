@@ -36,6 +36,9 @@ struct vector_expression
     using index_sequence_type = typename traits::index_sequence_type;
 
     static constexpr auto size = traits::size;
+    static_assert(
+        size <= axes_names::max_components,
+        "The number of components in vector expression is greater than allowed by axes names");
 };
 
 template <template <typename, typename> class Expression, typename LHS, typename RHS,

@@ -40,7 +40,7 @@ constexpr vector<T, 4, axes::xyzw> make_test_vector(dimension_count<4> const&)
 //  Vector 10
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr vector<T, 10, axes::xyzw> make_test_vector(dimension_count<10> const&)
+constexpr vector<T, 10, axes::none> make_test_vector(dimension_count<10> const&)
 {
     return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 }
@@ -115,7 +115,7 @@ constexpr matrix<T, 4, 3> make_test_matrix(matrix_size<4, 3> const&)
 //  Matrix 10x10
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 10, 10> make_test_matrix(matrix_size<10, 10> const&)
+constexpr matrix<T, 10, 10, axes::none> make_test_matrix(matrix_size<10, 10> const&)
 {
     // clang-format off
     return

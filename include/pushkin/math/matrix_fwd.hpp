@@ -13,7 +13,7 @@
 namespace psst {
 namespace math {
 
-template <typename T, size_t RC, size_t CC, typename Axes = axes::xyzw>
+template <typename T, size_t RC, size_t CC, typename Axes = axes::default_axes_t<CC>>
 struct matrix;
 
 } /* namespace math */
