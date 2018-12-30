@@ -569,46 +569,7 @@ detect_expression_value_type()
     }
 }
 
-template <typename T, typename U>
-constexpr auto
-detect_expression_result_value_type()
-{
-    using lhs_value_type = decltype(detect_expression_value_type<T>());
-    using rhs_value_type = decltype(detect_expression_value_type<U>());
-    return utils::most_precise_type_t<lhs_value_type, rhs_value_type>{};
-}
-
-template <typename T, typename U>
-constexpr auto
-detect_vector_exression_result()
-{
-    static_assert(
-        is_vector_expression_v<T> || is_vector_expression_v<U>,
-        "At least one of the arguments to a vector expression must be a vector expression");
-    using result_value_type = decltype(detect_expression_result_value_type<T, U>());
-    if constexpr (is_vector_expression_v<T> && is_vector_expression_v<U>) {
-        // check the sizes and axes
-        static_assert(T::size == U::size,
-                      "Cannot detect result of an exprssion with vectors of different sizes");
-        static_assert((std::is_same<typename T::axes_names, typename U::axes_names>::value), "");
-        return vector<result_value_type, T::size, typename T::axes_names>{};
-    } else if constexpr (is_vector_expression_v<T>) {
-        // left-hand side is vector expression
-        return vector<result_value_type, T::size, typename T::axes_names>{};
-    } else {
-        // right-hand side is vector expression
-        return vector<result_value_type, U::size, typename U::axes_names>{};
-    }
-}
-
 }    // namespace detail
-
-template <typename T>
-struct scalar_result {
-    using type = decltype(detail::detect_expression_value_type<std::decay_t<T>>());
-};
-template <typename T>
-using scalar_result_t = typename scalar_result<T>::type;
 
 template <typename... T>
 struct scalar_expression_result {
@@ -618,13 +579,30 @@ struct scalar_expression_result {
 template <typename... T>
 using scalar_expression_result_t = typename scalar_expression_result<T...>::type;
 
-template <typename T, typename U>
+namespace detail {
+
+template <typename... T>
+constexpr auto
+detect_vector_exression_result()
+{
+    static_assert(
+        (contains_vector_expression_v<T...>),
+        "At least one of the arguments to a vector expression must be a vector expression");
+    static_assert((compatible_axes_v<T...>), "All vectors should have the same axes");
+    using result_value_type = scalar_expression_result_t<T...>;
+    using axes_names        = axes_names_for_t<T...>;
+    using size_type         = min_vector_size_t<T...>;
+    return vector<result_value_type, size_type::value, axes_names>{};
+}
+
+}    // namespace detail
+
+template <typename... T>
 struct vector_expression_result {
-    using type
-        = decltype(detail::detect_vector_exression_result<std::decay_t<T>, std::decay_t<U>>());
+    using type = decltype(detail::detect_vector_exression_result<std::decay_t<T>...>());
 };
-template <typename T, typename U>
-using vector_expression_result_t = typename vector_expression_result<T, U>::type;
+template <typename... T>
+using vector_expression_result_t = typename vector_expression_result<T...>::type;
 
 } /* namespace math */
 } /* namespace psst */

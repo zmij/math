@@ -45,7 +45,7 @@ private:
 };
 
 template <template <typename> class Expression, typename Arg,
-          typename Result = scalar_result_t<Arg>>
+          typename Result = scalar_expression_result_t<Arg>>
 using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
           typename Result = scalar_expression_result_t<LHS, RHS>>
@@ -91,6 +91,13 @@ struct wrap_arg<Arg, std::enable_if_t<is_expression_v<Arg>>> {
 
 template <typename Arg>
 using wrap_arg_t = typename wrap_arg<Arg>::type;
+
+template <template <typename> class ExpressionType, typename Arg>
+constexpr auto
+wrap_non_expression_args(Arg&& arg)
+{
+    return make_unary_expression<ExpressionType>(wrap_arg_t<Arg&&>(std::forward<Arg>(arg)));
+}
 
 template <template <typename, typename> class ExpressionType, typename LHS, typename RHS>
 constexpr auto
