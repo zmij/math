@@ -373,6 +373,31 @@ sqrt(Expression&& ex)
 }
 //@}
 
+//@{
+template <typename Expression>
+struct scalar_abs : unary_scalar_expression<scalar_abs, Expression>, unary_expression<Expression> {
+    static_assert(is_scalar_v<Expression>, "Can apply abs only to scalar expressions");
+    using base_type       = unary_scalar_expression<scalar_abs, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        using std::abs;
+        return abs(this->arg_.value());
+    }
+};
+template <typename Expression, typename = enable_if_scalar_value<Expression>>
+constexpr auto
+abs(Expression&& ex)
+{
+    return detail::wrap_non_expression_args<scalar_abs>(std::forward<Expression>(ex));
+}
+//@}
+
 }    // namespace s
 
 }    // namespace expr
