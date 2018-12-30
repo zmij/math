@@ -413,16 +413,18 @@ private:
 
 //----------------------------------------------------------------------------
 //@{
-/** @name Vector magnitude (squared and not) */
-template <typename LHS>
-struct vector_magnitude_squared : unary_scalar_expression<vector_magnitude_squared, LHS>,
-                                  unary_expression<LHS> {
-    static_assert(is_vector_expression_v<LHS>, "Argument to magnitude must be a vector");
-    using base_type  = unary_scalar_expression<vector_magnitude_squared, LHS>;
+/** @name Magnitude (squared and not) */
+template <typename Vector, typename Axes>
+struct magnitude_squared_calc
+    : scalar_expression<magnitude_squared_calc<Vector, Axes>, scalar_expression_result_t<Vector>>,
+      unary_expression<Vector> {
+    static_assert(is_vector_expression_v<Vector>, "Argument to magnitude must be a vector");
+    using base_type  = scalar_expression<magnitude_squared_calc<Vector, Axes>,
+                                        scalar_expression_result_t<Vector>>;
     using value_type = typename base_type::value_type;
 
-    using expression_base   = unary_expression<LHS>;
-    using source_index_type = typename std::decay_t<LHS>::index_sequence_type;
+    using expression_base   = unary_expression<Vector>;
+    using source_index_type = typename std::decay_t<Vector>::index_sequence_type;
 
     using expression_base::expression_base;
 
@@ -447,31 +449,45 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
+template <typename Polar>
+struct magnitude_squared_calc<Polar, axes::polar>
+    : scalar_expression<magnitude_squared_calc<Polar, axes::polar>,
+                        scalar_expression_result_t<Polar>>,
+      unary_expression<Polar> {
+    static_assert(is_vector_expression_v<Polar>, "Argument to magnitude must be a vector");
+
+    using expression_base = unary_expression<Polar>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    value() const
+    {
+        return this->arg_.rho() * this->arg_.rho();
+    }
+};
+
+template <typename Expr, typename = enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude_square(Expr&& expr)
 {
     // TODO Special handling for non-cartesian coordinate systems
-    // using axes_names        = typename Expr::axes_names;
-    return make_unary_expression<vector_magnitude_squared>(std::forward<Expr>(expr));
+    using axes_names = axes_names_t<Expr>;
+    return make_unary_expression<
+        select_unary_impl<magnitude_squared_calc, axes_names>::template type>(
+        std::forward<Expr>(expr));
 }
 
-template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
+template <typename Expr, typename = enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude(Expr&& expr)
 {
     // TODO Special handling for non-cartesian coordinate systems
-    // using axes_names        = typename Expr::axes_names;
-    return sqrt(magnitude_square(std::forward<Expr>(expr)));
-}
-
-template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
-constexpr auto
-normalize(Expr&& expr)
-{
-    // TODO Special handling for non-cartesian coordinate systems
-    // using axes_names        = typename Expr::axes_names;
-    return expr / magnitude(expr);
+    if constexpr (has_axes_v<Expr, axes::polar>) {
+        // Return RHO component
+        return s::abs(expr.template at<0>());
+    } else {
+        return sqrt(magnitude_square(std::forward<Expr>(expr)));
+    }
 }
 
 template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>

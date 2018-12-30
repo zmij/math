@@ -167,6 +167,26 @@ make_n_ary_expression(Args&&... args)
     return ExpressionType<expression_parameter_t<Args&&>...>{
         static_cast<expression_argument_t<Args&&>>(args)...};
 }
+
+//----------------------------------------------------------------------------
+template <template <typename, typename> class Expression, typename Axes>
+struct select_unary_impl {
+    template <typename T>
+    using type = Expression<T, Axes>;
+};
+
+template <template <typename, typename, typename> class Expression, typename Axes>
+struct select_binary_impl {
+    template <typename T, typename U>
+    using type = Expression<T, U, Axes>;
+};
+
+template <template <typename...> class Expression, typename Axes>
+struct select_n_ary_impl {
+    template <typename... T>
+    using type = Expression<T..., Axes>;
+};
+
 }    // namespace expr
 }    // namespace math
 }    // namespace psst

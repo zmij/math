@@ -289,6 +289,15 @@ TEST(Vector, Slerp)
         << "Unexpected lerp result " << slerp(v1, v2, 0.5);
 }
 
+TEST(Vector, PolarCoords)
+{
+    using polar_coord = vector<double, 2, axes::polar>;
+
+    polar_coord pc{1, pi<double>::value};
+    EXPECT_EQ(1, magnitude(pc));
+    EXPECT_EQ(1, magnitude_square(pc));
+}
+
 TEST(Vector, PolarCvt)
 {
     using vector2d    = vector<double, 2, axes::xyzw>;
