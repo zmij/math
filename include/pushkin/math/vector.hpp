@@ -294,17 +294,29 @@ project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
 // every time the metashell starts
 using namespace psst::math;
 
-using vec_3f = vector<float, 3>;
-using vec_3d = vector<double, 3>;
+using vec_3f  = vector<float, 3>;
+using vec_3d  = vector<double, 3>;
+using vec_3fn = vector<float, 3, axes::none>;
 
-using vec_4f = vector<float, 4>;
-using vec_4d = vector<double, 4>;
+using vec_4f  = vector<float, 4>;
+using vec_4d  = vector<double, 4>;
+using vec_4fn = vector<float, 4, axes::none>;
 
-vec_3f v3f_1, v3f_2;
-vec_4f v4f_1, v4f_2;
+vec_3f  v3f_1, v3f_2;
+vec_4f  v4f_1, v4f_2;
+vec_3fn v3f_n;
+vec_4fn v4f_n;
 
 vec_3d v3d_1, v3d_2;
 vec_4d v4d_1, v4d_2;
+
+using polar_f       = vector<float, 2, axes::polar>;
+using spherical_f   = vector<float, 3, axes::spherical>;
+using cylindrical_f = vector<float, 3, axes::cylindrical>;
+
+polar_f       p_1;
+spherical_f   s_1;
+cylindrical_f c_1;
 
 #endif
 

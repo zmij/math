@@ -28,7 +28,7 @@ template <>
 struct is_vector_calculus<axes::cylindrical> : std::false_type {};
 
 template <typename T, std::size_t Size, typename Axes>
-struct nonvector_calculus;
+struct nonvector_calculus {};
 
 template <typename T, std::size_t Size, typename Axes>
 struct vector_calculus {
