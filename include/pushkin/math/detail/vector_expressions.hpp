@@ -323,7 +323,12 @@ struct vector_scalar_multiply : binary_vector_expression<vector_scalar_multiply,
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply element index is out of range");
-        return this->lhs_.template at<N>() * this->rhs_;
+        if constexpr (has_axes_v<LHS, axes::polar> && N != axes::polar::rho) {
+            // In polar coordinates only the first component (rho) is multiplied
+            return this->lhs_.template at<N>();
+        } else {
+            return this->lhs_.template at<N>() * this->rhs_;
+        }
     }
 };
 
@@ -359,7 +364,12 @@ struct vector_scalar_divide : binary_vector_expression<vector_scalar_divide, LHS
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        return this->lhs_.template at<N>() / this->rhs_;
+        if constexpr (has_axes_v<LHS, axes::polar> && N != axes::polar::rho) {
+            // In polar coordinates only the first component (rho) is divided
+            return this->lhs_.template at<N>();
+        } else {
+            return this->lhs_.template at<N>() / this->rhs_;
+        }
     }
 };
 template <typename LHS, typename RHS,
