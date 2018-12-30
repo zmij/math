@@ -8,6 +8,7 @@
 #ifndef PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 #define PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 
+#include <pushkin/math/angles.hpp>
 #include <pushkin/math/detail/axis_names.hpp>
 #include <pushkin/math/detail/expressions.hpp>
 #include <pushkin/math/detail/scalar_expressions.hpp>
@@ -505,6 +506,45 @@ constexpr auto
 distance(LHS&& lhs, RHS&& rhs)
 {
     return magnitude(lhs - rhs);
+}
+//@}
+
+//@{
+template <typename Expr>
+struct polar_normalize : vector_expression<polar_normalize<Expr>, vector_expression_result_t<Expr>>,
+                         unary_expression<Expr> {
+    using base_type  = vector_expression<polar_normalize<Expr>, vector_expression_result_t<Expr>>;
+    using value_type = typename base_type::value_type;
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        static_assert(N < base_type::size, "Vector normalize element index is out of range");
+        if (N == axes::polar::rho) {
+            return value_type{1};
+        } else {
+            if (this->arg_.rho() < 0) {
+                return clamp_angle(this->arg_.azimuth() + pi<value_type>::value);
+            } else {
+                return this->arg_.azimuth();
+            }
+        }
+    }
+};
+
+template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
+constexpr auto
+normalize(Expr&& expr)
+{
+    // TODO Special handling for non-cartesian coordinate systems
+    if constexpr (has_axes_v<Expr, axes::polar>) {
+        return make_unary_expression<polar_normalize>(std::forward<Expr>(expr));
+    } else {
+        return expr / magnitude(expr);
+    }
 }
 //@}
 

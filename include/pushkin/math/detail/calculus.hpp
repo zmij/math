@@ -8,10 +8,8 @@
 #ifndef INCLUDE_PUSHKIN_MATH_DETAIL_CALCULUS_HPP_
 #define INCLUDE_PUSHKIN_MATH_DETAIL_CALCULUS_HPP_
 
+#include <pushkin/math/angles.hpp>
 #include <pushkin/math/detail/vector_expressions.hpp>
-#include <pushkin/math/pi.hpp>
-
-#include <type_traits>
 
 namespace psst {
 namespace math {

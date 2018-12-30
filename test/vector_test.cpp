@@ -293,9 +293,13 @@ TEST(Vector, PolarCoords)
 {
     using polar_coord = vector<double, 2, axes::polar>;
 
-    polar_coord pc{1, pi<double>::value};
+    polar_coord pc{-1, (double)180.0_°};
     EXPECT_EQ(1, magnitude(pc));
     EXPECT_EQ(1, magnitude_square(pc));
+
+    polar_coord n = normalize(pc);
+    EXPECT_EQ(1, n.rho());
+    EXPECT_EQ(0, n.azimuth());
 }
 
 TEST(Vector, PolarCvt)

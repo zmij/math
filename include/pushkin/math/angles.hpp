@@ -5,8 +5,8 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_PI_HPP_
-#define PUSHKIN_MATH_PI_HPP_
+#ifndef PUSHKIN_MATH_ANGLES_HPP_
+#define PUSHKIN_MATH_ANGLES_HPP_
 
 #include <cmath>
 
@@ -40,7 +40,31 @@ clamp_angle(T angle)
     return angle;
 }
 
+template <typename T>
+constexpr T
+degrees_to_radians(T degrees)
+{
+    return degrees / 180 * pi<std::decay_t<T>>::value;
+}
+
+template <typename T>
+constexpr T
+radians_to_degrees(T radians)
+{
+    return radians / pi<std::decay_t<T>>::value * 180;
+}
+
+inline constexpr long double operator"" _deg(long double deg)
+{
+    return degrees_to_radians(deg);
+}
+
+inline constexpr long double operator"" _°(long double deg)
+{
+    return degrees_to_radians(deg);
+}
+
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_PI_HPP_ */
+#endif /* PUSHKIN_MATH_ANGLES_HPP_ */
