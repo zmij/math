@@ -430,11 +430,11 @@ private:
 //@{
 /** @name Magnitude (squared and not) */
 template <typename Axes, typename Vector>
-struct magnitude_squared_calc
-    : scalar_expression<magnitude_squared_calc<Axes, Vector>, scalar_expression_result_t<Vector>>,
+struct vector_magnitude_squared
+    : scalar_expression<vector_magnitude_squared<Axes, Vector>, scalar_expression_result_t<Vector>>,
       unary_expression<Vector> {
     static_assert(is_vector_expression_v<Vector>, "Argument to magnitude must be a vector");
-    using base_type  = scalar_expression<magnitude_squared_calc<Axes, Vector>,
+    using base_type  = scalar_expression<vector_magnitude_squared<Axes, Vector>,
                                         scalar_expression_result_t<Vector>>;
     using value_type = typename base_type::value_type;
 
@@ -471,7 +471,7 @@ magnitude_square(Expr&& expr)
     // TODO Special handling for non-cartesian coordinate systems
     using axes_names = axes_names_t<Expr>;
     return make_unary_expression<
-        select_unary_impl<axes_names, magnitude_squared_calc>::template type>(
+        select_unary_impl<axes_names, vector_magnitude_squared>::template type>(
         std::forward<Expr>(expr));
 }
 

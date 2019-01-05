@@ -105,8 +105,8 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
 //@{
 /** @name Magnitude squared for polar coordinates */
 template <typename Polar>
-struct magnitude_squared_calc<axes::polar, Polar>
-    : scalar_expression<magnitude_squared_calc<axes::polar, Polar>,
+struct vector_magnitude_squared<axes::polar, Polar>
+    : scalar_expression<vector_magnitude_squared<axes::polar, Polar>,
                         scalar_expression_result_t<Polar>>,
       unary_expression<Polar> {
     static_assert(is_vector_expression_v<Polar>, "Argument to magnitude must be a vector");
