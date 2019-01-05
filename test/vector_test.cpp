@@ -345,14 +345,18 @@ TEST(Polar, Conversion)
 
 TEST(Color, Hex)
 {
-    using color::      operator""_rgba;
-    color::rgba_hex    c_hex = 0xff0000ff_rgba;
-    color::rgba<float> c1    = convert<color::rgba<float>>(c_hex);
-    std::cout << c1 << "\n";
-    EXPECT_EQ(1, c1.red());
+    using color::   operator""_rgba;
+    color::rgba_hex c_hex = 0xff0000ff_rgba;
+    EXPECT_EQ(0xff, c_hex.red());
+    EXPECT_EQ(0, c_hex.green());
+    EXPECT_EQ(0, c_hex.blue());
+    EXPECT_EQ(0xff, c_hex.alpha());
+    color::rgba<float> c1 = convert<color::rgba<float>>(c_hex);
+    std::cout << c_hex << " " << c1 << "\n";
+    EXPECT_EQ(1.0, c1.red());
     EXPECT_EQ(0, c1.green());
     EXPECT_EQ(0, c1.blue());
-    EXPECT_EQ(1, c1.alpha());
+    EXPECT_EQ(1.0, c1.alpha());
 }
 
 } /* namespace test */

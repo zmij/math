@@ -10,6 +10,7 @@
 #define PUSHKIN_MATH_COLORS_HPP_
 
 #include <pushkin/math/vector.hpp>
+#include <pushkin/math/vector_io.hpp>
 
 namespace psst {
 namespace math {
@@ -69,6 +70,7 @@ struct rgba_hex {
     static constexpr std::size_t blue           = b;
     static constexpr std::size_t alpha          = a;
 };
+
 struct hsva {
     static constexpr std::size_t min_components = 3;
     static constexpr std::size_t max_components = 4;
@@ -177,9 +179,9 @@ struct axis_access<4, rgba, VectorType, T> : axis_access<3, rgba, VectorType, T>
 //@{
 /** @name axes::rgba axes names */
 template <typename VectorType, typename T>
-struct axis_access<3, rgba_hex, VectorType, T> : basic_axis_access<VectorType, T, rgba> {
+struct axis_access<3, rgba_hex, VectorType, T> : basic_axis_access<VectorType, T, rgba_hex> {
 
-    using base_type = basic_axis_access<VectorType, T, rgba>;
+    using base_type = basic_axis_access<VectorType, T, rgba_hex>;
 
     PSST_MATH_COORD_ACCESS(r)
     PSST_MATH_COORD_ACCESS(red)
@@ -309,7 +311,7 @@ inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
 inline constexpr rgb_hex operator"" _rgb(unsigned long long val)
 {
     // clang-format off
-    rgba_hex res{
+    rgb_hex res{
         (std::uint8_t)((val & 0xff0000) >> 16),
         (std::uint8_t)((val & 0xff00) >> 8),
         (std::uint8_t)(val & 0xff)
@@ -369,6 +371,20 @@ struct conversion<color::rgba<T>, color::rgba_hex, Expression>
 }    // namespace v
 
 }    // namespace expr
+
+inline std::ostream&
+operator<<(std::ostream& os, color::rgba_hex const& val)
+{
+    // clang-format off
+    os << '#' << std::hex << std::setfill('0')
+       << std::setw(2) << (unsigned int)val.red()
+       << std::setw(2) << (unsigned int)val.green()
+       << std::setw(2) << (unsigned int)val.blue()
+       << std::setw(2) << (unsigned int)val.alpha();
+    // clang-format on
+    return os;
+}
+
 }    // namespace math
 }    // namespace psst
 
