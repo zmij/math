@@ -47,9 +47,9 @@ TEST(Matrix, ConstructInitList)
     EXPECT_EQ(11, m1[0].x());
     EXPECT_EQ(12, m1[0].y());
     EXPECT_EQ(13, m1[0].z());
-    EXPECT_EQ(11, m1.x().x());
-    EXPECT_EQ(12, m1.x().y());
-    EXPECT_EQ(13, m1.x().z());
+    //    EXPECT_EQ(11, m1.x().x());
+    //    EXPECT_EQ(12, m1.x().y());
+    //    EXPECT_EQ(13, m1.x().z());
 
     EXPECT_EQ(21, m1[1][0]);
     EXPECT_EQ(22, m1[1][1]);
@@ -57,9 +57,9 @@ TEST(Matrix, ConstructInitList)
     EXPECT_EQ(21, m1[1].x());
     EXPECT_EQ(22, m1[1].y());
     EXPECT_EQ(23, m1[1].z());
-    EXPECT_EQ(21, m1.y().x());
-    EXPECT_EQ(22, m1.y().y());
-    EXPECT_EQ(23, m1.y().z());
+    //    EXPECT_EQ(21, m1.y().x());
+    //    EXPECT_EQ(22, m1.y().y());
+    //    EXPECT_EQ(23, m1.y().z());
 
     EXPECT_EQ(31, m1[2][0]);
     EXPECT_EQ(32, m1[2][1]);
@@ -67,9 +67,9 @@ TEST(Matrix, ConstructInitList)
     EXPECT_EQ(31, m1[2].x());
     EXPECT_EQ(32, m1[2].y());
     EXPECT_EQ(33, m1[2].z());
-    EXPECT_EQ(31, m1.z().x());
-    EXPECT_EQ(32, m1.z().y());
-    EXPECT_EQ(33, m1.z().z());
+    //    EXPECT_EQ(31, m1.z().x());
+    //    EXPECT_EQ(32, m1.z().y());
+    //    EXPECT_EQ(33, m1.z().z());
 }
 
 TEST(Matrix, ConstructPlainArray)

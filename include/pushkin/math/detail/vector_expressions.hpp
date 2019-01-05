@@ -8,8 +8,7 @@
 #ifndef PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 #define PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 
-#include <pushkin/math/angles.hpp>
-#include <pushkin/math/detail/axis_names.hpp>
+#include <pushkin/math/detail/axis_access.hpp>
 #include <pushkin/math/detail/expressions.hpp>
 #include <pushkin/math/detail/scalar_expressions.hpp>
 
@@ -35,16 +34,30 @@ struct vector_expression
     using value_tag           = typename traits::value_tag;
     using axes_names          = typename traits::axes_names;
     using index_sequence_type = typename traits::index_sequence_type;
+    using axis_access
+        = math::detail::axes_names_t<value_traits_t<Result>::size,
+                                     typename value_traits_t<Result>::axes_names, Expression,
+                                     typename value_traits_t<Result>::value_type>;
 
     static constexpr auto size = traits::size;
     static_assert(
         size <= axes_names::max_components,
         "The number of components in vector expression is greater than allowed by axes names");
+    static_assert(
+        size >= axes_names::min_components,
+        "The number of components in vector expression is less than allowed by axes names");
 };
+
+template <template <typename, typename> class Expression, typename Axes, typename Arg,
+          typename Result = vector_expression_result_t<Arg>>
+using unary_vector_expression_axes = vector_expression<Expression<Axes, Arg>, Result>;
 
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
           typename Result = vector_expression_result_t<LHS, RHS>>
 using binary_vector_expression = vector_expression<Expression<LHS, RHS>, Result>;
+template <template <typename, typename, typename> class Expression, typename Axes, typename LHS,
+          typename RHS, typename Result = vector_expression_result_t<LHS, RHS>>
+using binary_vector_expression_axes = vector_expression<Expression<Axes, LHS, RHS>, Result>;
 
 template <std::size_t N, typename Expression, typename = enable_if_vector_expression<Expression>>
 constexpr auto
@@ -313,10 +326,11 @@ operator-(LHS&& lhs, RHS&& rhs)
 //----------------------------------------------------------------------------
 //@{
 /** @name Multiplication of a vector by scalar expression */
-template <typename LHS, typename RHS>
-struct vector_scalar_multiply : binary_vector_expression<vector_scalar_multiply, LHS, RHS>,
-                                binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression<vector_scalar_multiply, LHS, RHS>;
+template <typename Axes, typename LHS, typename RHS>
+struct vector_scalar_multiply
+    : binary_vector_expression_axes<vector_scalar_multiply, Axes, LHS, RHS>,
+      binary_expression<LHS, RHS> {
+    using base_type  = binary_vector_expression_axes<vector_scalar_multiply, Axes, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -327,12 +341,7 @@ struct vector_scalar_multiply : binary_vector_expression<vector_scalar_multiply,
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply element index is out of range");
-        if constexpr (has_axes_v<LHS, axes::polar> && N != axes::polar::rho) {
-            // In polar coordinates only the first component (rho) is multiplied
-            return this->lhs_.template at<N>();
-        } else {
-            return this->lhs_.template at<N>() * this->rhs_;
-        }
+        return this->lhs_.template at<N>() * this->rhs_;
     }
 };
 
@@ -342,11 +351,15 @@ template <typename LHS, typename RHS,
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
     if constexpr (is_vector_expression_v<LHS> && is_scalar_v<RHS>) {
-        return s::detail::wrap_non_expression_args<vector_scalar_multiply>(std::forward<LHS>(lhs),
-                                                                           std::forward<RHS>(rhs));
+        using axes_names = axes_names_t<LHS>;
+        return s::detail::wrap_non_expression_args<
+            select_binary_impl<axes_names, vector_scalar_multiply>::template type>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs));
     } else if constexpr (is_scalar_v<LHS> && is_vector_expression_v<RHS>) {
-        return s::detail::wrap_non_expression_args<vector_scalar_multiply>(std::forward<RHS>(rhs),
-                                                                           std::forward<LHS>(lhs));
+        using axes_names = axes_names_t<RHS>;
+        return s::detail::wrap_non_expression_args<
+            select_binary_impl<axes_names, vector_scalar_multiply>::template type>(
+            std::forward<RHS>(rhs), std::forward<LHS>(lhs));
     }
 }
 //@}
@@ -354,10 +367,10 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 //----------------------------------------------------------------------------
 //@{
 /** @name Division of a vector by a scalar expression */
-template <typename LHS, typename RHS>
-struct vector_scalar_divide : binary_vector_expression<vector_scalar_divide, LHS, RHS>,
+template <typename Axes, typename LHS, typename RHS>
+struct vector_scalar_divide : binary_vector_expression_axes<vector_scalar_divide, Axes, LHS, RHS>,
                               binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression<vector_scalar_divide, LHS, RHS>;
+    using base_type  = binary_vector_expression_axes<vector_scalar_divide, Axes, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -368,21 +381,19 @@ struct vector_scalar_divide : binary_vector_expression<vector_scalar_divide, LHS
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        if constexpr (has_axes_v<LHS, axes::polar> && N != axes::polar::rho) {
-            // In polar coordinates only the first component (rho) is divided
-            return this->lhs_.template at<N>();
-        } else {
-            return this->lhs_.template at<N>() / this->rhs_;
-        }
+        return this->lhs_.template at<N>() / this->rhs_;
     }
 };
+
 template <typename LHS, typename RHS,
           typename = std::enable_if_t<is_vector_expression_v<LHS> && is_scalar_v<RHS>>>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
-    return s::detail::wrap_non_expression_args<vector_scalar_divide>(std::forward<LHS>(lhs),
-                                                                     std::forward<RHS>(rhs));
+    using axes_names = axes_names_t<LHS>;
+    return s::detail::wrap_non_expression_args<
+        select_binary_impl<axes_names, vector_scalar_divide>::template type>(
+        std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
 
@@ -418,12 +429,12 @@ private:
 //----------------------------------------------------------------------------
 //@{
 /** @name Magnitude (squared and not) */
-template <typename Vector, typename Axes>
+template <typename Axes, typename Vector>
 struct magnitude_squared_calc
-    : scalar_expression<magnitude_squared_calc<Vector, Axes>, scalar_expression_result_t<Vector>>,
+    : scalar_expression<magnitude_squared_calc<Axes, Vector>, scalar_expression_result_t<Vector>>,
       unary_expression<Vector> {
     static_assert(is_vector_expression_v<Vector>, "Argument to magnitude must be a vector");
-    using base_type  = scalar_expression<magnitude_squared_calc<Vector, Axes>,
+    using base_type  = scalar_expression<magnitude_squared_calc<Axes, Vector>,
                                         scalar_expression_result_t<Vector>>;
     using value_type = typename base_type::value_type;
 
@@ -453,23 +464,6 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Polar>
-struct magnitude_squared_calc<Polar, axes::polar>
-    : scalar_expression<magnitude_squared_calc<Polar, axes::polar>,
-                        scalar_expression_result_t<Polar>>,
-      unary_expression<Polar> {
-    static_assert(is_vector_expression_v<Polar>, "Argument to magnitude must be a vector");
-
-    using expression_base = unary_expression<Polar>;
-    using expression_base::expression_base;
-
-    constexpr auto
-    value() const
-    {
-        return this->arg_.rho() * this->arg_.rho();
-    }
-};
-
 template <typename Expr, typename = enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude_square(Expr&& expr)
@@ -477,7 +471,7 @@ magnitude_square(Expr&& expr)
     // TODO Special handling for non-cartesian coordinate systems
     using axes_names = axes_names_t<Expr>;
     return make_unary_expression<
-        select_unary_impl<magnitude_squared_calc, axes_names>::template type>(
+        select_unary_impl<axes_names, magnitude_squared_calc>::template type>(
         std::forward<Expr>(expr));
 }
 
@@ -510,38 +504,19 @@ distance(LHS&& lhs, RHS&& rhs)
 //@}
 
 //@{
-template <typename Expr>
-struct polar_normalize : vector_expression<polar_normalize<Expr>, vector_expression_result_t<Expr>>,
-                         unary_expression<Expr> {
-    using base_type  = vector_expression<polar_normalize<Expr>, vector_expression_result_t<Expr>>;
-    using value_type = typename base_type::value_type;
-    using expression_base = unary_expression<Expr>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        static_assert(N < base_type::size, "Vector normalize element index is out of range");
-        if (N == axes::polar::rho) {
-            return value_type{1};
-        } else {
-            if (this->arg_.rho() < 0) {
-                return clamp_angle(this->arg_.azimuth() + pi<value_type>::value);
-            } else {
-                return this->arg_.azimuth();
-            }
-        }
-    }
-};
+template <typename Axes, typename Expr>
+struct vector_normalize;
 
 template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
 constexpr auto
 normalize(Expr&& expr)
 {
     // TODO Special handling for non-cartesian coordinate systems
-    if constexpr (has_axes_v<Expr, axes::polar>) {
-        return make_unary_expression<polar_normalize>(std::forward<Expr>(expr));
+    using axes_names = axes_names_t<Expr>;
+    if constexpr (utils::is_decl_complete_v<vector_normalize<axes_names, Expr>>) {
+        return make_unary_expression<
+            select_unary_impl<axes_names, vector_normalize>::template type>(
+            std::forward<Expr>(expr));
     } else {
         return expr / magnitude(expr);
     }
@@ -598,6 +573,7 @@ dot_product(LHS&& lhs, RHS&& rhs)
 //@}
 
 //----------------------------------------------------------------------------
+// TODO Move to a separate header
 template <typename Start, typename End, typename U,
           typename = std::enable_if_t<
               is_vector_expression_v<Start> && is_vector_expression_v<End> && is_scalar_v<U>>>
@@ -608,6 +584,7 @@ lerp(Start&& start, End&& end, U&& percent)
 }
 
 //----------------------------------------------------------------------------
+// TODO Move to a separate header
 template <typename Start, typename End, typename U,
           typename = std::enable_if_t<
               is_vector_expression_v<Start> && is_vector_expression_v<End> && is_scalar_v<U>>>

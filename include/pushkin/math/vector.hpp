@@ -39,6 +39,9 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
     using iterator             = typename traits::iterator;
     using const_iterator       = typename traits::const_iterator;
     using init_list            = std::initializer_list<value_type>;
+    using axis_access          = typename base_expression_type::axis_access;
+    template <std::size_t N>
+    using value_policy = typename axis_access::template value_policy<N>;
 
     static constexpr auto size = traits::size;
 
@@ -79,11 +82,11 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
     }
 
     template <std::size_t N>
-    lvalue_reference
+    typename value_policy<N>::accessor_type
     at()
     {
         static_assert(N < size, "Invalid value index in vector");
-        return std::get<N>(data_);
+        return value_policy<N>::accessor(std::get<N>(data_));
     }
 
     template <std::size_t N>
@@ -158,18 +161,19 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
 private:
     template <std::size_t... Indexes>
     constexpr vector(value_type val, std::index_sequence<Indexes...>)
-        : data_({utils::value_fill<Indexes, T>{val}.value...})
+        : data_({value_policy<Indexes>::apply(utils::value_fill<Indexes, T>{val}.value)...})
     {}
     template <std::size_t... Indexes>
-    constexpr vector(const_pointer p, std::index_sequence<Indexes...>) : data_({*(p + Indexes)...})
+    constexpr vector(const_pointer p, std::index_sequence<Indexes...>)
+        : data_({value_policy<Indexes>::apply(*(p + Indexes))...})
     {}
     template <typename U, std::size_t SizeR, typename AxesR, std::size_t... Indexes>
     constexpr vector(vector<U, SizeR, AxesR> const& rhs, std::index_sequence<Indexes...>)
-        : data_({rhs.template at<Indexes>()...})
+        : data_({value_policy<Indexes>::apply(rhs.template at<Indexes>())...})
     {}
     template <typename Expr, std::size_t... Indexes>
     constexpr vector(Expr&& rhs, std::index_sequence<Indexes...>)
-        : data_({(value_type)expr::get<Indexes>(std::forward<Expr>(rhs))...})
+        : data_({value_policy<Indexes>::apply(expr::get<Indexes>(std::forward<Expr>(rhs)))...})
     {}
 
 private:
@@ -178,7 +182,7 @@ private:
 };
 
 template <std::size_t N, typename T, std::size_t Size, typename Axes>
-constexpr auto&
+constexpr typename vector<T, Size, Axes>::template value_policy<N>::accessor_type
 get(vector<T, Size, Axes>& v)
 {
     return v.template at<N>();
@@ -292,6 +296,9 @@ project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
 #ifdef __METASHELL
 // Some definitions for debugging templates, not to input them
 // every time the metashell starts
+#    include <pushkin/math/cylindrical_coord.hpp>
+#    include <pushkin/math/polar_coord.hpp>
+#    include <pushkin/math/spherical_coord.hpp>
 using namespace psst::math;
 
 using vec_3f  = vector<float, 3>;
@@ -310,9 +317,9 @@ vec_4fn v4f_n;
 vec_3d v3d_1, v3d_2;
 vec_4d v4d_1, v4d_2;
 
-using polar_f       = vector<float, 2, axes::polar>;
-using spherical_f   = vector<float, 3, axes::spherical>;
-using cylindrical_f = vector<float, 3, axes::cylindrical>;
+using polar_f       = polar_coord<float>;
+using spherical_f   = spherical_coord<float>;
+using cylindrical_f = cylindrical_coord<float>;
 
 polar_f       p_1;
 spherical_f   s_1;

@@ -17,6 +17,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(
     test_program_SRCS
     # Add your sources here
+    misc_tests.cpp
     vector_test.cpp
     matrix_test.cpp
 )

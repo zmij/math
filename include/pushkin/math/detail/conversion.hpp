@@ -8,57 +8,121 @@
 #ifndef PUSHKIN_MATH_DETAIL_CONVERSION_HPP_
 #define PUSHKIN_MATH_DETAIL_CONVERSION_HPP_
 
-#include <pushkin/math/vector_fwd.hpp>
+#include <pushkin/math/detail/vector_expressions.hpp>
 
 namespace psst {
 namespace math {
 
-namespace cvt {
+namespace expr {
+inline namespace v {
 
-template <typename T, typename U>
+template <typename Source, typename Target, typename Expression = Source>
 struct conversion;
 
-template <typename T, std::size_t Cartesian>
-struct conversion<vector<T, 2, axes::polar>, vector<T, Cartesian, axes::xyzw>> {
-    using source_type = vector<T, 2, axes::polar>;
-    using target_type = vector<T, Cartesian, axes::xyzw>;
+//@{
+/** @name conversion_exists */
+template <typename Source, typename Target>
+struct conversion_exists
+    : utils::is_decl_complete_t<
+          conversion<vector_expression_result_t<std::decay_t<Source>>, Target>> {};
+template <typename Source, typename Target>
+using conversion_exists_t = typename conversion_exists<Source, Target>::type;
+template <typename Source, typename Target>
+constexpr bool conversion_exists_v = conversion_exists_t<Source, Target>::value;
+//@}
 
-    static_assert(
-        target_type::size >= 2,
-        "Target vector for conversion from polar coordinates must have at least 2 components");
+// Conversion within same axes is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+          typename Expression>
+struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>
+    : vector_expression<conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>>,
+      unary_expression<Expression> {
+    using base_type = vector_expression<
+        conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>>;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
 
-    static target_type
-    apply(source_type const& src)
+    template <std::size_t N>
+    constexpr auto
+    at() const
     {
-        auto const& phi = src.phi();
-        auto const& rho = src.rho();
-        return {rho * std::cos(phi), rho * std::sin(phi)};
+        static_assert(N < base_type::size, "Invalid component index");
+        return this->arg_.template at<N>();
     }
 };
 
-template <typename T, std::size_t Cartesian>
-struct conversion<vector<T, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>> {
-    using source_type = vector<T, Cartesian, axes::xyzw>;
-    using target_type = vector<T, 2, axes::polar>;
+// Conversion to axes::none is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+          typename Expression>
+struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>
+    : vector_expression<
+          conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>,
+          vector<LHS, LSize, axes::none>>,
+      unary_expression<Expression> {
+    using base_type = vector_expression<
+        conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>,
+        vector<LHS, LSize, axes::none>>;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
 
-    static_assert(
-        source_type::size >= 2,
-        "Target vector for conversion to polar coordinates must have at lease 2 components");
-
-    static target_type
-    apply(source_type const& src)
+    template <std::size_t N>
+    constexpr auto
+    at() const
     {
-        return {src.magnitude(), std::atan2(src.y(), src.x())};
+        static_assert(N < base_type::size, "Invalid component index");
+        return this->arg_.template at<N>();
     }
 };
 
-}    // namespace cvt
+// Conversion from axes::none is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+          typename Expression>
+struct conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>
+    : vector_expression<
+          conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>,
+          vector<LHS, LSize, Axes>>,
+      unary_expression<Expression> {
+    using base_type = vector_expression<
+        conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>,
+        vector<LHS, LSize, Axes>>;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
 
-template <typename Target, typename Source>
-Target
-convert(Source const& src)
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        static_assert(N < base_type::size, "Invalid component index");
+        return this->arg_.template at<N>();
+    }
+};
+
+template <typename Source, typename Target>
+struct bind_conversion_args {
+    template <typename Expression>
+    using type = conversion<Source, Target, Expression>;
+};
+
+}    // namespace v
+}    // namespace expr
+
+template <typename Target, typename Expression>
+constexpr auto
+convert(Expression&& expr)
 {
-    return cvt::conversion<Source, Target>::apply(src);
+    static_assert(is_vector_expression_v<Expression>,
+                  "Source expression must be a vector expression");
+    static_assert(is_vector_v<Target>, "Conversion target must be a vector type");
+    static_assert((expr::conversion_exists_v<Expression, Target>),
+                  "Conversion between theses axes is not defined");
+    if constexpr (same_axes_v<Expression, Target>) {
+        return std::forward<Expression>(expr);
+    } else {
+        using source_vector_type = vector_expression_result_t<Expression>;
+        return expr::make_unary_expression<
+            expr::bind_conversion_args<source_vector_type, Target>::template type>(
+            std::forward<Expression>(expr));
+    }
 }
 
 } /* namespace math */

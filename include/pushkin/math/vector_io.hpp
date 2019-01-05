@@ -267,6 +267,19 @@ operator<<(std::basic_ostream<CharT>& os, T const& v)
 
 } /* namespace io */
 
+namespace value_policy {
+
+template <typename T, T (*F)(T const&)>
+std::istream&
+operator>>(std::istream& is, value_clamp<T, F>& val)
+{
+    T tmp;
+    is >> tmp;
+    val = tmp;
+    return is;
+}
+
+}    // namespace value_policy
 namespace expr {
 inline namespace v {
 

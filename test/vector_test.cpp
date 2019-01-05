@@ -5,7 +5,9 @@
  *      Author: zmij
  */
 
+#include "../include/pushkin/math/polar_coord.hpp"
 #include "test_printing.hpp"
+#include <pushkin/math/colors.hpp>
 #include <pushkin/math/matrix.hpp>
 #include <pushkin/math/vector.hpp>
 
@@ -289,20 +291,42 @@ TEST(Vector, Slerp)
         << "Unexpected lerp result " << slerp(v1, v2, 0.5);
 }
 
-TEST(Vector, PolarCoords)
+TEST(Polar, Azimuth)
 {
-    using polar_coord = vector<double, 2, axes::polar>;
+    polar_coord<double> pc{1, 360.0_deg};
+    EXPECT_EQ(0, pc.azimuth());
+    pc.azimuth() = -180.0_deg;
+    EXPECT_EQ(180.0_deg, pc.azimuth());
+}
 
-    polar_coord pc{-1, (double)180.0_°};
+TEST(Polar, Multiply)
+{
+    polar_coord<double> pc{1, 180.0_deg};
+    EXPECT_EQ(1, pc.rho());
+    EXPECT_EQ(180.0_deg, pc.azimuth());
+    auto m = pc * 2;
+    EXPECT_EQ(2, m.rho());
+    EXPECT_EQ(180.0_deg, m.azimuth());
+
+    auto d = m / 2;
+    EXPECT_EQ(1, d.rho());
+    EXPECT_EQ(180.0_deg, d.azimuth());
+}
+
+TEST(Polar, Magnitude)
+{
+    polar_coord<double> pc{-1, 180.0_deg};
     EXPECT_EQ(1, magnitude(pc));
     EXPECT_EQ(1, magnitude_square(pc));
 
-    polar_coord n = normalize(pc);
+    polar_coord<double> n = normalize(pc);
     EXPECT_EQ(1, n.rho());
     EXPECT_EQ(0, n.azimuth());
+
+    // polar_coord
 }
 
-TEST(Vector, PolarCvt)
+TEST(Polar, Conversion)
 {
     using vector2d    = vector<double, 2, axes::xyzw>;
     using polar_coord = vector<double, 2, axes::polar>;
@@ -315,6 +339,18 @@ TEST(Vector, PolarCvt)
 
     EXPECT_EQ(pc, v.convert<axes::polar>());
     EXPECT_EQ(v, pc.convert<axes::xyzw>());
+}
+
+TEST(Color, Hex)
+{
+    using color::      operator""_rgba;
+    color::rgba_hex    c_hex = 0xff0000ff_rgba;
+    color::rgba<float> c1    = convert<color::rgba<float>>(c_hex);
+    std::cout << c1 << "\n";
+    EXPECT_EQ(1, c1.red());
+    EXPECT_EQ(0, c1.green());
+    EXPECT_EQ(0, c1.blue());
+    EXPECT_EQ(1, c1.alpha());
 }
 
 } /* namespace test */

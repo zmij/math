@@ -101,6 +101,56 @@ struct is_same<T, U> : std::is_same<T, U> {};
 template <typename T, typename U, typename... V>
 struct is_same<T, U, V...> : bool_constant<is_same_v<T, U> && is_same_v<U, V...>> {};
 //@}
+
+//@{
+/** @name is_decl_complete */
+namespace detail {
+
+template <typename T, std::size_t = sizeof(T)>
+std::true_type
+is_decl_complete_impl(T*);
+
+std::false_type
+is_decl_complete_impl(...);
+
+}    // namespace detail
+template <typename T>
+struct is_decl_complete : decltype(detail::is_decl_complete_impl(std::declval<T*>())) {};
+template <typename T>
+using is_decl_complete_t = typename is_decl_complete<T>::type;
+template <typename T>
+constexpr bool is_decl_complete_v = is_decl_complete_t<T>::value;
+//@}
+
+//@{
+template <std::size_t N, template <typename> class... T>
+struct nth_template;
+
+template <template <typename> class T, template <typename> class... Y>
+struct nth_template<0, T, Y...> {
+    template <typename U>
+    using type = T<U>;
+};
+
+template <::std::size_t N, template <typename> class T, template <typename> class... Y>
+struct nth_template<N, T, Y...> : nth_template<N - 1, Y...> {
+    static_assert(N <= sizeof...(Y), "Index type is out of range");
+};
+
+//@}
+//@{
+template <template <typename> class... T>
+struct template_tuple {
+    static constexpr std::size_t size = sizeof...(T);
+    template <std::size_t N, typename U>
+    using type = typename nth_template<N, T...>::template type<U>;
+};
+template <>
+struct template_tuple<> {
+    static constexpr std::size_t size = 0;
+};
+//@}
+
 }    // namespace utils
 }    // namespace math
 }    // namespace psst

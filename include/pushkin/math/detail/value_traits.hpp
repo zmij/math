@@ -265,6 +265,8 @@ template <typename T>
 constexpr bool is_vector_v = is_vector_t<T>::value;
 template <typename T>
 struct is_vector<T&> : is_vector<T> {};
+template <typename T>
+using enable_if_vector = std::enable_if_t<is_vector_v<T>>;
 //@}
 
 //@{
@@ -279,7 +281,12 @@ template <typename T>
 constexpr bool is_matrix_v = is_matrix_t<T>::value;
 template <typename T>
 struct is_matrix<T&> : is_matrix<T> {};
+template <typename T>
+using enable_if_matrix = std::enable_if_t<is_matrix_v<T>>;
 //@}
+
+template <typename T>
+using enable_if_vector_or_matrix = std::enable_if_t<is_vector_v<T> || is_matrix_v<T>>;
 
 //@{
 /** @name is_expression trait */
