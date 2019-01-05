@@ -318,12 +318,14 @@ TEST(Polar, Magnitude)
     polar_coord<double> pc{-1, 180.0_deg};
     EXPECT_EQ(1, magnitude(pc));
     EXPECT_EQ(1, magnitude_square(pc));
+}
 
+TEST(Polar, Normalize)
+{
+    polar_coord<double> pc{-1, 180.0_deg};
     polar_coord<double> n = normalize(pc);
     EXPECT_EQ(1, n.rho());
     EXPECT_EQ(0, n.azimuth());
-
-    // polar_coord
 }
 
 TEST(Polar, Conversion)

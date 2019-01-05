@@ -475,14 +475,18 @@ magnitude_square(Expr&& expr)
         std::forward<Expr>(expr));
 }
 
+template <typename Axes, typename Expr>
+struct vector_magnitude;
+
 template <typename Expr, typename = enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude(Expr&& expr)
 {
-    // TODO Special handling for non-cartesian coordinate systems
-    if constexpr (has_axes_v<Expr, axes::polar>) {
-        // Return RHO component
-        return s::abs(expr.template at<0>());
+    using axes_names = axes_names_t<Expr>;
+    if constexpr (utils::is_decl_complete_v<vector_magnitude<axes_names, Expr>>) {
+        return make_unary_expression<
+            select_unary_impl<axes_names, vector_magnitude>::template type>(
+            std::forward<Expr>(expr));
     } else {
         return sqrt(magnitude_square(std::forward<Expr>(expr)));
     }

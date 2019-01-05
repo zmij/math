@@ -93,7 +93,7 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        if constexpr (has_axes_v<LHS, axes::polar> && N != axes::polar::rho) {
+        if constexpr (N != axes::polar::rho) {
             // In polar coordinates only the first component (rho) is divided
             return this->lhs_.template at<N>();
         } else {
@@ -104,20 +104,40 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
 //@}
 //@{
 /** @name Magnitude squared for polar coordinates */
-template <typename Polar>
-struct vector_magnitude_squared<axes::polar, Polar>
-    : scalar_expression<vector_magnitude_squared<axes::polar, Polar>,
-                        scalar_expression_result_t<Polar>>,
-      unary_expression<Polar> {
-    static_assert(is_vector_expression_v<Polar>, "Argument to magnitude must be a vector");
+template <typename Expr>
+struct vector_magnitude_squared<axes::polar, Expr>
+    : scalar_expression<vector_magnitude_squared<axes::polar, Expr>,
+                        scalar_expression_result_t<Expr>>,
+      unary_expression<Expr> {
+    static_assert(is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
 
-    using expression_base = unary_expression<Polar>;
+    using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     constexpr auto
     value() const
     {
         return this->arg_.rho() * this->arg_.rho();
+    }
+};
+
+//@}
+//@{
+/** @name Magnitude for polar coordinates */
+template <typename Expr>
+struct vector_magnitude<axes::polar, Expr>
+    : scalar_expression<vector_magnitude<axes::polar, Expr>, scalar_expression_result_t<Expr>>,
+      unary_expression<Expr> {
+    static_assert(is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    value() const
+    {
+        using std::abs;
+        return abs(this->arg_.rho());
     }
 };
 
