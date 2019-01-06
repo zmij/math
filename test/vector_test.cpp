@@ -5,10 +5,11 @@
  *      Author: zmij
  */
 
-#include "../include/pushkin/math/polar_coord.hpp"
 #include "test_printing.hpp"
 #include <pushkin/math/colors.hpp>
 #include <pushkin/math/matrix.hpp>
+#include <pushkin/math/polar_coord.hpp>
+#include <pushkin/math/spherical_coord.hpp>
 #include <pushkin/math/vector.hpp>
 
 #include <gtest/gtest.h>
@@ -291,7 +292,7 @@ TEST(Vector, Slerp)
         << "Unexpected lerp result " << slerp(v1, v2, 0.5);
 }
 
-TEST(Polar, Azimuth)
+TEST(Polar, Clamp)
 {
     polar_coord<double> pc{1, 360.0_deg};
     EXPECT_EQ(0, pc.azimuth());
@@ -349,6 +350,142 @@ TEST(Polar, XYZConversion)
 
     EXPECT_EQ(pc, v.convert<axes::polar>());
     EXPECT_EQ(v, pc.convert<axes::xyzw>());
+}
+
+TEST(Spherical, Clamp)
+{
+    spherical_coord<double> sc{10, 180_deg, 360_deg};
+    EXPECT_EQ(10, sc.rho());
+    EXPECT_EQ(90_deg, sc.inclination());
+    EXPECT_EQ(0, sc.azimuth());
+}
+
+TEST(Spherical, Multiply)
+{
+    spherical_coord<double> sc{10, 45_deg, 60_deg};
+    EXPECT_EQ(10, sc.rho());
+    EXPECT_EQ(45_deg, sc.inclination());
+    EXPECT_EQ(60_deg, sc.azimuth());
+
+    auto m = sc * 2;
+    EXPECT_EQ(20, m.rho());
+    EXPECT_EQ(45_deg, m.inclination());
+    EXPECT_EQ(60_deg, m.azimuth());
+
+    auto d = m / 2;
+    EXPECT_EQ(10, d.rho());
+    EXPECT_EQ(45_deg, d.inclination());
+    EXPECT_EQ(60_deg, d.azimuth());
+}
+
+TEST(Spherical, Magnitude)
+{
+    spherical_coord<double> sc{-10, 45_deg, 60_deg};
+    EXPECT_EQ(10, magnitude(sc));
+    EXPECT_EQ(100, magnitude_square(sc));
+}
+
+TEST(Spherical, Normalize)
+{
+    {
+        spherical_coord<double> sc{-10, 45_deg, 60_deg};
+        spherical_coord<double> n = normalize(sc);
+        EXPECT_EQ(1, n.rho());
+        EXPECT_EQ(-45_deg, n.inclination());
+        EXPECT_EQ(240_deg, n.azimuth());
+    }
+    {
+        spherical_coord<double> sc{10, 45_deg, 60_deg};
+        spherical_coord<double> n = normalize(sc);
+        EXPECT_EQ(1, n.rho());
+        EXPECT_EQ(45_deg, n.inclination());
+        EXPECT_EQ(60_deg, n.azimuth());
+    }
+}
+
+TEST(Spherical, XYZConversion)
+{
+    using vector3d    = vector<double, 3, axes::xyzw>;
+    using spherical_d = spherical_coord<double>;
+
+    {
+        vector3d    v{1, 0, 0};
+        spherical_d sc{1, 0, 0};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{-1, 0, 0};
+        spherical_d sc{1, 0, 180_deg};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{0, 1, 0};
+        spherical_d sc{1, 0, 90_deg};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{0, -1, 0};
+        spherical_d sc{1, 0, 270_deg};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{0, 0, 1};
+        spherical_d sc{1, 90_deg, 0};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{0, 0, -1};
+        spherical_d sc{1, -90_deg, 0};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        vector3d    v{3, 4, 0};
+        spherical_d sc{5, 0, 0.92729521800161219};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+    {
+        spherical_d sc{1, 45_deg, 45_deg};
+        vector3d    v{.5, .5, sqrt(2) / 2};
+
+        EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+    }
+}
+
+TEST(Spherical, PolarConversion)
+{
+    using polar_d     = polar_coord<double>;
+    using spherical_d = spherical_coord<double>;
+    {
+        polar_d     pc{1, 45_deg};
+        spherical_d sc{1, 0, 45_deg};
+        EXPECT_EQ(sc, convert<spherical_d>(pc));
+        EXPECT_EQ(pc, convert<polar_d>(sc));
+    }
+    {
+        spherical_d sc{1, 90_deg, 45_deg};
+        EXPECT_EQ((polar_d{0, 45_deg}), convert<polar_d>(sc))
+            << "Conversion result " << convert<polar_d>(sc);
+    }
+    {
+        spherical_d sc{1, 45_deg, 0};
+        EXPECT_EQ((polar_d{sqrt(2) / 2, 0}), convert<polar_d>(sc))
+            << "Conversion result " << convert<polar_d>(sc);
+    }
 }
 
 TEST(Color, Hex)
