@@ -226,7 +226,7 @@ struct conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, E
         if constexpr (N == axes::polar::rho) {
             return magnitude(this->arg_);
         } else if constexpr (N == axes::polar::azimuth) {
-            return atan2(this->arg_.y(), this->arg_.x());
+            return zero_to_two_pi(atan2(this->arg_.y(), this->arg_.x()));
         }
     }
 };
