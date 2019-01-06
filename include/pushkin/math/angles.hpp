@@ -74,6 +74,11 @@ inline constexpr double operator"" _deg(long double deg)
     return degrees_to_radians(deg);
 }
 
+inline constexpr double operator"" _deg(unsigned long long int deg)
+{
+    return degrees_to_radians<double>(deg);
+}
+
 namespace value_policy {
 
 template <typename T>
