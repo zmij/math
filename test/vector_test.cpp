@@ -350,6 +350,8 @@ TEST(Polar, XYZConversion)
 
     EXPECT_EQ(pc, v.convert<axes::polar>());
     EXPECT_EQ(v, pc.convert<axes::xyzw>());
+
+    EXPECT_EQ(convert<polar_coord>(v) * 3, convert<polar_coord>(v * 3));
 }
 
 TEST(Spherical, Clamp)
@@ -414,6 +416,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{-1, 0, 0};
@@ -421,6 +425,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{0, 1, 0};
@@ -428,6 +434,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{0, -1, 0};
@@ -435,6 +443,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{0, 0, 1};
@@ -442,6 +452,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{0, 0, -1};
@@ -449,6 +461,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
     {
         vector3d    v{3, 4, 0};
@@ -463,6 +477,8 @@ TEST(Spherical, XYZConversion)
 
         EXPECT_EQ(sc, convert<spherical_d>(v)) << "Conversion result " << convert<spherical_d>(v);
         EXPECT_EQ(v, convert<vector3d>(sc)) << "Conversion result " << convert<vector3d>(sc);
+
+        EXPECT_EQ(convert<spherical_d>(v) * 3, convert<spherical_d>(v * 3));
     }
 }
 
