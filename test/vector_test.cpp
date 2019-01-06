@@ -322,13 +322,21 @@ TEST(Polar, Magnitude)
 
 TEST(Polar, Normalize)
 {
-    polar_coord<double> pc{-1, 180.0_deg};
-    polar_coord<double> n = normalize(pc);
-    EXPECT_EQ(1, n.rho());
-    EXPECT_EQ(0, n.azimuth());
+    {
+        polar_coord<double> pc{-1, 180.0_deg};
+        polar_coord<double> n = normalize(pc);
+        EXPECT_EQ(1, n.rho());
+        EXPECT_EQ(0, n.azimuth());
+    }
+    {
+        polar_coord<double> pc{10, 180.0_deg};
+        polar_coord<double> n = normalize(pc);
+        EXPECT_EQ(1, n.rho());
+        EXPECT_EQ(180_deg, n.azimuth());
+    }
 }
 
-TEST(Polar, Conversion)
+TEST(Polar, XYZConversion)
 {
     using vector2d    = vector<double, 2, axes::xyzw>;
     using polar_coord = vector<double, 2, axes::polar>;

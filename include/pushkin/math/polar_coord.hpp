@@ -65,7 +65,7 @@ struct vector_scalar_multiply<axes::polar, LHS, RHS>
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector multiply element index is out of range");
+        static_assert(N < base_type::size, "Vector multiply component index is out of range");
         if constexpr (N != axes::polar::rho) {
             // In polar coordinates only the first component (rho) is multiplied
             return this->lhs_.template at<N>();
@@ -92,7 +92,7 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector divide element index is out of range");
+        static_assert(N < base_type::size, "Vector divide component index is out of range");
         if constexpr (N != axes::polar::rho) {
             // In polar coordinates only the first component (rho) is divided
             return this->lhs_.template at<N>();
@@ -156,7 +156,7 @@ struct vector_normalize<axes::polar, Expr>
     constexpr auto
     at() const
     {
-        static_assert(N < base_type::size, "Vector normalize element index is out of range");
+        static_assert(N < base_type::size, "Vector normalize component index is out of range");
         if (N == axes::polar::rho) {
             return value_type{1};
         } else {
@@ -175,13 +175,11 @@ struct vector_normalize<axes::polar, Expr>
 /** @name Polar to XYZW conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
 struct conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, Expression>
-    : vector_expression<
-          conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, Expression>,
-          vector<U, Cartesian, axes::xyzw>>,
+    : vector_conversion_expression<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>,
+                                   Expression>,
       unary_expression<Expression> {
-    using base_type = vector_expression<
-        conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, Expression>,
-        vector<U, Cartesian, axes::xyzw>>;
+    using base_type = vector_conversion_expression<vector<T, 2, axes::polar>,
+                                                   vector<U, Cartesian, axes::xyzw>, Expression>;
 
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -193,10 +191,10 @@ struct conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, E
         using std::cos;
         using std::sin;
         static_assert(N < base_type::size,
-                      "Polar to XYZW conversion element index is out of bounds");
-        if constexpr (N == 0) {
+                      "Polar to XYZW conversion component index is out of bounds");
+        if constexpr (N == axes::xyzw::x) {
             return this->arg_.rho() * cos(this->arg_.phi());
-        } else if constexpr (N == 1) {
+        } else if constexpr (N == axes::xyzw::y) {
             return this->arg_.rho() * sin(this->arg_.phi());
         } else {
             return T{0};
@@ -209,13 +207,11 @@ struct conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, E
 /** @name XYZW to polar conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
 struct conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, Expression>
-    : vector_expression<
-          conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, Expression>,
-          vector<T, 2, axes::polar>>,
+    : vector_conversion_expression<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>,
+                                   Expression>,
       unary_expression<Expression> {
-    using base_type = vector_expression<
-        conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, Expression>,
-        vector<T, 2, axes::polar>>;
+    using base_type = vector_conversion_expression<vector<U, Cartesian, axes::xyzw>,
+                                                   vector<T, 2, axes::polar>, Expression>;
 
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -226,10 +222,10 @@ struct conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, E
     {
         using std::atan2;
         static_assert(N < base_type::size,
-                      "XYZW to polar conversion element index is out of bounds");
-        if constexpr (N == 0) {
+                      "XYZW to polar conversion component index is out of bounds");
+        if constexpr (N == axes::polar::rho) {
             return magnitude(this->arg_);
-        } else if constexpr (N == 1) {
+        } else if constexpr (N == axes::polar::azimuth) {
             return atan2(this->arg_.y(), this->arg_.x());
         }
     }

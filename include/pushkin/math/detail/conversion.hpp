@@ -97,6 +97,10 @@ struct conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expr
     }
 };
 
+template <typename Source, typename Target, typename Expression>
+using vector_conversion_expression
+    = vector_expression<conversion<Source, Target, Expression>, Target>;
+
 template <typename Source, typename Target>
 struct bind_conversion_args {
     template <typename Expression>
