@@ -463,8 +463,6 @@ template <typename... T>
 struct axes_names_for : select_axes_names<axes_names_t<T>...> {};
 template <typename... T>
 using axes_names_for_t = typename axes_names_for<T...>::type;
-template <typename... T>
-constexpr bool axes_names_for_v = axes_names_for_t<T...>::value;
 //@}
 
 //@{

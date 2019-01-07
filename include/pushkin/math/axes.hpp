@@ -28,14 +28,7 @@ struct xyzw {
     static constexpr std::size_t z              = 2;
     static constexpr std::size_t w              = 3;
 };
-struct wxyz {
-    static constexpr std::size_t min_components = 1;
-    static constexpr std::size_t max_components = 4;
-    static constexpr std::size_t w              = 0;
-    static constexpr std::size_t x              = 1;
-    static constexpr std::size_t y              = 2;
-    static constexpr std::size_t z              = 3;
-};
+struct wxyz;    // Quaternion
 
 // FIXME Calculus for non-Cartesian coordinates
 struct polar;

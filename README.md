@@ -5,6 +5,8 @@ Small C++17 template library for vector and matrix computations.
 
 Library provides easy syntax for declaring, assigning vectors and matrices and making calculations. The `vector` and `matrix` classes are designed to have a memory layout as C++ arrays of respective elements, and can be passed to rendering libraries where pointers to floats (for example) are required. The library uses lazy expression templates for calcutations.
 
+### Vectors and Matrices
+
 #### Usage Synopsis
 
 ##### Declaration and assignment
@@ -172,4 +174,93 @@ std::cout << io::pretty << m1 << io::ugly << "\n";
 //      { 4, 5, 6 },
 //      { 7, 8, 9 }
 // }
+```
+
+### Quaternions
+
+The libbrary provides quaternions and operations with them, such as sum, substraction, multiplication and division by scalar, quaternion multiplication, magnitude, normalize, conjugate and inverse functions. Components of a quaternion are accessible via `w()`, `x()`, `y()` and `z()` accessors, where `w()` is the real part and `x()`, `y()` and `z()` are coefficients for i, j and k respectively. Also, the scalar part is accessible via `scalar_part()` member function, and the vector part is accessible via `vector_part()`.
+
+```C++
+#include <pushkin/math/quaternion.hpp>
+
+using quat = ::psst::math::quaternion<double>;
+
+quat q1{1, 2, 3, 4}, q2{5, 6, 7, 8};
+// quaternion sum and difference
+auto sum = q1 + q2;
+auto diff = q1 - q2;
+// multiplication and division by scalar
+auto mul = q1 * 2;
+auto div = q2 / 3;
+// quaternion multiplication
+auto q3 = q1 * q2;
+// misc function
+auto mag = magnitude(q1);
+auto c = conjugate(q2);
+auto u = normalize(q1);
+auto i = inverse(q2);
+```
+
+#### Example of Using Quaternions for Rotation
+
+```C++
+#include <pushkin/math/quaternion.hpp>
+
+using quat = ::psst::math::quaternion<double>;
+using vec3 = ::psst::math::std::vector<double, 3>;
+
+vec3
+rotate(vec3 v, vec3 axis, double angle)
+{
+    using std::cos;
+    using std::sin;
+    auto unit = normalize(quat{ 0, axis.x(), axis.y(), axis.z() });
+    auto rot =  quat{cos(angle / 2), 0, 0, 0} + unit * sin(angle / 2);
+    return (rot * quat{0, v.x(), v.y(), v.z()} * inverse(rot)).vector_part();
+}
+
+```
+
+### Polar, Spherical and Cylindrical Coordinates
+
+The library provides polar, spherical and cylindrical coordinates and conversion between them and XYZ coordinates. 
+Components of polar coordinates:
+1. #0 `r()` or `rho()`, the radius component.
+2. #1 `phi()` or `azimuth()`, the azimuth component, the value is in radians between zero and 2π, the value is normalized automatically.
+
+Componetns of spherical coordinates:
+1. #0 `r()` or `rho()`, the radius component.
+2. #1 `phi()` or `inclination()`, the angle between the projection on the plane and vector. The range of value is [-π/2, π/2], the value is clamped automatically.
+3. #2 `theta()` or `azimuth()`, the azimuth component, the value is in radians between zero and 2π, the value is normalized automatically.
+
+Components of cylindrical coordinates:
+1. #0 `r()` or `rho()`, the radius component.
+2. #1 `phi()` or `azimuth()`, the azimuth component, the value is in radians between zero and 2π, the value is normalized automatically.
+3. #2 `z()` or `elevation()`, the height above zero.
+
+Conversion is defined for:
+* XYZ <-> polar
+* XYZ <-> spherical
+* XYZ <-> cylindrical
+* polar <-> spherical
+* polar <-> cylindrical
+* spherical <-> cylindrical
+
+```C++
+#include <pushkin/math/polar_coord.hpp>
+#include <pushkin/math/spherical_coord.hpp>
+#include <pushkin/math/cylindrical_coord.hpp>
+
+using polar_c       = ::psst::math::polar_coord<double>;
+using spherical_c   = ::psst::math::spherical_coord<double>
+using cylindrical_c = ::psst::math::cylindrical_coord<double>;
+using vec3          = ::psst::math::vector<double, 3>;
+
+using ::psst::math::operator "" _deg;
+
+polar_c p{10, 180_deg};
+spherical_c s = convert<spherical_c>(p);
+s.inclination() = 45_deg;
+cylindrical_c c = convert<cylindrical_c>(s);
+vec3 v = convert<vec3>(c);
 ```
