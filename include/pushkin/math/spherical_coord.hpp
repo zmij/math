@@ -59,7 +59,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_multiply<axes::spherical, LHS, RHS>
     : binary_vector_expression_axes<vector_scalar_multiply, axes::spherical, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_axes<vector_scalar_multiply, axes::polar, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_axes<vector_scalar_multiply, axes::spherical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -205,10 +206,8 @@ struct conversion<vector<T, 3, axes::spherical>, vector<U, Cartesian, axes::xyzw
         static_assert(N < base_type::size,
                       "Spherical to XYZW conversion component index is out of bounds");
         if constexpr (N == axes::xyzw::x) {
-            // REally?
             return projection_length() * cos(this->arg_.theta());
         } else if constexpr (N == axes::xyzw::y) {
-            // REally?
             return projection_length() * sin(this->arg_.theta());
         } else if constexpr (N == axes::xyzw::z) {
             return this->arg_.rho() * sin(this->arg_.phi());
@@ -305,7 +304,7 @@ struct conversion<vector<T, 3, axes::spherical>, vector<U, 2, axes::polar>, Expr
 //@}
 
 //@{
-/** @name Spherical to polar conversion */
+/** @name Polar to spherical conversion */
 template <typename T, typename U, typename Expression>
 struct conversion<vector<T, 2, axes::polar>, vector<U, 3, axes::spherical>, Expression>
     : vector_conversion_expression<vector<T, 2, axes::polar>, vector<U, 3, axes::spherical>,
