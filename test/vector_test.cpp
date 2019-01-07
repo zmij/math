@@ -225,6 +225,12 @@ TEST(Vector, Multiply)
     EXPECT_EQ(initial, res2) << "Unexpected result " << res2 << "\n";
 }
 
+TEST(Vector, Cross)
+{
+    vector3d v1{1, 2, 3}, v2{4, 5, 6};
+    EXPECT_EQ((vector3d{-3, 6, -3}), v1 * v2) << "Cross product " << v1 * v2;
+}
+
 TEST(Vector, Magnitude)
 {
     vector3d v1{1, 1, 1};

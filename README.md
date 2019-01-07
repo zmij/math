@@ -100,7 +100,7 @@ auto s = v3.magnitude_square(); // vector magnitude squared
 s = v3.magnitude()      // vector magnitude
 
 auto p = v1 | v2; // dot product
-v3 = v1 ^ v2;     // cross product. Defined for 3D and 3D homogenous (having 4 elements) vectors only
+v3 = v1 * v2;     // cross product. Defined for 3D vectors only
 
 v3 = projection( v1, v2 ); // projection of vector v2 onto vector v1
 v3 = perpendicular( v1, v2 ); // vector that is perpendicular to v1, such as v3 + projection( v1 , v2 ) == v2

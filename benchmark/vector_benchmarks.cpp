@@ -150,7 +150,8 @@ VectorCross(benchmark::State& state)
     auto v2 = make_test_vector<typename Vector::value_type>(dimension_count<Vector::size>{});
 
     while (state.KeepRunning()) {
-        benchmark::DoNotOptimize(cross(v1, v2));
+        decltype(v1) v3;
+        benchmark::DoNotOptimize(v3 = v1 * v2);
     }
 }
 template <typename Vector>
@@ -262,8 +263,6 @@ BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorScalarDiv,     vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorDot,           vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorDot,           vector<double,  4>);
-BENCHMARK_TEMPLATE(VectorCross,         vector<float,   4>);
-BENCHMARK_TEMPLATE(VectorCross,         vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorMagSQ,         vector<float,   4>);
 BENCHMARK_TEMPLATE(VectorMagSQ,         vector<double,  4>);
 BENCHMARK_TEMPLATE(VectorMag,           vector<float,   4>);

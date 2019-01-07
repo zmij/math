@@ -48,6 +48,9 @@ struct vector_expression
         "The number of components in vector expression is less than allowed by axes names");
 };
 
+template <template <typename> class Expression, typename Arg,
+          typename Result = vector_expression_result_t<Arg>>
+using unary_vector_expression = vector_expression<Expression<Arg>, Result>;
 template <template <typename, typename> class Expression, typename Axes, typename Arg,
           typename Result = vector_expression_result_t<Arg>>
 using unary_vector_expression_axes = vector_expression<Expression<Axes, Arg>, Result>;
@@ -274,7 +277,7 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector sum element index is out of range");
+        static_assert(N < base_type::size, "Vector sum component index is out of range");
         return this->lhs_.template at<N>() + this->rhs_.template at<N>();
     }
 };
@@ -306,7 +309,7 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector difference element index is out of range");
+        static_assert(N < base_type::size, "Vector difference component index is out of range");
         return this->lhs_.template at<N>() - this->rhs_.template at<N>();
     }
 };
@@ -340,14 +343,56 @@ struct vector_scalar_multiply
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector multiply element index is out of range");
+        static_assert(N < base_type::size, "Vector multiply component index is out of range");
         return this->lhs_.template at<N>() * this->rhs_;
     }
 };
+//@}
 
-template <typename LHS, typename RHS,
-          typename = std::enable_if_t<(is_vector_expression_v<LHS> && is_scalar_v<RHS>)
-                                      || (is_scalar_v<LHS> && is_vector_expression_v<RHS>)>>
+//@{
+/** @name Vector product */
+template <typename Axes, typename LHS, typename RHS>
+struct vector_vector_multiply;
+
+template <typename LHS, typename RHS>
+struct vector_vector_multiply<axes::xyzw, LHS, RHS>
+    : binary_vector_expression_axes<vector_vector_multiply, axes::xyzw, LHS, RHS>,
+      binary_expression<LHS, RHS> {
+    using base_type = binary_vector_expression_axes<vector_vector_multiply, axes::xyzw, LHS, RHS>;
+    static_assert(
+        base_type::size == 3,
+        "Vector cross product is defined only for 3 and 7 dimensions, implemented only for 3");
+
+    using expression_base = binary_expression<LHS, RHS>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        static_assert(N < base_type::size, "Vector multiply component index is out of range");
+        if constexpr (N == axes::xyzw::x) {
+            return this->lhs_.template at<1>() * this->rhs_.template at<2>()
+                   - this->lhs_.template at<2>() * this->rhs_.template at<1>();
+        } else if constexpr (N == axes::xyzw::y) {
+            return this->lhs_.template at<2>() * this->rhs_.template at<0>()
+                   - this->lhs_.template at<0>() * this->rhs_.template at<2>();
+        } else if constexpr (N == axes::xyzw::z) {
+            return this->lhs_.template at<0>() * this->rhs_.template at<1>()
+                   - this->lhs_.template at<1>() * this->rhs_.template at<0>();
+        }
+    }
+};
+//@}
+
+//@{
+/** @name Multiply operator */
+template <
+    typename LHS, typename RHS,
+    typename = std::enable_if_t<
+        (is_vector_expression_v<LHS> && is_scalar_v<RHS>)
+        || (is_scalar_v<LHS> && is_vector_expression_v<RHS>)
+        || (is_vector_expression_v<LHS> && is_vector_expression_v<RHS> && same_axes_v<LHS, RHS>)>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
     if constexpr (is_vector_expression_v<LHS> && is_scalar_v<RHS>) {
@@ -360,6 +405,14 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
         return s::detail::wrap_non_expression_args<
             select_binary_impl<axes_names, vector_scalar_multiply>::template type>(
             std::forward<RHS>(rhs), std::forward<LHS>(lhs));
+    } else if constexpr (is_vector_expression_v<
+                             LHS> && is_vector_expression_v<RHS> && same_axes_v<LHS, RHS>) {
+        using axes_names = axes_names_t<RHS>;
+        static_assert((utils::is_decl_complete_v<vector_vector_multiply<axes_names, LHS, RHS>>),
+                      "Vector multiplication is not defined for this axes");
+        return make_binary_expression<
+            select_binary_impl<axes_names, vector_vector_multiply>::template type>(
+            std::forward<LHS>(lhs), std::forward<RHS>(rhs));
     }
 }
 //@}
@@ -380,7 +433,7 @@ struct vector_scalar_divide : binary_vector_expression_axes<vector_scalar_divide
     constexpr value_type
     at() const
     {
-        static_assert(N < base_type::size, "Vector divide element index is out of range");
+        static_assert(N < base_type::size, "Vector divide component index is out of range");
         return this->lhs_.template at<N>() / this->rhs_;
     }
 };

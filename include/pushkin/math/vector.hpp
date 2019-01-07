@@ -189,67 +189,6 @@ get(vector<T, Size, Axes>& v)
 }
 
 /**
- * Dot product operator
- * @param lhs
- * @param rhs
- * @return
- */
-template <typename T, size_t Size, typename Axes>
-typename vector<T, Size, Axes>::magnitude_type
-operator|(vector<T, Size, Axes> const& lhs, vector<T, Size, Axes> const& rhs)
-{
-    return dot_product(lhs, rhs);
-}
-
-/**
- * Cross product for 3D vectors
- * @param a
- * @param b
- * @return
- */
-template <typename T, typename U, typename Axes>
-vector<typename vector<T, 3, Axes>::value_type, 3, Axes> cross(vector<T, 3, Axes> const& lhs,
-                                                               vector<U, 3, Axes> const& rhs)
-{
-    vector<T, 3, Axes> res{
-        lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
-        lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
-        lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>()};
-    return res;
-}
-
-template <typename T, typename U, typename Axes>
-vector<typename vector<T, 3, Axes>::value_type, 3, Axes> operator^(vector<T, 3, Axes> const& lhs,
-                                                                   vector<U, 3, Axes> const& rhs)
-{
-    return cross(lhs, rhs);
-}
-
-/**
- * Cross product for homogenous 3D vectors
- * @param a
- * @param b
- * @return
- */
-template <typename T, typename U>
-vector<typename vector<T, 4, axes::xyzw>::value_type, 4, axes::xyzw>
-    cross(vector<T, 4, axes::xyzw> const& lhs, vector<U, 4, axes::xyzw> const& rhs)
-{
-    vector<T, 4, axes::xyzw> res{
-        lhs.template at<1>() * rhs.template at<2>() - lhs.template at<2>() * rhs.template at<1>(),
-        lhs.template at<2>() * rhs.template at<0>() - lhs.template at<0>() * rhs.template at<2>(),
-        lhs.template at<0>() * rhs.template at<1>() - lhs.template at<1>() * rhs.template at<0>(),
-        typename vector<T, 4, axes::xyzw>::value_type(1)};
-    return res;
-}
-template <typename T, typename U>
-vector<typename vector<T, 4, axes::xyzw>::value_type, 4, axes::xyzw>
-operator^(vector<T, 4, axes::xyzw> const& lhs, vector<U, 4, axes::xyzw> const& rhs)
-{
-    return cross(lhs, rhs);
-}
-
-/**
  * Projection of vector v onto vector n
  * @param n Target vector
  * @param v Source vector
