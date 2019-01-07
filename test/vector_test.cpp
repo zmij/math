@@ -7,6 +7,7 @@
 
 #include "test_printing.hpp"
 #include <pushkin/math/colors.hpp>
+#include <pushkin/math/cylindrical_coord.hpp>
 #include <pushkin/math/matrix.hpp>
 #include <pushkin/math/polar_coord.hpp>
 #include <pushkin/math/spherical_coord.hpp>
@@ -501,6 +502,159 @@ TEST(Spherical, PolarConversion)
         spherical_d sc{1, 45_deg, 0};
         EXPECT_EQ((polar_d{sqrt(2) / 2, 0}), convert<polar_d>(sc))
             << "Conversion result " << convert<polar_d>(sc);
+    }
+}
+
+TEST(Cylindrical, Clamp)
+{
+    cylindrical_coord<double> cc{1, 360_deg, 1};
+    EXPECT_EQ(0, cc.azimuth());
+    cc.azimuth() = -180.0_deg;
+    EXPECT_EQ(180.0_deg, cc.azimuth());
+}
+
+TEST(Cylindrical, Multiply)
+{
+    cylindrical_coord<double> cc{1, 180_deg, 1};
+    EXPECT_EQ(1, cc.rho());
+    EXPECT_EQ(180_deg, cc.azimuth());
+    EXPECT_EQ(1, cc.z());
+    auto m = cc * 2;
+    EXPECT_EQ(2, m.rho());
+    EXPECT_EQ(180_deg, m.azimuth());
+    EXPECT_EQ(2, m.z());
+
+    auto d = m / 2;
+    EXPECT_EQ(1, d.rho());
+    EXPECT_EQ(180_deg, d.azimuth());
+    EXPECT_EQ(1, d.z());
+}
+
+TEST(Cylindrical, Magnitude)
+{
+    cylindrical_coord<double> cc{3, 360_deg, 4};
+    EXPECT_EQ(5, magnitude(cc));
+    EXPECT_EQ(25, magnitude_square(cc));
+}
+
+TEST(Cylindrical, Normalize)
+{
+    cylindrical_coord<double> cc{3, 360_deg, 4};
+    cylindrical_coord<double> n = normalize(cc);
+    EXPECT_EQ(0.6, n.rho());
+    EXPECT_EQ(0, n.azimuth());
+    EXPECT_EQ(0.8, n.z());
+}
+
+TEST(Cylindrical, XYZConversion)
+{
+    using vector3d      = vector<double, 3, axes::xyzw>;
+    using cylindrical_d = cylindrical_coord<double>;
+
+    {
+        vector3d      v{1, 0, 0};
+        cylindrical_d c{1, 0, 0};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{-1, 0, 0};
+        cylindrical_d c{1, 180_deg, 0};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{0, 1, 0};
+        cylindrical_d c{1, 90_deg, 0};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{0, -1, 0};
+        cylindrical_d c{1, 270_deg, 0};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{0, 0, 1};
+        cylindrical_d c{0, 0, 1};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{0, 0, -1};
+        cylindrical_d c{0, 0, -1};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+
+        EXPECT_EQ(convert<cylindrical_d>(v) * 3, convert<cylindrical_d>(v * 3));
+    }
+    {
+        vector3d      v{2, 2, 2};
+        cylindrical_d c{sqrt(8), 45_deg, 2};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(v))
+            << "Conversion result " << convert<cylindrical_d>(v);
+        EXPECT_EQ(v, convert<vector3d>(c)) << "Conversion result " << convert<vector3d>(c);
+    }
+}
+
+TEST(Cylindrical, PolarConversion)
+{
+    using polar_d       = polar_coord<double>;
+    using cylindrical_d = cylindrical_coord<double>;
+
+    {
+        polar_d       p{1, 45_deg};
+        cylindrical_d c{1, 45_deg, 0};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(p));
+        EXPECT_EQ(p, convert<polar_d>(c));
+    }
+}
+
+TEST(Cylindrical, SphericalConversion)
+{
+    using cylindrical_d = cylindrical_coord<double>;
+    using spherical_d   = spherical_coord<double>;
+
+    {
+        cylindrical_d c{sqrt(2) / 2, 45_deg, sqrt(2) / 2};
+        spherical_d   s{1, 45_deg, 45_deg};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(s))
+            << "Conversion result " << convert<cylindrical_d>(s);
+        EXPECT_EQ(s, convert<spherical_d>(c)) << "Conversion result " << convert<spherical_d>(c);
+    }
+    {
+        cylindrical_d c{sqrt(2) / 2, 45_deg, -sqrt(2) / 2};
+        spherical_d   s{1, -45_deg, 45_deg};
+
+        EXPECT_EQ(c, convert<cylindrical_d>(s))
+            << "Conversion result " << convert<cylindrical_d>(s);
+        EXPECT_EQ(s, convert<spherical_d>(c)) << "Conversion result " << convert<spherical_d>(c);
     }
 }
 
