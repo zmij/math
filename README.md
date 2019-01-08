@@ -224,6 +224,7 @@ rotate(vec3 v, vec3 axis, double angle)
 ### Polar, Spherical and Cylindrical Coordinates
 
 The library provides polar, spherical and cylindrical coordinates and conversion between them and XYZ coordinates. 
+
 Components of polar coordinates:
 1. #0 `r()` or `rho()`, the radius component.
 2. #1 `phi()` or `azimuth()`, the azimuth component, the value is in radians between zero and 2π, the value is normalized automatically.
@@ -263,4 +264,47 @@ spherical_c s = convert<spherical_c>(p);
 s.inclination() = 45_deg;
 cylindrical_c c = convert<cylindrical_c>(s);
 vec3 v = convert<vec3>(c);
+```
+
+### Colors
+
+Based on vector class and expressions, the library provides classes for color calculateions in RGB, HSL ans HSV color spaces. For color classes the following operations are defined:
+* sum and difference
+* multiplication and division by scalar
+* lerp and slerp
+
+Components of rgba color:
+1. #0 `r()` or `red()`
+2. #1 `g()` or `green()`
+3. #2 `b()` or `blue()`
+4. #3 `a()` or `alpha()`
+
+Components of hsla color:
+1. #0 `h()` or `hue()`
+2. #1 `s()` or `saturation()`
+3. #2 `l()` or `lightness()`
+4. #3 `a()` or `alpha()`
+
+Components of hsva color:
+1. #0 `h()` or `hue()`
+2. #1 `s()` or `saturation()`
+3. #2 `v()` or `value()`
+4. #3 `a()` or `alpha()`
+
+Conversions are defined for:
+* RGB <-> HSL
+* RGB <-> HSV
+
+```C++
+#include <pushkin/math/colors.hpp>
+
+using rgba = ::psst::math::colors::rgba<float>;
+using hsla = ::psst::math::colors::hsla<float>;
+using hsva = ::psst::math::colors::hsva<float>;
+
+using ::psst::math::operator "" _rgba;
+
+rgba col1 = convert<rgba>( 0xff0000ff_rgba ); // red
+hsla hl1  = convert<hsla>(col1);
+hsva hv1  = convert<hsva>(col1);
 ```

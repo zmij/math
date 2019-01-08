@@ -274,6 +274,16 @@ struct axis_access<4, hsla, VectorType, T> : axis_access<3, hsla, VectorType, T>
 }    // namespace axes
 namespace color {
 
+//@{
+/** @name is_color */
+template <typename T>
+struct is_color : has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla, axes::hsva> {};
+template <typename T>
+using is_color_t = typename is_color<T>::type;
+template <typename T>
+constexpr bool is_color_v = is_color_t<T>::value;
+//@}
+
 template <typename T>
 using rgb = vector<T, 3, axes::rgba>;
 template <typename T>
@@ -333,12 +343,51 @@ namespace expr {
 
 inline namespace v {
 
+template <typename Axes, typename Expr>
+struct color_chroma;
+
+template <typename Expr>
+struct color_chroma<axes::hsla, Expr>
+    : unary_scalar_expression_axes<color_chroma, axes::hsla, Expr>, unary_expression<Expr> {
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    value() const
+    {
+        using std::abs;
+        return (1 - abs(2 * this->arg_.l() - 1)) * this->arg_.s();
+    }
+};
+
+template <typename Expr>
+struct color_chroma<axes::hsva, Expr>
+    : unary_scalar_expression_axes<color_chroma, axes::hsva, Expr>, unary_expression<Expr> {
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    value() const
+    {
+        using std::abs;
+        return this->arg_.v() * this->arg_.s();
+    }
+};
+
+template <typename Expr, typename = enable_for_axes<Expr, axes::hsla, axes::hsva>>
+constexpr auto
+chroma(Expr&& expr)
+{
+    using axes_names = axes_names_t<Expr>;
+    return make_unary_expression<select_unary_impl<axes_names, color_chroma>::template type>(
+        std::forward<Expr>(expr));
+}
+
 template <typename T, typename Expression>
 struct conversion<color::rgba_hex, color::rgba<T>, Expression>
-    : vector_expression<conversion<color::rgba_hex, color::rgba<T>, Expression>, color::rgba<T>>,
+    : vector_conversion_expression<color::rgba_hex, color::rgba<T>, Expression>,
       unary_expression<Expression> {
-    using base_type = vector_expression<conversion<color::rgba_hex, color::rgba<T>, Expression>,
-                                        color::rgba<T>>;
+    using base_type = vector_conversion_expression<color::rgba_hex, color::rgba<T>, Expression>;
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -353,9 +402,9 @@ struct conversion<color::rgba_hex, color::rgba<T>, Expression>
 
 template <typename T, typename Expression>
 struct conversion<color::rgba<T>, color::rgba_hex, Expression>
-    : vector_expression<conversion<color::rgba<T>, color::rgba_hex, Expression>>,
+    : vector_conversion_expression<color::rgba<T>, color::rgba_hex, Expression>,
       unary_expression<Expression> {
-    using base_type = vector_expression<conversion<color::rgba<T>, color::rgba_hex, Expression>>;
+    using base_type = vector_conversion_expression<color::rgba<T>, color::rgba_hex, Expression>;
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -367,6 +416,246 @@ struct conversion<color::rgba<T>, color::rgba_hex, Expression>
         return this->arg_.template at<N>() * 0xff;
     }
 };
+
+//@{
+/** @name HSL -> RGB conversion */
+template <typename T, typename U, std::size_t Size, typename Expression>
+struct conversion<vector<T, Size, axes::hsla>, vector<U, Size, axes::rgba>, Expression>
+    : vector_conversion_expression<vector<T, Size, axes::hsla>, vector<U, Size, axes::rgba>,
+                                   Expression>,
+      unary_expression<Expression> {
+    using base_type       = vector_conversion_expression<vector<T, Size, axes::hsla>,
+                                                   vector<U, Size, axes::rgba>, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr value_type
+    at() const
+    {
+        using std::abs;
+        using std::fmod;
+        static_assert(N < base_type::size, "Invalid color component index");
+        if constexpr (N == axes::rgba::a) {
+            return this->arg_.a();
+        } else {
+            value_type c       = chroma(this->arg_);
+            value_type segment = this->arg_.hue() * 3 / pi<value_type>::value;
+            value_type x       = c * (1 - abs(fmod(segment, 2) - 1));
+            value_type m       = this->arg_.l() - c / 2;
+            if constexpr (N == axes::rgba::r) {
+                if (0 <= segment && segment < 1) {
+                    return c + m;
+                } else if (1 <= segment && segment < 2) {
+                    return x + m;
+                } else if (4 <= segment && segment < 5) {
+                    return x + m;
+                } else if (5 <= segment && segment <= 6) {
+                    return c + m;
+                }
+                return 0;
+            } else if constexpr (N == axes::rgba::g) {
+                if (0 <= segment && segment < 1) {
+                    return x + m;
+                } else if (1 <= segment && segment < 2) {
+                    return c + m;
+                } else if (2 <= segment && segment < 3) {
+                    return c + m;
+                } else if (3 <= segment && segment < 4) {
+                    return x + m;
+                }
+                return 0;
+            } else if constexpr (N == axes::rgba::b) {
+                if (2 <= segment && segment < 3) {
+                    return x + m;
+                } else if (3 <= segment && segment < 4) {
+                    return c + m;
+                } else if (4 <= segment && segment < 5) {
+                    return c + m;
+                } else if (5 <= segment && segment < 6) {
+                    return x + m;
+                }
+                return 0;
+            }
+        }
+    }
+};
+//@}
+
+//@{
+/** @name RGB -> HSL conversion */
+template <typename T, typename U, std::size_t Size, typename Expression>
+struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsla>, Expression>
+    : vector_conversion_expression<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsla>,
+                                   Expression>,
+      unary_expression<Expression> {
+    using base_type       = vector_conversion_expression<vector<T, Size, axes::rgba>,
+                                                   vector<U, Size, axes::hsla>, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr value_type
+    at() const
+    {
+        using std::abs;
+        using std::fmod;
+        static_assert(N < base_type::size, "Invalid color component index");
+        if constexpr (N == axes::hsla::a) {
+            return this->arg_.a();
+        } else {
+            using std::max;
+            using std::min;
+            auto cmax = max(this->arg_.r(), max(this->arg_.g(), this->arg_.b()));
+            auto cmin = min(this->arg_.r(), min(this->arg_.g(), this->arg_.b()));
+            auto d    = cmax - cmin;
+            auto l    = (cmax + cmin) / 2;
+            if constexpr (N == axes::hsla::h) {
+                if (d == 0) {
+                    return 0;
+                } else if (cmax == this->arg_.r()) {
+                    return pi<value_type>::value / 3
+                           * fmod((this->arg_.g() - this->arg_.b()) / d, 6);
+                } else if (cmax == this->arg_.g()) {
+                    return pi<value_type>::value / 3 * ((this->arg_.b() - this->arg_.r()) / d + 2);
+                } else if (cmax == this->arg_.b()) {
+                    return pi<value_type>::value / 3 * ((this->arg_.r() - this->arg_.g()) / d + 4);
+                }
+                return 0;
+            } else if constexpr (N == axes::hsla::s) {
+                if (l == 0) {
+                    return 0;
+                }
+                return d / (1 - abs(2 * l - 1));
+            } else if constexpr (N == axes::hsla::l) {
+                return l;
+            }
+        }
+    }
+};
+//@}
+
+//@{
+/** @name HSV -> RGB conversion */
+template <typename T, typename U, std::size_t Size, typename Expression>
+struct conversion<vector<T, Size, axes::hsva>, vector<U, Size, axes::rgba>, Expression>
+    : vector_conversion_expression<vector<T, Size, axes::hsva>, vector<U, Size, axes::rgba>,
+                                   Expression>,
+      unary_expression<Expression> {
+    using base_type       = vector_conversion_expression<vector<T, Size, axes::hsva>,
+                                                   vector<U, Size, axes::rgba>, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr value_type
+    at() const
+    {
+        using std::abs;
+        using std::fmod;
+        static_assert(N < base_type::size, "Invalid color component index");
+        if constexpr (N == axes::rgba::a) {
+            return this->arg_.a();
+        } else {
+            value_type c       = chroma(this->arg_);
+            value_type segment = this->arg_.hue() * 3 / pi<value_type>::value;
+            value_type x       = c * (1 - abs(fmod(segment, 2) - 1));
+            value_type m       = this->arg_.v() - c;
+            if constexpr (N == axes::rgba::r) {
+                if (0 <= segment && segment < 1) {
+                    return c + m;
+                } else if (1 <= segment && segment < 2) {
+                    return x + m;
+                } else if (4 <= segment && segment < 5) {
+                    return x + m;
+                } else if (5 <= segment && segment <= 6) {
+                    return c + m;
+                }
+                return 0;
+            } else if constexpr (N == axes::rgba::g) {
+                if (0 <= segment && segment < 1) {
+                    return x + m;
+                } else if (1 <= segment && segment < 2) {
+                    return c + m;
+                } else if (2 <= segment && segment < 3) {
+                    return c + m;
+                } else if (3 <= segment && segment < 4) {
+                    return x + m;
+                }
+                return 0;
+            } else if constexpr (N == axes::rgba::b) {
+                if (2 <= segment && segment < 3) {
+                    return x + m;
+                } else if (3 <= segment && segment < 4) {
+                    return c + m;
+                } else if (4 <= segment && segment < 5) {
+                    return c + m;
+                } else if (5 <= segment && segment < 6) {
+                    return x + m;
+                }
+                return 0;
+            }
+        }
+    }
+};
+//@}
+
+//@{
+/** @name RGB -> HSL conversion */
+template <typename T, typename U, std::size_t Size, typename Expression>
+struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsva>, Expression>
+    : vector_conversion_expression<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsva>,
+                                   Expression>,
+      unary_expression<Expression> {
+    using base_type       = vector_conversion_expression<vector<T, Size, axes::rgba>,
+                                                   vector<U, Size, axes::hsva>, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr value_type
+    at() const
+    {
+        using std::abs;
+        using std::fmod;
+        static_assert(N < base_type::size, "Invalid color component index");
+        if constexpr (N == axes::hsva::a) {
+            return this->arg_.a();
+        } else {
+            using std::max;
+            using std::min;
+            auto cmax = max(this->arg_.r(), max(this->arg_.g(), this->arg_.b()));
+            auto cmin = min(this->arg_.r(), min(this->arg_.g(), this->arg_.b()));
+            auto d    = cmax - cmin;
+            if constexpr (N == axes::hsva::h) {
+                if (d == 0) {
+                    return 0;
+                } else if (cmax == this->arg_.r()) {
+                    return pi<value_type>::value / 3
+                           * fmod((this->arg_.g() - this->arg_.b()) / d, 6);
+                } else if (cmax == this->arg_.g()) {
+                    return pi<value_type>::value / 3 * ((this->arg_.b() - this->arg_.r()) / d + 2);
+                } else if (cmax == this->arg_.b()) {
+                    return pi<value_type>::value / 3 * ((this->arg_.r() - this->arg_.g()) / d + 4);
+                }
+                return 0;
+            } else if constexpr (N == axes::hsva::s) {
+                if (cmax == 0) {
+                    return 0;
+                } else {
+                    return d / cmax;
+                }
+            } else if constexpr (N == axes::hsva::v) {
+                return cmax;
+            }
+        }
+    }
+};
+//@}
 
 }    // namespace v
 

@@ -6,7 +6,6 @@
  */
 
 #include "test_printing.hpp"
-#include <pushkin/math/colors.hpp>
 #include <pushkin/math/cylindrical_coord.hpp>
 #include <pushkin/math/matrix.hpp>
 #include <pushkin/math/polar_coord.hpp>
@@ -23,9 +22,6 @@ namespace test {
 
 using vector3d  = vector<double, 3>;
 using vector3df = vector<float, 3>;
-
-using rgba_col = vector<float, 4, axes::rgba>;
-using argb_col = vector<float, 4, axes::argb>;
 
 TEST(Scalar, Compare)
 {
@@ -139,24 +135,6 @@ TEST(Vector, ConstructPoiter)
         EXPECT_EQ(1, v1[0]);
         EXPECT_EQ(2, v1[1]);
         EXPECT_EQ(3, v1[2]);
-    }
-}
-
-TEST(Vector, ConstructRGB)
-{
-    {
-        rgba_col c{0.1, 0.2, 0.3, 0.4};
-        EXPECT_FLOAT_EQ(0.1, c.r());
-        EXPECT_FLOAT_EQ(0.2, c.g());
-        EXPECT_FLOAT_EQ(0.3, c.b());
-        EXPECT_FLOAT_EQ(0.4, c.a());
-    }
-    {
-        argb_col c{0.1, 0.2, 0.3, 0.4};
-        EXPECT_FLOAT_EQ(0.1, c.a());
-        EXPECT_FLOAT_EQ(0.2, c.r());
-        EXPECT_FLOAT_EQ(0.3, c.g());
-        EXPECT_FLOAT_EQ(0.4, c.b());
     }
 }
 
@@ -662,22 +640,6 @@ TEST(Cylindrical, SphericalConversion)
             << "Conversion result " << convert<cylindrical_d>(s);
         EXPECT_EQ(s, convert<spherical_d>(c)) << "Conversion result " << convert<spherical_d>(c);
     }
-}
-
-TEST(Color, Hex)
-{
-    using color::   operator""_rgba;
-    color::rgba_hex c_hex = 0xff0000ff_rgba;
-    EXPECT_EQ(0xff, c_hex.red());
-    EXPECT_EQ(0, c_hex.green());
-    EXPECT_EQ(0, c_hex.blue());
-    EXPECT_EQ(0xff, c_hex.alpha());
-    color::rgba<float> c1 = convert<color::rgba<float>>(c_hex);
-    std::cout << c_hex << " " << c1 << "\n";
-    EXPECT_EQ(1.0, c1.red());
-    EXPECT_EQ(0, c1.green());
-    EXPECT_EQ(0, c1.blue());
-    EXPECT_EQ(1.0, c1.alpha());
 }
 
 } /* namespace test */

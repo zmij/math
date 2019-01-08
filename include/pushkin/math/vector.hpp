@@ -235,8 +235,10 @@ project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
 #ifdef __METASHELL
 // Some definitions for debugging templates, not to input them
 // every time the metashell starts
+#    include <pushkin/math/colors.hpp>
 #    include <pushkin/math/cylindrical_coord.hpp>
 #    include <pushkin/math/polar_coord.hpp>
+#    include <pushkin/math/quaternion.hpp>
 #    include <pushkin/math/spherical_coord.hpp>
 using namespace psst::math;
 
