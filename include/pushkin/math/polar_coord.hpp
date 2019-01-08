@@ -26,8 +26,8 @@ struct polar {
     static constexpr std::size_t r              = rho;
     static constexpr std::size_t azimuth        = phi;
 
-    using value_policy = utils::template_tuple<math::value_policy::no_change,
-                                               math::value_policy::clamp_zero_to_two_pi>;
+    using value_policies = utils::template_tuple<math::value_policy::no_change,
+                                                 math::value_policy::clamp_zero_to_two_pi>;
 };
 
 //@{

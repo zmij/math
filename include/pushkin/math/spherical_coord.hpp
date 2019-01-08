@@ -28,9 +28,9 @@ struct spherical {
     static constexpr std::size_t inclination    = phi;
     static constexpr std::size_t azimuth        = theta;
 
-    using value_policy = utils::template_tuple<math::value_policy::no_change,
-                                               math::value_policy::clamp_minus_plus_half_pi,
-                                               math::value_policy::clamp_zero_to_two_pi>;
+    using value_policies = utils::template_tuple<math::value_policy::no_change,
+                                                 math::value_policy::clamp_minus_plus_half_pi,
+                                                 math::value_policy::clamp_zero_to_two_pi>;
 };
 
 //@{

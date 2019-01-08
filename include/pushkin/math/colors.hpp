@@ -29,7 +29,7 @@ struct argb {
     static constexpr std::size_t blue           = b;
 
     // clang-format off
-    using value_policy = utils::template_tuple<
+    using value_policies = utils::template_tuple<
             math::value_policy::clamp_zero_to_one,    // alpha
             math::value_policy::clamp_zero_to_one,    // red
             math::value_policy::clamp_zero_to_one,    // green
@@ -50,7 +50,7 @@ struct rgba {
     static constexpr std::size_t alpha          = a;
 
     // clang-format off
-    using value_policy = utils::template_tuple<
+    using value_policies = utils::template_tuple<
             math::value_policy::clamp_zero_to_one,    // red
             math::value_policy::clamp_zero_to_one,    // green
             math::value_policy::clamp_zero_to_one,    // blue
@@ -84,7 +84,7 @@ struct hsva {
     static constexpr std::size_t alpha          = a;
 
     // clang-format off
-    using value_policy = utils::template_tuple<
+    using value_policies = utils::template_tuple<
                 math::value_policy::clamp_zero_to_two_pi,   // hue,
                 math::value_policy::clamp_zero_to_one,      // saturation
                 math::value_policy::clamp_zero_to_one,      // value
@@ -105,7 +105,7 @@ struct hsla {
     static constexpr std::size_t alpha          = a;
 
     // clang-format off
-    using value_policy = utils::template_tuple<
+    using value_policies = utils::template_tuple<
                 math::value_policy::clamp_zero_to_two_pi,   // hue,
                 math::value_policy::clamp_zero_to_one,      // saturation
                 math::value_policy::clamp_zero_to_one,      // lightness

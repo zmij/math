@@ -29,9 +29,9 @@ struct cylindrical {
     static constexpr std::size_t azimuth        = phi;
     static constexpr std::size_t elevation      = z;
 
-    using value_policy = utils::template_tuple<math::value_policy::no_change,
-                                               math::value_policy::clamp_zero_to_two_pi,
-                                               math::value_policy::no_change>;
+    using value_policies = utils::template_tuple<math::value_policy::no_change,
+                                                 math::value_policy::clamp_zero_to_two_pi,
+                                                 math::value_policy::no_change>;
 };
 
 //@{
