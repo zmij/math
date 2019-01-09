@@ -70,6 +70,7 @@ get(Expression const& exp)
     return static_cast<expression_type const&>(exp).template at<N>();
 }
 
+//----------------------------------------------------------------------------
 template <typename Vector>
 struct vector_fill
     : vector_expression<vector_fill<Vector>, typename std::decay_t<Vector>::result_type> {
@@ -263,6 +264,44 @@ operator>=(LHS&& lhs, RHS&& rhs)
 //@}
 
 //----------------------------------------------------------------------------
+template <typename Expr, char Family>
+struct named_vector
+    : vector_expression<named_vector<Expr, Family>, vector_expression_result_t<Expr>>,
+      unary_expression<Expr> {
+    static_assert(is_vector_v<Expr>, "Can apply named vector to vectors only");
+    using base_type
+        = vector_expression<named_vector<Expr, Family>, vector_expression_result_t<Expr>>;
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        static_assert(N < base_type::size, "Vector component index is out of range");
+        return make_named_variable<Family, N>(this->arg_.template at<N>());
+    }
+};
+
+namespace detail {
+
+template <char F>
+struct named_vector_type {
+    template <typename T>
+    using type = named_vector<T, F>;
+};
+
+}    // namespace detail
+
+template <char Family, typename Expr>
+constexpr auto
+name(Expr&& expr)
+{
+    return make_unary_expression<detail::named_vector_type<Family>::template type>(
+        std::forward<Expr>(expr));
+}
+
+//----------------------------------------------------------------------------
 //@{
 /** @name Sum of two vectors */
 template <typename LHS, typename RHS>
@@ -274,7 +313,7 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr value_type
+    constexpr auto
     at() const
     {
         static_assert(N < base_type::size, "Vector sum component index is out of range");
@@ -306,7 +345,7 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr value_type
+    constexpr auto
     at() const
     {
         static_assert(N < base_type::size, "Vector difference component index is out of range");
@@ -340,7 +379,7 @@ struct vector_scalar_multiply
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr value_type
+    constexpr auto
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply component index is out of range");
@@ -430,7 +469,7 @@ struct vector_scalar_divide : binary_vector_expression_axes<vector_scalar_divide
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr value_type
+    constexpr auto
     at() const
     {
         static_assert(N < base_type::size, "Vector divide component index is out of range");
