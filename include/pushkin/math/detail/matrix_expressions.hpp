@@ -536,6 +536,10 @@ operator>=(LHS&& lhs, RHS&& rhs)
 
 //----------------------------------------------------------------------------
 //@{
+/** @name Matrix transposition */
+/**
+ * Matrix transposition is a "flip" around the main diagonal
+ */
 template <typename Expr>
 struct matrix_transpose
     : matrix_expression<matrix_transpose<Expr>, typename std::decay_t<Expr>::transposed_type>,
@@ -543,7 +547,6 @@ struct matrix_transpose
 
     using base_type
         = matrix_expression<matrix_transpose<Expr>, typename std::decay_t<Expr>::transposed_type>;
-    using value_type = typename base_type::value_type;
 
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -563,6 +566,186 @@ constexpr auto
 transpose(Expr&& expr)
 {
     return make_unary_expression<matrix_transpose>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Flip matrix around the secondary diagonal */
+template <typename Expr>
+struct matrix_secondary_flip
+    : matrix_expression<matrix_secondary_flip<Expr>, typename std::decay_t<Expr>::transposed_type>,
+      unary_expression<Expr> {
+    using base_type = matrix_expression<matrix_secondary_flip<Expr>,
+                                        typename std::decay_t<Expr>::transposed_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<base_type::cols - C - 1, base_type::rows - R - 1>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+flip_secondary(Expr&& expr)
+{
+    return make_unary_expression<matrix_secondary_flip>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Flip matrix horizontally */
+template <typename Expr>
+struct matrix_horizontal_flip
+    : matrix_expression<matrix_horizontal_flip<Expr>, typename std::decay_t<Expr>::matrix_type>,
+      unary_expression<Expr> {
+    using base_type
+        = matrix_expression<matrix_horizontal_flip<Expr>, typename std::decay_t<Expr>::matrix_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<R, base_type::cols - C - 1>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+flip_horizontally(Expr&& expr)
+{
+    return make_unary_expression<matrix_horizontal_flip>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Flip matrix vertically */
+template <typename Expr>
+struct matrix_vertical_flip
+    : matrix_expression<matrix_vertical_flip<Expr>, typename std::decay_t<Expr>::matrix_type>,
+      unary_expression<Expr> {
+    using base_type
+        = matrix_expression<matrix_vertical_flip<Expr>, typename std::decay_t<Expr>::matrix_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<base_type::rows - R - 1, C>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+flip_vertically(Expr&& expr)
+{
+    return make_unary_expression<matrix_vertical_flip>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Rotate matrix clockwise */
+template <typename Expr>
+struct matrix_cw_rotation
+    : matrix_expression<matrix_cw_rotation<Expr>, typename std::decay_t<Expr>::transposed_type>,
+      unary_expression<Expr> {
+    using base_type
+        = matrix_expression<matrix_cw_rotation<Expr>, typename std::decay_t<Expr>::transposed_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<base_type::cols - C - 1, R>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+rotate_cw(Expr&& expr)
+{
+    return make_unary_expression<matrix_cw_rotation>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Rotate matrix counter-clockwise */
+template <typename Expr>
+struct matrix_ccw_rotation
+    : matrix_expression<matrix_ccw_rotation<Expr>, typename std::decay_t<Expr>::transposed_type>,
+      unary_expression<Expr> {
+    using base_type = matrix_expression<matrix_ccw_rotation<Expr>,
+                                        typename std::decay_t<Expr>::transposed_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<C, base_type::rows - R - 1>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+rotate_ccw(Expr&& expr)
+{
+    return make_unary_expression<matrix_ccw_rotation>(std::forward<Expr>(expr));
+}
+//@}
+
+//@{
+/** @name Flip matrix vertically */
+template <typename Expr>
+struct matrix_180_rotate
+    : matrix_expression<matrix_180_rotate<Expr>, typename std::decay_t<Expr>::matrix_type>,
+      unary_expression<Expr> {
+    using base_type
+        = matrix_expression<matrix_180_rotate<Expr>, typename std::decay_t<Expr>::matrix_type>;
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t R, std::size_t C>
+    constexpr auto
+    element() const
+    {
+        static_assert(R < base_type::rows, "Invalid matrix expression row index");
+        static_assert(C < base_type::cols, "Invalid matrix expression col index");
+        return this->arg_.template element<base_type::rows - R - 1, base_type::cols - C - 1>();
+    }
+};
+
+template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+constexpr auto
+rotate_180(Expr&& expr)
+{
+    return make_unary_expression<matrix_180_rotate>(std::forward<Expr>(expr));
 }
 //@}
 

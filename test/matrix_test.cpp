@@ -21,6 +21,8 @@ using vector3d  = vector<double, 3>;
 using vector3df = vector<float, 3>;
 using matrix3x3 = matrix<double, 3, 3>;
 using matrix2x2 = matrix<double, 2, 2>;
+using matrix3x4 = matrix<double, 3, 4>;
+using matrix4x3 = matrix<double, 4, 3>;
 
 TEST(Matrix, ConstructDefault)
 {
@@ -319,6 +321,71 @@ TEST(Matrix, Determinant)
         // clang-format on
         EXPECT_EQ(0, det(m));
     }
+}
+
+TEST(Matrix, Mutate)
+{
+    // clang-format off
+    matrix3x4 m{
+        { 11, 21, 31, 41 },
+        { 12, 22, 32, 42 },
+        { 13, 23, 33, 43 }
+    };
+    // Transposed
+    matrix4x3 t{
+        { 11, 12, 13 },
+        { 21, 22, 23 },
+        { 31, 32, 33 },
+        { 41, 42, 43 }
+    };
+    // Flipped around secondary diagonal
+    matrix4x3 f_2nd {
+        { 43, 42, 41 },
+        { 33, 32, 31 },
+        { 23, 22, 21 },
+        { 13, 12, 11 }
+    };
+    // Flipped horizontally
+    matrix3x4 f_h {
+        { 41, 31, 21, 11 },
+        { 42, 32, 22, 12 },
+        { 43, 33, 23, 13 },
+    };
+    // Flipped vertically
+    matrix3x4 f_v{
+        { 13, 23, 33, 43 },
+        { 12, 22, 32, 42 },
+        { 11, 21, 31, 41 }
+    };
+    // Rotated cw
+    matrix4x3 cw{
+        { 13, 12, 11 },
+        { 23, 22, 21 },
+        { 33, 32, 31 },
+        { 43, 42, 41 }
+    };
+    // Rotated ccw
+    matrix4x3 ccw{
+        { 41, 42, 43 },
+        { 31, 32, 33 },
+        { 21, 22, 23 },
+        { 11, 12, 13 },
+    };
+    // Rotated 180°
+    matrix3x4 r_180{
+        { 43, 33, 23, 13 },
+        { 42, 32, 22, 12 },
+        { 41, 31, 21, 11 }
+    };
+    // clang-format on
+
+    EXPECT_EQ(t, transpose(m)) << "Transpose: " << transpose(m);
+    EXPECT_EQ(f_2nd, flip_secondary(m)) << "Flip 2nd diagonal: " << flip_secondary(m);
+    EXPECT_EQ(f_h, flip_horizontally(m)) << "Flip horizontally: " << flip_horizontally(m);
+    EXPECT_EQ(f_v, flip_vertically(m)) << "Flip vertically: " << flip_vertically(m);
+    EXPECT_EQ(cw, rotate_cw(m)) << "Rotate CW: " << rotate_cw(m);
+    EXPECT_EQ(ccw, rotate_ccw(m)) << "Rotate CCW: " << rotate_ccw(m);
+    EXPECT_EQ(r_180, rotate_180(m)) << "Rotate 180: " << rotate_180(m);
 }
 
 } /* namespace test */
