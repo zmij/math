@@ -23,7 +23,14 @@ using vector3f = vector<float, 3>;
 using vector4d = vector<double, 4>;
 using vector4f = vector<float, 4>;
 
-TEST(Vector, GenerateRandom)
+using matrix3x3d = matrix<double, 3, 3>;
+using matrix3x3f = matrix<float, 3, 3>;
+using matrix4x3d = matrix<double, 4, 3>;
+using matrix4x3f = matrix<float, 4, 3>;
+using matrix3x4d = matrix<double, 3, 4>;
+using matrix3x4f = matrix<float, 3, 4>;
+
+TEST(Vector, RandomVector)
 {
     auto gen_d = random_vector_data<double>(std::uniform_real_distribution<double>{0, 1});
     auto gen_f = random_vector_data<float>(std::normal_distribution<float>{0, 1});
@@ -46,6 +53,21 @@ TEST(Vector, GenerateRandom)
     vector4f v4 = gen_f;
     std::cout << "Random vector " << v4 << "\n";
     EXPECT_NE(0, magnitude_square(v4));
+}
+
+TEST(Matrix, RandomMatrix)
+{
+    std::cout << io::pretty;
+    auto gen_d = random_matrix_data<double>(std::uniform_real_distribution<double>{0, 1});
+    auto gen_f = random_matrix_data<float>(std::normal_distribution<float>{0, 1});
+
+    matrix3x3d m1 = gen_d;
+    std::cout << "Random matrix " << m1 << "\n";
+
+    matrix3x3f m2 = gen_f;
+    std::cout << "Random matrix " << m2 << "\n";
+
+    std::cout << io::ugly;
 }
 
 }    // namespace test
