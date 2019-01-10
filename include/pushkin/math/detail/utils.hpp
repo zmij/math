@@ -148,6 +148,57 @@ struct template_tuple<> {
 };
 //@}
 
+//@{
+template <std::size_t N, typename... T>
+struct nth_value;
+
+template <typename T, typename... Y>
+struct nth_value<0, T, Y...> {
+    template <typename U, typename... V>
+    static constexpr auto
+    get(U&& v, V&&...)
+    {
+        if constexpr (std::is_rvalue_reference<U&&>{}) {
+            return std::move(v);
+        } else {
+            return std::forward<U>(v);
+        }
+    }
+};
+
+template <std::size_t N, typename T, typename... Y>
+struct nth_value<N, T, Y...> {
+    template <typename U, typename... V>
+    static constexpr auto
+    get(U&& v, V&&... args)
+    {
+        return nth_value<N - 1, Y...>::get(std::forward<V>(args)...);
+    }
+};
+
+template <std::size_t N, typename... T>
+constexpr auto
+get_nth_value(T&&... args)
+{
+    return nth_value<N, T...>::get(std::forward<T>(args)...);
+}
+//@}
+
+//@{
+template <std::size_t, typename T>
+struct nth_index;
+template <std::size_t N, typename T>
+using nth_index_t = typename nth_index<N, T>::type;
+template <std::size_t N, typename T>
+constexpr std::size_t nth_index_v = nth_index_t<N, T>::value;
+
+template <std::size_t I, std::size_t... Indexes>
+struct nth_index<0, std::index_sequence<I, Indexes...>> : size_constant<I> {};
+
+template <std::size_t N, std::size_t I, std::size_t... Indexes>
+struct nth_index<N, std::index_sequence<I, Indexes...>>
+    : nth_index<N - 1, std::index_sequence<Indexes...>> {};
+//@}
 }    // namespace utils
 }    // namespace math
 }    // namespace psst

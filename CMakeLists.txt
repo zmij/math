@@ -48,14 +48,14 @@ else()
     message(STATUS "ccache disabled")
 endif()
 
-
-add_subdirectory(include)
+find_package(ExternalProjectZmijModules)
+find_package(ExternalProjectMetapushkin REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+message(STATUS "Metapushkin include dir ${METAPUSHKIN_INCLUDE_DIRS}")
+include_directories(${METAPUSHKIN_INCLUDE_DIRS})
 
-if (PSST_MATH_BUILD_TESTS OR PSST_MATH_BUILD_BENCHMARKS)
-find_package(ExternalProjectZmijModules)
-endif()
+add_subdirectory(include)
 
 if (PSST_MATH_BUILD_TESTS)
     enable_testing()

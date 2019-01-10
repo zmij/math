@@ -671,6 +671,26 @@ struct vector_dot_product : binary_scalar_expression<vector_dot_product, LHS, RH
         return value_cache_;
     }
 
+    constexpr auto
+    derivative() const
+    {
+        return derivative(source_index_type{});
+    }
+
+    template <char F>
+    constexpr auto
+    derivative() const
+    {
+        return this->template derivative<F>(source_index_type{});
+    }
+
+    template <char F, std::size_t I>
+    constexpr auto
+    derivative() const
+    {
+        return this->template derivative<F, I>(source_index_type{});
+    }
+
 private:
     template <std::size_t... Indexes>
     constexpr value_type
@@ -678,6 +698,29 @@ private:
     {
         return s::sum((get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
     }
+
+    template <std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::sum(s::derivative(get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
+    }
+
+    template <char F, std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::sum(
+            s::derivative<F, Indexes>(get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
+    }
+
+    template <char F, std::size_t I, std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::sum(s::derivative<F, I>(get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
+    }
+
     // TODO Optional
     static constexpr value_type nval         = std::numeric_limits<value_type>::min();
     mutable value_type          value_cache_ = nval;
@@ -689,6 +732,42 @@ dot_product(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<vector_dot_product>(std::forward<LHS>(lhs),
                                                       std::forward<RHS>(rhs));
+}
+//@}
+
+//@{
+template <typename Expr, char Family>
+struct vector_gradient
+    : vector_expression<vector_gradient<Expr, Family>, vector_expression_result_t<Expr>>,
+      unary_expression<Expr> {
+
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        return s::derivative<Family, N>(this->arg_.template at<N>());
+    }
+};
+
+namespace detail {
+
+template <char F>
+struct named_gradient {
+    template <typename T>
+    using type = vector_gradient<T, F>;
+};
+
+}    // namespace detail
+
+template <char Family, typename Expr, typename = enable_if_vector_expression<Expr>>
+constexpr auto
+gradient(Expr&& expr)
+{
+    return make_unary_expression<detail::named_gradient<Family>::template type>(
+        std::forward<Expr>(expr));
 }
 //@}
 

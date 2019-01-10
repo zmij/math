@@ -9,6 +9,7 @@
 #define PUSHKIN_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_
 
 #include <pushkin/math/detail/expressions.hpp>
+#include <pushkin/meta/algorithm.hpp>
 
 #include <cmath>
 
@@ -308,6 +309,15 @@ wrap_non_expression_args(Args&&... args)
     return make_n_ary_expression<ExpressionType>(wrap_arg_t<Args&&>(std::forward<Args>(args))...);
 }
 
+template <template <typename...> class ExpressionType, std::size_t... Indexes, typename... Args>
+constexpr auto
+wrap_non_expression_args(std::index_sequence<Indexes...>, Args&&... args)
+{
+    return make_n_ary_expression<ExpressionType>(
+        wrap_arg_t<typename meta::nth_type<Indexes, Args...>::type&&>(
+            utils::get_nth_value<Indexes>(std::forward<Args>(args)...))...);
+}
+
 }    // namespace detail
 
 //----------------------------------------------------------------------------
@@ -463,12 +473,38 @@ struct scalar_sum : scalar_expression<scalar_sum<T...>, scalar_expression_result
         return sum(index_sequence_type{});
     }
 
+    constexpr auto
+    derivative() const
+    {
+        return derivative(index_sequence_type{});
+    }
+
+    template <char F, std::size_t I>
+    constexpr auto
+    derivative() const
+    {
+        return this->template derivative<F, I>(index_sequence_type{});
+    }
+
 private:
     template <std::size_t... Indexes>
     constexpr auto
     sum(std::index_sequence<Indexes...>) const
     {
         return (this->template arg<Indexes>() + ...);
+    }
+
+    template <std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::sum(this->template arg<Indexes>().derivative()...);
+    }
+    template <char F, std::size_t I, std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::sum(this->template arg<Indexes>().template derivative<F, I>()...);
     }
 };
 
@@ -479,11 +515,25 @@ sum(T&& arg)
     return detail::wrap_arg_t<T&&>(std::forward<T>(arg));
 }
 
-template <typename... T, typename = enable_if_scalar_values<T...>>
+template <typename... T, typename>
 constexpr auto
 sum(T&&... args)
 {
-    return detail::wrap_non_expression_args<scalar_sum>(std::forward<T>(args)...);
+    // Filter out zeros
+    using remove_zeros = meta::remove_if<expr::is_zero, T...>;
+    if constexpr (meta::is_empty_v<typename remove_zeros::type>) {
+        return zero;
+    } else if constexpr (remove_zeros::type::size == 1) {
+        constexpr std::size_t arg_index = utils::nth_index_v<0, typename remove_zeros::indexes>;
+        return detail::wrap_arg_t<typename remove_zeros::type::template type<0>&&>(
+            utils::get_nth_value<arg_index>(std::forward<T>(args)...));
+    } else if constexpr (remove_zeros::type::size != sizeof...(T)) {
+        // Forward nth args
+        return detail::wrap_non_expression_args<scalar_sum>(typename remove_zeros::indexes{},
+                                                            std::forward<T>(args)...);
+    } else {
+        return detail::wrap_non_expression_args<scalar_sum>(std::forward<T>(args)...);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -616,12 +666,37 @@ struct scalar_product : scalar_expression<scalar_product<T...>, scalar_expressio
         return product(index_sequence_type{});
     }
 
+    constexpr auto
+    derivative() const
+    {
+        return derivative(index_sequence_type{});
+    }
+
+    template <char F, std::size_t I>
+    constexpr auto
+    derivative() const
+    {
+        return this->template derivative<F, I>(index_sequence_type{});
+    }
+
 private:
     template <std::size_t... Indexes>
     constexpr auto
     product(std::index_sequence<Indexes...>) const
     {
         return (this->template arg<Indexes>() * ...);
+    }
+    template <std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::derivative((this->template arg<Indexes>() * ...));
+    }
+    template <char F, std::size_t I, std::size_t... Indexes>
+    constexpr auto
+    derivative(std::index_sequence<Indexes...>) const
+    {
+        return s::derivative<F, I>((this->template arg<Indexes>() * ...));
     }
 };
 
@@ -636,8 +711,24 @@ template <typename... T, typename = enable_if_scalar_values<T...>>
 constexpr auto
 product(T&&... args)
 {
-    // TODO Check for zeroes and filter out ones
-    return detail::wrap_non_expression_args<scalar_product>(std::forward<T>(args)...);
+    using zeros = meta::find_if_t<is_zero, T...>;
+    if constexpr (!meta::is_empty_v<zeros>) {
+        return zero;
+    } else {
+        // Filter out ones
+        using remove_ones = meta::remove_if<is_one, T...>;
+        if constexpr (remove_ones::type::size == 1) {
+            constexpr std::size_t arg_index = utils::nth_index_v<0, typename remove_ones::indexes>;
+            return detail::wrap_arg_t<typename remove_ones::type::template type<0>&&>(
+                utils::get_nth_value<arg_index>(std::forward<T>(args)...));
+        } else if constexpr (remove_ones::type::size != sizeof...(T)) {
+            // Forward nth args
+            return detail::wrap_non_expression_args<scalar_product>(typename remove_ones::indexes{},
+                                                                    std::forward<T>(args)...);
+        } else {
+            return detail::wrap_non_expression_args<scalar_product>(std::forward<T>(args)...);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
