@@ -83,7 +83,8 @@ constexpr std::size_t min_v = min<V...>::value;
 template <std::size_t... V>
 using make_min_index_sequence = std::make_index_sequence<min_v<V...>>;
 
-using npos = size_constant<std::numeric_limits<std::size_t>::max()>;
+using npos                   = size_constant<std::numeric_limits<std::size_t>::max()>;
+constexpr std::size_t npos_v = npos::value;
 
 //@{
 /** @name is_same */

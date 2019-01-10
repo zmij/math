@@ -7,7 +7,6 @@
 
 #include "test_printing.hpp"
 #include <pushkin/math/cylindrical_coord.hpp>
-#include <pushkin/math/matrix.hpp>
 #include <pushkin/math/polar_coord.hpp>
 #include <pushkin/math/spherical_coord.hpp>
 #include <pushkin/math/vector.hpp>

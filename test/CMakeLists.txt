@@ -22,6 +22,7 @@ set(
     matrix_test.cpp
     quaternion_tests.cpp
     color_tests.cpp
+    random_tests.cpp
 )
 add_executable(test-psst-math ${test_program_SRCS})
 target_link_libraries(
