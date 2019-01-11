@@ -34,6 +34,7 @@ public:
 
     vector_facet(vector_facet const& rhs)
         : facet{},
+          bin_mode_{rhs.bin_mode_},
           pretty_{rhs.pretty_},
           start_{rhs.start_},
           end_{rhs.end_},
@@ -42,6 +43,12 @@ public:
           row_sep_{rhs.row_sep_},
           offset_{rhs.offset_}
     {}
+
+    bool
+    binmode() const
+    {
+        return bin_mode_;
+    }
 
     bool
     pretty() const
@@ -94,6 +101,15 @@ public:
     {
         vector_facet* fct = new vector_facet{*this};
         fct->pretty_      = val;
+        fct->bin_mode_    = false;
+        return fct;
+    }
+
+    vector_facet*
+    set_binmode(bool val) const
+    {
+        vector_facet* fct = new vector_facet{*this};
+        fct->bin_mode_    = val;
         return fct;
     }
 
@@ -115,6 +131,7 @@ public:
     }
 
 private:
+    bool        bin_mode_  = false;
     bool        pretty_    = false;
     char_type   start_     = '{';
     char_type   end_       = '}';
@@ -244,6 +261,35 @@ private:
     std::size_t col_width_;
 };
 
+/**
+ * Manipulator to set binary I/O mode
+ */
+struct binmode {
+    binmode(bool m) : bin_mode_{m} {}
+
+    template <typename CharT>
+    void
+    apply(std::basic_ostream<CharT>& os) const
+    {
+        auto const& fct = get_facet(os);
+        add_facet(os, fct.set_binmode(bin_mode_));
+    }
+
+    template <typename CharT>
+    void
+    apply(std::basic_istream<CharT>& is) const
+    {
+        auto const& fct = get_facet(is);
+        is >> std::noskipws;
+        add_facet(is, fct.set_binmode(bin_mode_));
+    }
+
+private:
+    bool bin_mode_;
+};
+
+//@{
+/** @name Detect if a struct is an output manipulator */
 template <typename T, typename CharT, typename = utils::void_t<>>
 struct is_omanip : std::false_type {};
 template <typename T, typename CharT>
@@ -256,6 +302,23 @@ template <typename T, typename CharT>
 constexpr bool is_omanip_v = is_omanip_t<T, CharT>::value;
 template <typename T, typename CharT>
 using enable_for_omanip = std::enable_if_t<is_omanip_v<T, CharT>>;
+//@}
+
+//@{
+/** @name Detect if a struct is an output manipulator */
+template <typename T, typename CharT, typename = utils::void_t<>>
+struct is_imanip : std::false_type {};
+template <typename T, typename CharT>
+struct is_imanip<T, CharT,
+                 utils::void_t<decltype(std::declval<T const&>().apply(
+                     std::declval<std::basic_istream<CharT>&>()))>> : std::true_type {};
+template <typename T, typename CharT>
+using is_imanip_t = typename is_imanip<T, CharT>::type;
+template <typename T, typename CharT>
+constexpr bool is_imanip_v = is_imanip_t<T, CharT>::value;
+template <typename T, typename CharT>
+using enable_for_imanip = std::enable_if_t<is_imanip_v<T, CharT>>;
+//@}
 
 template <typename CharT, typename T, typename = enable_for_omanip<T, CharT>>
 std::basic_ostream<CharT>&
@@ -265,13 +328,68 @@ operator<<(std::basic_ostream<CharT>& os, T const& v)
     return os;
 }
 
+template <typename CharT, typename T, typename = enable_for_imanip<T, CharT>>
+std::basic_istream<CharT>&
+operator>>(std::basic_istream<CharT>& is, T const& v)
+{
+    v.apply(is);
+    return is;
+}
+
+//----------------------------------------------------------------------------
+// A very naïve implementation for reading and writing binary data. Most likely
+// won't work with wchar_t
+template <typename CharT, typename T>
+std::basic_ostream<CharT>&
+write_binary(std::basic_ostream<CharT>& os, T const& val)
+{
+    std::ostreambuf_iterator<CharT> out{os};
+    CharT const*                    p   = reinterpret_cast<CharT const*>(&val);
+    auto                            end = p + sizeof(T);
+    while (p != end) {
+        *out++ = *p++;
+    }
+    return os;
+}
+
+template <typename CharT, typename T>
+std::basic_istream<CharT>&
+read_binary(std::basic_istream<CharT>& is, T& val)
+{
+    using std::swap;
+    std::istreambuf_iterator<CharT> in{is};
+    std::istreambuf_iterator<CharT> end_in;
+    T                               tmp{0};
+    CharT*                          p   = reinterpret_cast<CharT*>(&tmp);
+    auto                            end = p + sizeof(T);
+    while (p != end && in != end_in) {
+        *p++ = *in++;
+    }
+    if (p != end) {
+        is.setstate(std::ios::failbit);
+        return is;
+    }
+    swap(val, tmp);
+    return is;
+}
+
+template <typename CharT, typename T, T (*F)(T const&)>
+std::basic_istream<CharT>&
+read_binary(std::basic_istream<CharT>& is, value_policy::value_clamp<T, F>&& val)
+{
+    T tmp;
+    read_binary(is, tmp);
+    val = tmp;
+    return is;
+}
+
 } /* namespace io */
 
 namespace value_policy {
 
 template <typename T, T (*F)(T const&)>
 std::istream&
-operator>>(std::istream& is, value_clamp<T, F>& val)
+operator>>(std::istream& is, value_clamp<T, F>&& val)
 {
     T tmp;
     is >> tmp;
@@ -320,23 +438,37 @@ struct vector_output<0, Vector> {
     }
 };
 
+template <typename CharT, typename Vector, std::size_t... Indexes>
+std::basic_ostream<CharT>&
+write_binary(std::basic_ostream<CharT>& os, Vector const& val, std::index_sequence<Indexes...>)
+{
+    using value_type = typename Vector::value_type;
+    (io::write_binary(os, (value_type)val.template at<Indexes>()), ...);
+    return os;
+}
+
 }    // namespace detail
 
-template <typename Expression, typename Result>
+template <typename Expression, typename = enable_if_vector_expression<Expression>>
 std::ostream&
-operator<<(std::ostream& os, vector_expression<Expression, Result> const& v)
+operator<<(std::ostream& os, Expression const& v)
 {
-    using expression_type = vector_expression<Expression, Result>;
+    using expression_type = Expression;
     std::ostream::sentry s(os);
     if (s) {
         auto const& fct = io::get_facet(os);
-        os << fct.start();
-        if (fct.pretty())
-            os << fct.separator();
-        detail::vector_output<expression_type::size - 1, expression_type>::output(os, v);
-        if (fct.pretty())
-            os << fct.separator();
-        os << fct.end();
+        if (fct.binmode()) {
+            io::write_binary(os, expression_type::size);
+            detail::write_binary(os, v, typename expression_type::index_sequence_type{});
+        } else {
+            os << fct.start();
+            if (fct.pretty())
+                os << fct.separator();
+            detail::vector_output<expression_type::size - 1, expression_type>::output(os, v);
+            if (fct.pretty())
+                os << fct.separator();
+            os << fct.end();
+        }
     }
     return os;
 }
@@ -374,30 +506,49 @@ struct data_input<0, Vector> {
     }
 };
 
+template <typename CharT, typename Vector, std::size_t... Indexes>
+std::basic_istream<CharT>&
+read_binary(std::basic_istream<CharT>& is, Vector& v, std::index_sequence<Indexes...>)
+{
+    (io::read_binary(is, get<Indexes>(v)), ...);
+    return is;
+}
+
 }    // namespace detail
 
 template <typename T, std::size_t Size, typename Axes>
 std::istream&
 operator>>(std::istream& is, vector<T, Size, Axes>& v)
 {
+    using vector_type = vector<T, Size, Axes>;
     std::istream::sentry s(is);
     if (s) {
         auto const& fct = io::get_facet(is);
-        char        c   = '\0';
-        if (!(is >> c)) {
-            return is;
-        }
-        if (c != fct.start()) {
-            is.setstate(std::ios::failbit);
-            return is;
-        }
-        detail::data_input<Size - 1, vector<T, Size, Axes>>::input(is, v);
-        if (!(is >> c)) {
-            return is;
-        }
-        if (c != fct.end()) {
-            is.setstate(std::ios::failbit);
-            return is;
+        if (fct.binmode()) {
+            std::size_t sz{0};
+            io::read_binary(is, sz);
+            if (sz != vector_type::size) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            detail::read_binary(is, v, typename vector_type::index_sequence_type{});
+        } else {
+            char c = '\0';
+            if (!(is >> c)) {
+                return is;
+            }
+            if (c != fct.start()) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            detail::data_input<Size - 1, vector<T, Size, Axes>>::input(is, v);
+            if (!(is >> c)) {
+                return is;
+            }
+            if (c != fct.end()) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
         }
     }
     return is;

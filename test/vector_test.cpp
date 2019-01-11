@@ -157,6 +157,38 @@ TEST(Vector, IO)
     EXPECT_EQ(v1, v2);
 }
 
+TEST(Vector, BinaryIO)
+{
+    {
+        // First just some values
+        double             src{42.0};
+        std::ostringstream os;
+        io::write_binary(os, src);
+        double             tgt{0};
+        std::istringstream is;
+        io::read_binary(is, tgt);
+        EXPECT_EQ(0, tgt) << "No value read from an empty stream";
+        is.str(os.str());
+        io::read_binary(is, tgt);
+        EXPECT_EQ(src, tgt) << "No value read from an empty stream";
+    }
+    {
+        vector3d           src{1, 2, 3}, tgt{};
+        std::ostringstream os;
+        os << io::binmode(true) << src;
+        EXPECT_FALSE(os.str().empty());
+        EXPECT_EQ(sizeof(std::size_t) + sizeof(double) * vector3d::size, os.str().size());
+        {
+            std::istringstream is;
+            is >> io::binmode(true) >> tgt;
+            EXPECT_EQ(vector3d{}, tgt) << "No value read from an empty stream";
+        }
+        std::istringstream is{os.str()};
+        is >> io::binmode(true) >> tgt;
+        EXPECT_EQ(src, tgt) << "Incorrect value read from stream";
+    }
+}
+
 TEST(Vector, Modify)
 {
     vector3d v1{};
@@ -282,6 +314,29 @@ TEST(Polar, Clamp)
     EXPECT_EQ(0, pc.azimuth());
     pc.azimuth() = -180.0_deg;
     EXPECT_EQ(180.0_deg, pc.azimuth());
+}
+
+TEST(Polar, IO)
+{
+    polar_coord<double> pc{1, 360.0_deg};
+    {
+        // Text
+        std::ostringstream os;
+        os << pc;
+        polar_coord<double> tgt;
+        std::istringstream  is(os.str());
+        is >> tgt;
+        EXPECT_EQ(pc, tgt);
+    }
+    {
+        // Binary
+        std::ostringstream os;
+        os << io::binmode(true) << pc;
+        polar_coord<double> tgt;
+        std::istringstream  is(os.str());
+        is >> io::binmode(true) >> tgt;
+        EXPECT_EQ(pc, tgt);
+    }
 }
 
 TEST(Polar, Multiply)

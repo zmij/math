@@ -388,6 +388,30 @@ TEST(Matrix, Mutate)
     EXPECT_EQ(r_180, rotate_180(m)) << "Rotate 180: " << rotate_180(m);
 }
 
+TEST(Matrix, BinaryIO)
+{
+    // clang-format off
+    matrix3x4 src{
+        { 11, 21, 31, 41 },
+        { 12, 22, 32, 42 },
+        { 13, 23, 33, 43 }
+    };
+    // clang-format on
+    matrix3x4          tgt;
+    std::ostringstream os;
+    os << io::binmode(true) << src;
+    EXPECT_FALSE(os.str().empty());
+    EXPECT_EQ(sizeof(std::size_t) * 4 + sizeof(double) * matrix3x4::size, os.str().size());
+    {
+        std::istringstream is;
+        is >> io::binmode(true) >> tgt;
+        EXPECT_EQ(matrix3x4{}, tgt) << "Nothing should be read from an empty stream";
+    }
+    std::istringstream is(os.str());
+    is >> io::binmode(true) >> tgt;
+    EXPECT_EQ(src, tgt) << "Invalid data read from stream";
+}
+
 } /* namespace test */
 } /* namespace math */
 } /* namespace psst */
