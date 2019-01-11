@@ -153,33 +153,7 @@ constexpr auto operator!(Expression&& exp)
 //@}
 
 //----------------------------------------------------------------------------
-//@{
-/** @name Sum two scalar expressions */
-template <typename LHS, typename RHS>
-struct scalar_add : binary_scalar_expression<scalar_add, LHS, RHS>, binary_expression<LHS, RHS> {
-    using base_type       = binary_scalar_expression<scalar_add, LHS, RHS>;
-    using value_type      = typename base_type::value_type;
-    using expression_base = binary_expression<LHS, RHS>;
-
-    using expression_base::expression_base;
-
-    constexpr value_type
-    value() const
-    {
-        return this->lhs_.value() + this->rhs_.value();
-    }
-};
-
-template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
-constexpr auto
-operator+(LHS&& lhs, RHS&& rhs)
-{
-    return detail::wrap_non_expression_args<scalar_add>(std::forward<LHS>(lhs),
-                                                        std::forward<RHS>(rhs));
-}
-//@}
-
-//----------------------------------------------------------------------------
+/** @name Sum one or more scalar expressions */
 template <typename T, typename... Y>
 struct scalar_sum : scalar_expression<scalar_sum<T, Y...>, scalar_expression_result_t<T>>,
                     n_ary_expression<T, Y...> {
@@ -204,6 +178,14 @@ private:
         return (this->template arg<Indexes>() + ...);
     }
 };
+
+template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
+constexpr auto
+operator+(LHS&& lhs, RHS&& rhs)
+{
+    return detail::wrap_non_expression_args<scalar_sum>(std::forward<LHS>(lhs),
+                                                        std::forward<RHS>(rhs));
+}
 
 template <typename T, typename = enable_if_scalar_value<T>>
 constexpr auto
@@ -285,46 +267,6 @@ operator+(scalar_sum<T...>&& lhs, Expr&& expr)
 {
     return detail::concat_sums(std::move(lhs), typename scalar_sum<T...>::index_sequence_type{},
                                std::forward<Expr>(expr));
-}
-
-template <typename Expr, typename LHS, typename RHS>
-constexpr auto
-operator+(Expr&& lhs, scalar_add<LHS, RHS>&& rhs)
-{
-    return detail::unchecked_scalar_sum(std::forward<Expr>(lhs), std::move(rhs.lhs()),
-                                        std::move(rhs.rhs()));
-}
-
-template <typename LHS, typename RHS, typename Expr>
-constexpr auto
-operator+(scalar_add<LHS, RHS>&& lhs, Expr&& rhs)
-{
-    return detail::unchecked_scalar_sum(std::move(lhs.lhs()), std::move(lhs.rhs()),
-                                        std::forward<Expr>(rhs));
-}
-
-template <typename LHSL, typename RHSL, typename LHSR, typename RHSR>
-constexpr auto
-operator+(scalar_add<LHSL, RHSL>&& lhs, scalar_add<LHSR, RHSR>&& rhs)
-{
-    return detail::unchecked_scalar_sum(std::move(lhs.lhs()), std::move(lhs.rhs()),
-                                        std::move(rhs.lhs()), std::move(rhs.rhs()));
-}
-
-template <typename LHS, typename RHS, typename... T>
-constexpr auto
-operator+(scalar_add<LHS, RHS>&& lhs, scalar_sum<T...>&& rhs)
-{
-    return detail::concat_sums(std::move(lhs.lhs()), std::move(lhs.rhs()), std::move(rhs),
-                               typename scalar_sum<T...>::index_sequence_type{});
-}
-
-template <typename LHS, typename RHS, typename... T>
-constexpr auto
-operator+(scalar_sum<T...>&& lhs, scalar_add<LHS, RHS>&& rhs)
-{
-    return detail::concat_sums(std::move(lhs), typename scalar_sum<T...>::index_sequence_type{},
-                               std::move(rhs.lhs()), std::move(rhs.rhs()));
 }
 
 //----------------------------------------------------------------------------

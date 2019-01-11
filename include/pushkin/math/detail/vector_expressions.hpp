@@ -510,7 +510,8 @@ private:
     constexpr value_type
     sum(std::index_sequence<Indexes...>) const
     {
-        return s::sum((get<Indexes>(this->arg_) * get<Indexes>(this->arg_))...);
+        return s::detail::unchecked_scalar_sum(
+            (get<Indexes>(this->arg_) * get<Indexes>(this->arg_))...);
     }
     // TODO Optional
     static constexpr value_type nval         = std::numeric_limits<value_type>::min();
@@ -637,7 +638,8 @@ private:
     constexpr value_type
     sum(std::index_sequence<Indexes...>) const
     {
-        return s::sum((get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
+        return s::detail::unchecked_scalar_sum(
+            (get<Indexes>(this->lhs_) * get<Indexes>(this->rhs_))...);
     }
     // TODO Optional
     static constexpr value_type nval         = std::numeric_limits<value_type>::min();
