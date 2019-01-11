@@ -581,6 +581,30 @@ normalize(Expr&& expr)
 //@}
 
 //----------------------------------------------------------------------------
+/** @name Apply a predicate to each vector component */
+template <typename Expr, typename Predicate>
+struct vector_apply
+    : vector_expression<vector_apply<Expr, Predicate>, vector_expression_result_t<Expr>>,
+      binary_expression<Expr, Predicate> {
+    using expression_base = binary_expression<Expr, Predicate>;
+    using expression_base::expression_base;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        return this->rhs_(this->lhs_.template at<N>());
+    }
+};
+
+template <typename Expr, typename Predicate, typename = enable_if_vector_expression<Expr>>
+constexpr auto
+apply(Expr&& expr, Predicate&& pred)
+{
+    return make_binary_expression<vector_apply>(std::forward<Expr>(expr),
+                                                std::forward<Predicate>(pred));
+}
+//----------------------------------------------------------------------------
 //@{
 /** @name Dot product of two vectors */
 template <typename LHS, typename RHS>
