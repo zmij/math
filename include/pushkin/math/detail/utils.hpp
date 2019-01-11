@@ -41,16 +41,12 @@ struct value_fill {
 };
 
 template <typename... T>
-struct most_precise_type;
+struct most_precise_type {
+    using type = decltype((std::declval<T>() * ...));
+};
 template <typename... T>
 using most_precise_type_t = typename most_precise_type<T...>::type;
 
-template <typename T, typename U>
-struct most_precise_type<T, U> {
-    using type = decltype(std::declval<T>() / std::declval<U>());
-};
-template <typename T, typename... U>
-struct most_precise_type<T, U...> : most_precise_type<T, most_precise_type_t<U...>> {};
 template <typename T>
 struct most_precise_type<T> {
     using type = T;
