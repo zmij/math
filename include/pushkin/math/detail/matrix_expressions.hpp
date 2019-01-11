@@ -938,11 +938,10 @@ struct matrix_matrix_mul_result {
     using rhs_type = std::decay_t<RHS>;
     static_assert(lhs_type::cols == rhs_type::rows,
                   "Left hand columns must be equal to right hand rows");
-    static_assert(
-        (std::is_same<typename lhs_type::axes_names, typename rhs_type::axes_names>::value),
-        "Matrices must have the same axes");
+    static_assert((compatible_axes_v<LHS, RHS>), "Matrices must have the same axes");
     using value_type = scalar_expression_result_t<lhs_type, rhs_type>;
-    using type = matrix<value_type, lhs_type::rows, rhs_type::cols, typename lhs_type::axes_names>;
+    using axes_names = axes_names_for_t<LHS, RHS>;
+    using type       = matrix<value_type, lhs_type::rows, rhs_type::cols, axes_names>;
 };
 
 template <typename LHS, typename RHS>
