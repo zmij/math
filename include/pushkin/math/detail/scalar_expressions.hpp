@@ -175,7 +175,7 @@ private:
     constexpr auto
     sum(std::index_sequence<Indexes...>) const
     {
-        return (this->template arg<Indexes>() + ...);
+        return (this->template arg<Indexes>().value() + ...);
     }
 };
 
