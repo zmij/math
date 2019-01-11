@@ -10,6 +10,7 @@
 
 #include <pushkin/math/detail/axis_access.hpp>
 #include <pushkin/math/detail/matrix_expressions.hpp>
+#include <pushkin/math/vector.hpp>
 
 #include <cassert>
 

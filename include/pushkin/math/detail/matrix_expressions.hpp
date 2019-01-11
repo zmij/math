@@ -238,20 +238,49 @@ col(Matrix&& mtx)
     return make_unary_expression<nth_col, C>(std::forward<Matrix>(mtx));
 }
 
+//----------------------------------------------------------------------------
+//@{
+template <typename Matrix>
+struct matrix_as_row_result {
+    using original_matrix_type = typename std::decay_t<Matrix>::matrix_type;
+    using value_type           = typename original_matrix_type::value_type;
+    using axes_names           = typename original_matrix_type::axes_names;
+    static constexpr auto size = original_matrix_type::size;
+    using type                 = vector<value_type, size, axes_names>;
+};
+template <typename Matrix>
+using matrix_as_row_result_t = typename matrix_as_row_result<Matrix>::type;
+template <typename Expr>
+struct matrix_as_row : vector_expression<matrix_as_row<Expr>, matrix_as_row_result_t<Expr>>,
+                       unary_expression<Expr> {
+    using expression_base = unary_expression<Expr>;
+    using expression_base::expression_base;
+
+    using original_matrix_type = typename std::decay_t<Expr>::matrix_type;
+
+    template <std::size_t N>
+    constexpr auto
+    at() const
+    {
+        return this->arg_
+            .template element<N / original_matrix_type::rows, N % original_matrix_type::rows>();
+    }
+};
+
 template <typename Matrix, typename = enable_if_matrix_expression<Matrix>>
 constexpr auto
 as_vector(Matrix&& mtx)
 {
     using matrix_type = std::decay_t<Matrix>;
-    static_assert(matrix_type::rows == 1 || matrix_type::cols == 1,
-                  "Can treat a matrix as a vector only if there is one row or one column");
-
     if constexpr (matrix_type::rows == 1) {
         return row<0>(std::forward<Matrix>(mtx));
     } else if constexpr (matrix_type::cols == 1) {
         return col<0>(std::forward<Matrix>(mtx));
+    } else {
+        return make_unary_expression<matrix_as_row>(std::forward<Matrix>(mtx));
     }
 }
+//@}
 
 //----------------------------------------------------------------------------
 //@{
