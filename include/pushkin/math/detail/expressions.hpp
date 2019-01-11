@@ -62,8 +62,20 @@ struct unary_expression {
     using arg_type         = expression_argument_t<Expression>;
     using by_value         = arg_by_value_t<Expression>;
     using arg_storage_type = expression_argument_storage_t<Expression>;
+    using arg_ref = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<Expression>>>;
 
     explicit constexpr unary_expression(arg_type arg) : arg_{std::forward<arg_type>(arg)} {}
+
+    constexpr arg_type
+    arg() &&
+    {
+        return arg_;
+    }
+    constexpr arg_ref
+    arg() const&
+    {
+        return arg_;
+    }
 
 protected:
     arg_storage_type arg_;
@@ -111,10 +123,34 @@ struct binary_expression {
     using rhs_storage_type = expression_argument_storage_t<RHS>;
     using lhs_by_value     = arg_by_value_t<LHS>;
     using rhs_by_value     = arg_by_value_t<RHS>;
+    using lhs_ref          = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<LHS>>>;
+    using rhs_ref          = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<RHS>>>;
 
     constexpr binary_expression(lhs_type lhs, rhs_type rhs)
         : lhs_{std::forward<lhs_type>(lhs)}, rhs_{std::forward<rhs_type>(rhs)}
     {}
+
+    constexpr lhs_type
+    lhs() &&
+    {
+        return lhs_;
+    }
+    constexpr lhs_ref
+    lhs() const&
+    {
+        return lhs_;
+    }
+
+    constexpr rhs_type
+    rhs() &&
+    {
+        return rhs_;
+    }
+    constexpr rhs_ref
+    rhs() const&
+    {
+        return rhs_;
+    }
 
 protected:
     lhs_storage_type lhs_;
@@ -145,10 +181,22 @@ template <typename... T>
 struct n_ary_expression {
     using args_storage_type = std::tuple<expression_argument_storage_t<T>...>;
     using by_value          = std::integer_sequence<bool, arg_by_value_v<T>...>;
+    using arg_indexes_type  = std::index_sequence_for<T...>;
 
     constexpr n_ary_expression(expression_argument_t<T>... args)
         : args_{std::forward<expression_argument_t<T>>(args)...}
     {}
+
+    constexpr args_storage_type&&
+    args() &&
+    {
+        return args_;
+    }
+    constexpr args_storage_type const&
+    args() const&
+    {
+        return args_;
+    }
 
 protected:
     template <std::size_t N>
