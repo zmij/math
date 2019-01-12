@@ -113,12 +113,13 @@ struct vector_as_row_matrix
 
     using base_type
         = matrix_expression<vector_as_row_matrix<Vector>, vector_to_row_matrix_t<Vector>>;
+    using value_type = typename base_type::value_type;
 
     using expression_base = unary_expression<Vector>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -154,12 +155,12 @@ struct vector_as_col_matrix
 
     using base_type
         = matrix_expression<vector_as_col_matrix<Vector>, vector_to_col_matrix_t<Vector>>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Vector>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -192,7 +193,7 @@ struct nth_row : vector_expression<nth_row<Matrix, RN>, typename std::decay_t<Ma
     using expression_base::expression_base;
 
     template <std::size_t CN>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         static_assert(CN < matrix_traits::cols, "Invalid column index");
@@ -223,7 +224,7 @@ struct nth_col : vector_expression<nth_col<Matrix, CN>, typename std::decay_t<Ma
     using expression_base::expression_base;
 
     template <std::size_t RN>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         static_assert(RN < matrix_traits::rows, "Invalid row index");
@@ -253,13 +254,15 @@ using matrix_as_row_result_t = typename matrix_as_row_result<Matrix>::type;
 template <typename Expr>
 struct matrix_as_row : vector_expression<matrix_as_row<Expr>, matrix_as_row_result_t<Expr>>,
                        unary_expression<Expr> {
+    using base_type       = vector_expression<matrix_as_row<Expr>, matrix_as_row_result_t<Expr>>;
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     using original_matrix_type = typename std::decay_t<Expr>::matrix_type;
 
     template <std::size_t N>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         return this->arg_
@@ -302,12 +305,13 @@ using remove_row_result_t = typename remove_row_result<Matrix>::type;
 template <typename Matrix, std::size_t RN>
 struct remove_nth_row : matrix_expression<remove_nth_row<Matrix, RN>, remove_row_result_t<Matrix>>,
                         unary_expression<Matrix> {
-    using base_type = matrix_expression<remove_nth_row<Matrix, RN>, remove_row_result_t<Matrix>>;
+    using base_type  = matrix_expression<remove_nth_row<Matrix, RN>, remove_row_result_t<Matrix>>;
+    using value_type = typename base_type::value_type;
     using expression_base = unary_expression<Matrix>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -348,12 +352,13 @@ using remove_col_result_t = typename remove_col_result<Matrix>::type;
 template <typename Matrix, std::size_t CN>
 struct remove_nth_col : matrix_expression<remove_nth_col<Matrix, CN>, remove_col_result_t<Matrix>>,
                         unary_expression<Matrix> {
-    using base_type = matrix_expression<remove_nth_col<Matrix, CN>, remove_col_result_t<Matrix>>;
+    using base_type  = matrix_expression<remove_nth_col<Matrix, CN>, remove_col_result_t<Matrix>>;
+    using value_type = typename base_type::value_type;
     using expression_base = unary_expression<Matrix>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -380,14 +385,14 @@ template <typename Matrix, std::size_t RN, std::size_t CN>
 struct matrix_minor : matrix_expression<matrix_minor<Matrix, RN, CN>,
                                         remove_col_result_t<remove_row_result_t<Matrix>>>,
                       unary_expression<Matrix> {
-    using base_type = matrix_expression<matrix_minor<Matrix, RN, CN>,
+    using base_type       = matrix_expression<matrix_minor<Matrix, RN, CN>,
                                         remove_col_result_t<remove_row_result_t<Matrix>>>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Matrix>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -576,12 +581,12 @@ struct matrix_transpose
 
     using base_type
         = matrix_expression<matrix_transpose<Expr>, typename std::decay_t<Expr>::transposed_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -604,14 +609,14 @@ template <typename Expr>
 struct matrix_secondary_flip
     : matrix_expression<matrix_secondary_flip<Expr>, typename std::decay_t<Expr>::transposed_type>,
       unary_expression<Expr> {
-    using base_type = matrix_expression<matrix_secondary_flip<Expr>,
+    using base_type       = matrix_expression<matrix_secondary_flip<Expr>,
                                         typename std::decay_t<Expr>::transposed_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -636,12 +641,12 @@ struct matrix_horizontal_flip
       unary_expression<Expr> {
     using base_type
         = matrix_expression<matrix_horizontal_flip<Expr>, typename std::decay_t<Expr>::matrix_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -666,12 +671,12 @@ struct matrix_vertical_flip
       unary_expression<Expr> {
     using base_type
         = matrix_expression<matrix_vertical_flip<Expr>, typename std::decay_t<Expr>::matrix_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -696,12 +701,12 @@ struct matrix_cw_rotation
       unary_expression<Expr> {
     using base_type
         = matrix_expression<matrix_cw_rotation<Expr>, typename std::decay_t<Expr>::transposed_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -724,14 +729,14 @@ template <typename Expr>
 struct matrix_ccw_rotation
     : matrix_expression<matrix_ccw_rotation<Expr>, typename std::decay_t<Expr>::transposed_type>,
       unary_expression<Expr> {
-    using base_type = matrix_expression<matrix_ccw_rotation<Expr>,
+    using base_type       = matrix_expression<matrix_ccw_rotation<Expr>,
                                         typename std::decay_t<Expr>::transposed_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -756,12 +761,12 @@ struct matrix_180_rotate
       unary_expression<Expr> {
     using base_type
         = matrix_expression<matrix_180_rotate<Expr>, typename std::decay_t<Expr>::matrix_type>;
-
+    using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -801,14 +806,13 @@ using matrix_sum_result_t = typename matrix_sum_result<LHS, RHS>::type;
 template <typename LHS, typename RHS>
 struct matrix_sum : matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<LHS, RHS>>,
                     binary_expression<LHS, RHS> {
-    using base_type  = matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<LHS, RHS>>;
-    using value_type = typename base_type::value_type;
-
+    using base_type       = matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<LHS, RHS>>;
+    using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -838,7 +842,7 @@ struct matrix_diff : matrix_expression<matrix_diff<LHS, RHS>, matrix_sum_result_
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -883,7 +887,7 @@ struct matrix_scalar_multiply
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -908,7 +912,7 @@ struct matrix_scalar_divide
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -954,11 +958,12 @@ struct matrix_matrix_multiply
 
     using base_type
         = matrix_expression<matrix_matrix_multiply<LHS, RHS>, matrix_matrix_mul_result_t<LHS, RHS>>;
+    using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
 
     template <std::size_t R, std::size_t C>
-    constexpr auto
+    constexpr value_type
     element() const
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
@@ -1016,7 +1021,7 @@ struct matrix_determinant
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
-    constexpr auto
+    constexpr value_type
     value() const
     {
         if constexpr (matrix_type::rows > 1) {

@@ -393,6 +393,34 @@ operator/(LHS&& lhs, RHS&& rhs)
 //@{
 /** @name Square root expression */
 template <typename Expression>
+struct scalar_square : unary_scalar_expression<scalar_square, Expression>,
+                       unary_expression<Expression> {
+    static_assert(is_scalar_v<Expression>, "Can apply square_root only to scalar expressions");
+    using base_type       = unary_scalar_expression<scalar_square, Expression>;
+    using value_type      = typename base_type::value_type;
+    using expression_base = unary_expression<Expression>;
+
+    using expression_base::expression_base;
+
+    constexpr value_type
+    value() const
+    {
+        return this->arg_.value() * this->arg_.value();
+    }
+};
+
+template <typename Expression, typename = enable_if_scalar_expression<Expression>>
+constexpr auto
+square(Expression&& ex)
+{
+    return make_unary_expression<scalar_square>(std::forward<Expression>(ex));
+}
+//@}
+
+//----------------------------------------------------------------------------
+//@{
+/** @name Square root expression */
+template <typename Expression>
 struct square_root : unary_scalar_expression<square_root, Expression>,
                      unary_expression<Expression> {
     static_assert(is_scalar_v<Expression>, "Can apply square_root only to scalar expressions");
@@ -426,6 +454,7 @@ sqrt(Expression&& ex)
 }
 //@}
 
+//----------------------------------------------------------------------------
 //@{
 template <typename Expression>
 struct scalar_abs : unary_scalar_expression<scalar_abs, Expression>, unary_expression<Expression> {

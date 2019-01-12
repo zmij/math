@@ -362,12 +362,12 @@ struct vector_vector_multiply<axes::xyzw, LHS, RHS>
     static_assert(
         base_type::size == 3,
         "Vector cross product is defined only for 3 and 7 dimensions, implemented only for 3");
-
+    using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply component index is out of range");
@@ -587,11 +587,14 @@ template <typename Expr, typename Predicate>
 struct vector_apply
     : vector_expression<vector_apply<Expr, Predicate>, vector_expression_result_t<Expr>>,
       binary_expression<Expr, Predicate> {
+    using base_type
+        = vector_expression<vector_apply<Expr, Predicate>, vector_expression_result_t<Expr>>;
+    using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<Expr, Predicate>;
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         return this->rhs_(this->lhs_.template at<N>());
