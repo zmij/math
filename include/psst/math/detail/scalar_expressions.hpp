@@ -416,7 +416,7 @@ template <typename Expression, typename = traits::enable_if_scalar_value<Express
 constexpr auto
 square(Expression&& ex)
 {
-    return make_unary_expression<scalar_square>(std::forward<Expression>(ex));
+    return detail::wrap_non_expression_args<scalar_square>(std::forward<Expression>(ex));
 }
 //@}
 

@@ -118,6 +118,17 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Components>> {    //,
         return at<R>().template at<C>();
     }
 
+    lvalue_reference
+    element(std::size_t r, std::size_t c)
+    {
+        return data_[r][c];
+    }
+    const_reference
+    element(std::size_t r, std::size_t c) const
+    {
+        return data_[r][c];
+    }
+
     iterator
     begin()
     {

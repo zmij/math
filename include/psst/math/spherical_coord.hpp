@@ -81,6 +81,14 @@ struct vector_scalar_multiply<components::spherical, LHS, RHS>
             return this->lhs_.template at<N>() * this->rhs_;
         }
     }
+
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::spherical::rho) {
+            return this->lhs_[i] * this->rhs_.value();
+        }
+        return this->lhs_[i];
+    }
 };
 //@}
 
@@ -108,6 +116,13 @@ struct vector_scalar_divide<components::spherical, LHS, RHS>
         } else {
             return this->lhs_.template at<N>() / this->rhs_;
         }
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::spherical::rho) {
+            return this->lhs_[i] / this->rhs_.value();
+        }
+        return this->lhs_[i];
     }
 };
 //@}
@@ -185,7 +200,27 @@ struct vector_normalize<components::spherical, Expr>
             }
         }
     }
+
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::spherical::rho) {
+            return value_type{1};
+        } else if (i == axes::spherical::inclination) {
+            if (this->arg_.rho() < 0) {
+                return -this->arg_.inclination();
+            } else {
+                return this->arg_.inclination();
+            }
+        } else {
+            if (this->arg_.rho() < 0) {
+                return zero_to_two_pi(this->arg_.azimuth() + pi<value_type>::value);
+            } else {
+                return this->arg_.azimuth();
+            }
+        }
+    }
 };
+
 //@}
 
 }    // namespace v

@@ -77,10 +77,6 @@ TEST(Vector, ConstructDefault)
     EXPECT_EQ(0, get<0>(be));
     EXPECT_EQ(0, get<1>(be));
     EXPECT_EQ(0, get<2>(be));
-    vector3d const& v2 = be;
-    EXPECT_EQ(0, v2[0]);
-    EXPECT_EQ(0, v2[1]);
-    EXPECT_EQ(0, v2[2]);
 }
 
 TEST(Vector, ConstructSingleValue)
@@ -290,6 +286,13 @@ TEST(Vector, Iteration)
         EXPECT_EQ(idx + 1, v);
         ++idx;
     }
+}
+
+TEST(Vector, Apply)
+{
+    vector3d v1{1, -2, 3};
+    vector3d res = apply(v1, &expr::s::square<float const&>);
+    EXPECT_EQ((vector3d{1, 4, 9}), res);
 }
 
 TEST(Vector, Lerp)

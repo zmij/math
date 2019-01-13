@@ -91,6 +91,8 @@ struct vector_fill
         return arg_;
     }
 
+    constexpr value_type operator[](std::size_t i) const { return arg_; }
+
 private:
     value_type arg_;
 };
@@ -284,6 +286,8 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
         static_assert(N < base_type::size, "Vector sum component index is out of range");
         return this->lhs_.template at<N>() + this->rhs_.template at<N>();
     }
+
+    constexpr value_type operator[](std::size_t i) const { return this->lhs_[i] + this->rhs_[i]; }
 };
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
@@ -317,6 +321,8 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
         static_assert(N < base_type::size, "Vector difference component index is out of range");
         return this->lhs_.template at<N>() - this->rhs_.template at<N>();
     }
+
+    constexpr value_type operator[](std::size_t i) const { return this->lhs_[i] - this->rhs_[i]; }
 };
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
@@ -351,7 +357,11 @@ struct vector_scalar_multiply
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply component index is out of range");
-        return this->lhs_.template at<N>() * this->rhs_;
+        return this->lhs_.template at<N>() * this->rhs_.value();
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        return this->lhs_[i] * this->rhs_.value();
     }
 };
 //@}
@@ -389,6 +399,20 @@ struct vector_vector_multiply<components::xyzw, LHS, RHS>
             return this->lhs_.template at<0>() * this->rhs_.template at<1>()
                    - this->lhs_.template at<1>() * this->rhs_.template at<0>();
         }
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::xyzw::x) {
+            return this->lhs_.template at<1>() * this->rhs_.template at<2>()
+                   - this->lhs_.template at<2>() * this->rhs_.template at<1>();
+        } else if (i == axes::xyzw::y) {
+            return this->lhs_.template at<2>() * this->rhs_.template at<0>()
+                   - this->lhs_.template at<0>() * this->rhs_.template at<2>();
+        } else if (i == axes::xyzw::z) {
+            return this->lhs_.template at<0>() * this->rhs_.template at<1>()
+                   - this->lhs_.template at<1>() * this->rhs_.template at<0>();
+        }
+        return value_type{0};
     }
 };
 //@}
@@ -448,6 +472,10 @@ struct vector_scalar_divide
     {
         static_assert(N < base_type::size, "Vector divide component index is out of range");
         return this->lhs_.template at<N>() / this->rhs_;
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        return this->lhs_[i] / this->rhs_.value();
     }
 };
 
@@ -613,15 +641,16 @@ struct vector_apply
     {
         return this->rhs_(this->lhs_.template at<N>());
     }
+    constexpr value_type operator[](std::size_t i) const { return this->rhs_(this->lhs_[i]); }
 };
 
 template <typename Expr, typename Predicate, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
 apply(Expr&& expr, Predicate&& pred)
 {
-    return make_binary_expression<vector_apply>(std::forward<Expr>(expr),
-                                                std::forward<Predicate>(pred));
+    return make_binary_expression<vector_apply>(std::forward<Expr>(expr), pred);
 }
+
 //----------------------------------------------------------------------------
 //@{
 /** @name Dot product of two vectors */

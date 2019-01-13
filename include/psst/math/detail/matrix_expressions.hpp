@@ -83,6 +83,12 @@ struct identity_matrix : matrix_expression<identity_matrix<Matrix>, Matrix> {
             return 0;
         }
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return (r == c) ? 1 : 0;
+    }
 };
 
 template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
@@ -133,6 +139,11 @@ struct vector_as_row_matrix
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return get<C>(this->arg_);
     }
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_[c];
+    }
 };
 
 template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
@@ -176,6 +187,12 @@ struct vector_as_col_matrix
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return get<R>(this->arg_);
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_[r];
+    }
 };
 
 template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
@@ -208,6 +225,8 @@ struct nth_row : vector_expression<nth_row<Matrix, RN>, typename std::decay_t<Ma
         static_assert(CN < matrix_traits::cols, "Invalid column index");
         return this->arg_.template element<RN, CN>();
     }
+
+    constexpr value_type operator[](std::size_t i) const { return this->arg_.element(RN, i); };
 };
 
 template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
@@ -239,6 +258,7 @@ struct nth_col : vector_expression<nth_col<Matrix, CN>, typename std::decay_t<Ma
         static_assert(RN < matrix_traits::rows, "Invalid row index");
         return this->arg_.template element<RN, CN>();
     }
+    constexpr value_type operator[](std::size_t i) const { return this->arg_.element(i, CN); }
 };
 
 template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
@@ -276,6 +296,11 @@ struct matrix_as_row : vector_expression<matrix_as_row<Expr>, matrix_as_row_resu
     {
         return this->arg_
             .template element<N / original_matrix_type::rows, N % original_matrix_type::rows>();
+    }
+
+    constexpr value_type operator[](std::size_t i) const
+    {
+        return this->arg_[i / original_matrix_type::rows][i % original_matrix_type::rows];
     }
 };
 
@@ -331,6 +356,16 @@ struct remove_nth_row : matrix_expression<remove_nth_row<Matrix, RN>, remove_row
             return this->arg_.template element<R + 1, C>();
         }
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        if (r < RN) {
+            return this->arg_.element(r, c);
+        } else {
+            return this->arg_.element(r + 1, c);
+        }
+    }
 };
 
 template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
@@ -378,6 +413,15 @@ struct remove_nth_col : matrix_expression<remove_nth_col<Matrix, CN>, remove_col
             return this->arg_.template element<R, C + 1>();
         }
     }
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        if (c < CN) {
+            return this->arg_.element(r, c);
+        } else {
+            return this->arg_.element(r, c + 1);
+        }
+    }
 };
 
 template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
@@ -409,6 +453,12 @@ struct matrix_minor : matrix_expression<matrix_minor<Matrix, RN, CN>,
         constexpr std::size_t row = R < RN ? R : R + 1;
         constexpr std::size_t col = C < CN ? C : C + 1;
         return this->arg_.template element<row, col>();
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element((r < RN) ? r : r + 1, (c < CN) ? c : c + 1);
     }
 };
 
@@ -603,6 +653,12 @@ struct matrix_transpose
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<C, R>();
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(c, r);
+    }
 };
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
@@ -632,6 +688,12 @@ struct matrix_secondary_flip
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<base_type::cols - C - 1, base_type::rows - R - 1>();
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(base_type::cols - c - 1, base_type::rows - r - 1);
     }
 };
 
@@ -663,6 +725,12 @@ struct matrix_horizontal_flip
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<R, base_type::cols - C - 1>();
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(r, base_type::cols - c - 1);
+    }
 };
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
@@ -692,6 +760,12 @@ struct matrix_vertical_flip
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<base_type::rows - R - 1, C>();
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(base_type::rows - r, c);
     }
 };
 
@@ -723,6 +797,12 @@ struct matrix_cw_rotation
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<base_type::cols - C - 1, R>();
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(base_type::cols - c - 1, r);
+    }
 };
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
@@ -753,6 +833,12 @@ struct matrix_ccw_rotation
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<C, base_type::rows - R - 1>();
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(c, base_type::rows - r - 1);
+    }
 };
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
@@ -782,6 +868,12 @@ struct matrix_180_rotate
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->arg_.template element<base_type::rows - R - 1, base_type::cols - C - 1>();
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->arg_.element(base_type::rows - r - 1, base_type::cols - c - 1);
     }
 };
 
@@ -830,6 +922,12 @@ struct matrix_sum : matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() + this->rhs_.template element<R, C>();
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->lhs_.element(r, c) + this->rhs_.element(r, c);
+    }
 };
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
@@ -859,6 +957,12 @@ struct matrix_diff : matrix_expression<matrix_diff<LHS, RHS>, matrix_sum_result_
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() - this->rhs_.template element<R, C>();
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->lhs_.element(r, c) - this->rhs_.element(r, c);
     }
 };
 
@@ -907,6 +1011,12 @@ struct matrix_scalar_multiply
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() * this->rhs_;
     }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->lhs_.element(r, c) * this->rhs_.value();
+    }
 };
 //@}
 
@@ -931,6 +1041,12 @@ struct matrix_scalar_divide
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
         return this->lhs_.template element<R, C>() / this->rhs_;
+    }
+
+    constexpr value_type
+    element(std::size_t r, std::size_t c) const
+    {
+        return this->lhs_.element(r, c) / this->rhs_.value();
     }
 };
 

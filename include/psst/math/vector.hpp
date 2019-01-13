@@ -178,7 +178,7 @@ private:
     {}
     template <typename Expr, std::size_t... Indexes>
     constexpr vector(Expr&& rhs, std::index_sequence<Indexes...>)
-        : data_({value_policy<Indexes>::apply(expr::get<Indexes>(std::forward<Expr>(rhs)))...})
+        : data_({value_policy<Indexes>::apply(rhs[Indexes])...})
     {}
 
 private:

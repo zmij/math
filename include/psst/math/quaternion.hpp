@@ -153,7 +153,7 @@ struct vector_normalize<components::wxyz, Expr>
     using expression_base::expression_base;
 
     template <std::size_t N>
-    constexpr auto
+    constexpr value_type
     at() const
     {
         static_assert(N < base_type::size, "Invalid quaternion component index");

@@ -40,6 +40,13 @@ struct random_vector_generator : vector_expression<random_vector_generator<T, Di
     constexpr value_type
     at() const
     {
+        return random_value();
+    }
+    constexpr value_type operator[](std::size_t) const { return random_value(); }
+
+    constexpr value_type
+    random_value() const
+    {
         return dist_(gen_);
     }
 
@@ -72,6 +79,12 @@ struct random_matrix_generator : matrix_expression<random_matrix_generator<T, Di
     constexpr value_type
     element() const
     {
+        return random_value();
+    }
+
+    constexpr value_type
+    random_value() const
+    {
         return dist_(gen_);
     }
 
@@ -99,8 +112,10 @@ struct nth_row<random_matrix_generator<T, Distribution, Engine>, RN>
     constexpr auto
     at() const
     {
-        return this->arg_.template element<RN, CN>();
+        return this->arg_.random_value();
     }
+
+    constexpr value_type operator[](std::size_t i) const { return this->arg_.random_value(); }
 };
 
 }    // namespace m

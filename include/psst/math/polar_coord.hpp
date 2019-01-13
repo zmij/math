@@ -77,6 +77,13 @@ struct vector_scalar_multiply<components::polar, LHS, RHS>
             return this->lhs_.template at<N>() * this->rhs_;
         }
     }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::polar::rho) {
+            return this->lhs_[i] * this->rhs_.value();
+        }
+        return this->lhs_[i];
+    }
 };
 
 //@}
@@ -104,6 +111,13 @@ struct vector_scalar_divide<components::polar, LHS, RHS>
         } else {
             return this->lhs_.template at<N>() / this->rhs_;
         }
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::polar::rho) {
+            return this->lhs_[i] / this->rhs_.value();
+        }
+        return this->lhs_[i];
     }
 };
 //@}
@@ -172,6 +186,17 @@ struct vector_normalize<components::polar, Expr>
             } else {
                 return this->arg_.azimuth();
             }
+        }
+    }
+    constexpr value_type operator[](std::size_t i) const
+    {
+        if (i == axes::polar::rho) {
+            return value_type{1};
+        }
+        if (this->arg_.rho() < 0) {
+            return zero_to_two_pi(this->arg_.azimuth() + pi<value_type>::value);
+        } else {
+            return this->arg_.azimuth();
         }
     }
 };
