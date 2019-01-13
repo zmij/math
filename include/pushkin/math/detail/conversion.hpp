@@ -35,19 +35,14 @@ constexpr bool conversion_exists_v = conversion_exists_t<Source, Target>::value;
 template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
           typename Expression>
 struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>
-    : vector_expression<conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>>,
-      unary_expression<Expression> {
-    using base_type = vector_expression<
-        conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>>;
+    : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
-    template <std::size_t N>
     constexpr auto
-    at() const
+    result() const
     {
-        static_assert(N < base_type::size, "Invalid component index");
-        return this->arg_.template at<N>();
+        return this->arg_;
     }
 };
 
@@ -55,22 +50,14 @@ struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression
 template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
           typename Expression>
 struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>
-    : vector_expression<
-          conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>,
-          vector<LHS, LSize, axes::none>>,
-      unary_expression<Expression> {
-    using base_type = vector_expression<
-        conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>,
-        vector<LHS, LSize, axes::none>>;
+    : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
-    template <std::size_t N>
     constexpr auto
-    at() const
+    result() const
     {
-        static_assert(N < base_type::size, "Invalid component index");
-        return this->arg_.template at<N>();
+        return this->arg_;
     }
 };
 
@@ -78,28 +65,16 @@ struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expr
 template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
           typename Expression>
 struct conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>
-    : vector_expression<
-          conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>,
-          vector<LHS, LSize, Axes>>,
-      unary_expression<Expression> {
-    using base_type = vector_expression<
-        conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>,
-        vector<LHS, LSize, Axes>>;
+    : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
-    template <std::size_t N>
     constexpr auto
-    at() const
+    result() const
     {
-        static_assert(N < base_type::size, "Invalid component index");
-        return this->arg_.template at<N>();
+        return this->arg_;
     }
 };
-
-template <typename Source, typename Target, typename Expression>
-using vector_conversion_expression
-    = vector_expression<conversion<Source, Target, Expression>, Target>;
 
 template <typename Source, typename Target>
 struct bind_conversion_args {
@@ -124,8 +99,9 @@ convert(Expression&& expr)
     } else {
         using source_vector_type = vector_expression_result_t<Expression>;
         return expr::make_unary_expression<
-            expr::bind_conversion_args<source_vector_type, Target>::template type>(
-            std::forward<Expression>(expr));
+                   expr::bind_conversion_args<source_vector_type, Target>::template type>(
+                   std::forward<Expression>(expr))
+            .result();
     }
 }
 

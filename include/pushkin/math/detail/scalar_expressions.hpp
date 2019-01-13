@@ -480,6 +480,14 @@ abs(Expression&& ex)
 }
 //@}
 
+// TODO Make it an expression
+template <typename... T>
+auto
+sum_of_squares(T&&... v)
+{
+    return ((v * v) + ...);
+}
+
 }    // namespace s
 
 }    // namespace expr

@@ -12,7 +12,6 @@
 #include <pushkin/math/angles.hpp>
 #include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/vector_expressions.hpp>
-#include <pushkin/math/polar_coord.hpp>    // For spherical-polar conversions
 
 namespace psst {
 namespace math {
@@ -79,8 +78,8 @@ struct vector_scalar_multiply<axes::spherical, LHS, RHS>
         }
     }
 };
-
 //@}
+
 //@{
 /** @name Vector scalar division for spherical coordinates */
 template <typename LHS, typename RHS>
@@ -108,6 +107,7 @@ struct vector_scalar_divide<axes::spherical, LHS, RHS>
     }
 };
 //@}
+
 //@{
 /** @name Magnitude squared for spherical coordinates */
 template <typename Expr>
@@ -126,8 +126,8 @@ struct vector_magnitude_squared<axes::spherical, Expr>
         return this->arg_.rho() * this->arg_.rho();
     }
 };
-
 //@}
+
 //@{
 /** @name Magnitude for spherical coordinates */
 template <typename Expr>
@@ -146,7 +146,6 @@ struct vector_magnitude<axes::spherical, Expr>
         return abs(this->arg_.rho());
     }
 };
-
 //@}
 
 //@{
@@ -181,162 +180,9 @@ struct vector_normalize<axes::spherical, Expr>
         }
     }
 };
-
-//@}
-
-//@{
-/** @name Spherical to XYZW conversion */
-template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<T, 3, axes::spherical>, vector<U, Cartesian, axes::xyzw>, Expression>
-    : vector_conversion_expression<vector<T, 3, axes::spherical>, vector<U, Cartesian, axes::xyzw>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<T, 3, axes::spherical>,
-                                                   vector<U, Cartesian, axes::xyzw>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::cos;
-        using std::sin;
-        static_assert(N < base_type::size,
-                      "Spherical to XYZW conversion component index is out of bounds");
-        if constexpr (N == axes::xyzw::x) {
-            return projection_length() * cos(this->arg_.theta());
-        } else if constexpr (N == axes::xyzw::y) {
-            return projection_length() * sin(this->arg_.theta());
-        } else if constexpr (N == axes::xyzw::z) {
-            return this->arg_.rho() * sin(this->arg_.phi());
-        } else {
-            return U{0};
-        }
-    }
-
-private:
-    constexpr auto
-    projection_length() const
-    {
-        return this->arg_.rho() * cos(this->arg_.phi());
-    }
-};
-//@}
-
-//@{
-/** @name XYZW to spherical conversion */
-template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 3, axes::spherical>, Expression>
-    : vector_conversion_expression<vector<U, Cartesian, axes::xyzw>, vector<T, 3, axes::spherical>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<U, Cartesian, axes::xyzw>,
-                                                   vector<T, 3, axes::spherical>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::asin;
-        using std::atan2;
-        static_assert(N < base_type::size,
-                      "XYZW to spherical conversion component index is out of bounds");
-        if constexpr (N == axes::spherical::rho) {
-            return magnitude(this->arg_);
-        } else if constexpr (N == axes::spherical::inclination) {
-            if (this->arg_.z() == 0) {
-                return T{0};
-            } else {
-                return minus_plus_half_pi(asin(this->arg_.z() / magnitude(this->arg_)));
-            }
-        } else if constexpr (N == axes::spherical::azimuth) {
-            return zero_to_two_pi(atan2(this->arg_.y(), this->arg_.x()));
-        } else {
-            return T{0};
-        }
-    }
-
-private:
-    constexpr auto
-    projection_length() const
-    {
-        using std::sqrt;
-        return sqrt(this->arg_.x() * this->arg_.x() + this->arg_.y() * this->arg_.y());
-    }
-};
-//@}
-
-//@{
-/** @name Spherical to polar conversion */
-template <typename T, typename U, typename Expression>
-struct conversion<vector<T, 3, axes::spherical>, vector<U, 2, axes::polar>, Expression>
-    : vector_conversion_expression<vector<T, 3, axes::spherical>, vector<U, 2, axes::polar>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<T, 3, axes::spherical>,
-                                                   vector<U, 2, axes::polar>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::cos;
-        using std::sin;
-        static_assert(N < base_type::size,
-                      "Spherical to polar conversion component index is out of bounds");
-        if constexpr (N == axes::polar::rho) {
-            return this->arg_.rho() * cos(this->arg_.phi());
-        } else if constexpr (N == axes::polar::azimuth) {
-            return this->arg_.azimuth();
-        } else {
-            return U{0};
-        }
-    }
-};
-//@}
-
-//@{
-/** @name Polar to spherical conversion */
-template <typename T, typename U, typename Expression>
-struct conversion<vector<T, 2, axes::polar>, vector<U, 3, axes::spherical>, Expression>
-    : vector_conversion_expression<vector<T, 2, axes::polar>, vector<U, 3, axes::spherical>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<T, 2, axes::polar>,
-                                                   vector<U, 3, axes::spherical>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::cos;
-        using std::sin;
-        static_assert(N < base_type::size,
-                      "Polar to spherical conversion component index is out of bounds");
-        if constexpr (N == axes::spherical::rho) {
-            return this->arg_.rho();
-        } else if constexpr (N == axes::spherical::azimuth) {
-            return this->arg_.azimuth();
-        } else {
-            return U{0};
-        }
-    }
-};
 //@}
 
 }    // namespace v
-
 }    // namespace expr
 
 template <typename T>

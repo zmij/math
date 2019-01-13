@@ -171,67 +171,6 @@ struct vector_normalize<axes::polar, Expr>
 
 //@}
 
-//@{
-/** @name Polar to XYZW conversion */
-template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>, Expression>
-    : vector_conversion_expression<vector<T, 2, axes::polar>, vector<U, Cartesian, axes::xyzw>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<T, 2, axes::polar>,
-                                                   vector<U, Cartesian, axes::xyzw>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::cos;
-        using std::sin;
-        static_assert(N < base_type::size,
-                      "Polar to XYZW conversion component index is out of bounds");
-        if constexpr (N == axes::xyzw::x) {
-            return this->arg_.rho() * cos(this->arg_.phi());
-        } else if constexpr (N == axes::xyzw::y) {
-            return this->arg_.rho() * sin(this->arg_.phi());
-        } else {
-            return T{0};
-        }
-    }
-};
-//@}
-
-//@{
-/** @name XYZW to polar conversion */
-template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>, Expression>
-    : vector_conversion_expression<vector<U, Cartesian, axes::xyzw>, vector<T, 2, axes::polar>,
-                                   Expression>,
-      unary_expression<Expression> {
-    using base_type = vector_conversion_expression<vector<U, Cartesian, axes::xyzw>,
-                                                   vector<T, 2, axes::polar>, Expression>;
-
-    using expression_base = unary_expression<Expression>;
-    using expression_base::expression_base;
-
-    template <std::size_t N>
-    constexpr auto
-    at() const
-    {
-        using std::atan2;
-        static_assert(N < base_type::size,
-                      "XYZW to polar conversion component index is out of bounds");
-        if constexpr (N == axes::polar::rho) {
-            return magnitude(this->arg_);
-        } else if constexpr (N == axes::polar::azimuth) {
-            return zero_to_two_pi(atan2(this->arg_.y(), this->arg_.x()));
-        }
-    }
-};
-//@}
-
 }    // namespace v
 
 }    // namespace expr

@@ -6,6 +6,7 @@
  */
 
 #include "test_printing.hpp"
+#include <pushkin/math/coordinate_conversion.hpp>
 #include <pushkin/math/cylindrical_coord.hpp>
 #include <pushkin/math/polar_coord.hpp>
 #include <pushkin/math/spherical_coord.hpp>
