@@ -8,9 +8,9 @@
 #ifndef PUSHKIN_MATH_VECTOR_HPP_
 #define PUSHKIN_MATH_VECTOR_HPP_
 
-#include <pushkin/math/detail/calculus.hpp>
 #include <pushkin/math/detail/conversion.hpp>
 #include <pushkin/math/detail/vector_expressions.hpp>
+#include <pushkin/math/detail/vector_ops.hpp>
 
 #include <assert.h>
 
@@ -23,8 +23,7 @@ namespace psst {
 namespace math {
 
 template <typename T, std::size_t Size, typename Axes>
-struct vector : expr::vector_expression<vector<T, Size, Axes>>,
-                detail::calculus_selector<T, Size, Axes> {
+struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_ops<T, Size, Axes> {
 
     using this_type            = vector<T, Size, Axes>;
     using traits               = vector_traits<this_type>;
@@ -59,12 +58,14 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
 
     constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
 
-    template <typename U, std::size_t SizeR, typename AxesR>
-    constexpr explicit vector(vector<U, SizeR, AxesR> const& rhs)
+    template <typename U, std::size_t SizeR, typename AxesR,
+              typename = enable_if_compatible_axes<Axes, AxesR>>
+    constexpr /* implicit */ vector(vector<U, SizeR, AxesR> const& rhs)
         : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{})
     {}
-    template <typename Expression, typename = enable_if_vector_expression<Expression>>
-    constexpr vector(Expression&& rhs)
+    template <typename Expression, typename = enable_if_vector_expression<Expression>,
+              typename = enable_for_compatible_axes<this_type, Expression>>
+    constexpr /* implicit */ vector(Expression&& rhs)
         : vector(std::forward<Expression>(rhs),
                  utils::make_min_index_sequence<Size, vector_expression_size_v<Expression>>{})
     {}
@@ -143,11 +144,11 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>,
         return data_[idx];
     }
     // TODO Make converter a CRTP base
-    template <typename TAxes>
-    vector<value_type, Size, TAxes>
+    template <typename U>
+    U
     convert() const
     {
-        return math::convert<vector<value_type, Size, TAxes>>(*this);
+        return math::convert<U>(*this);
     }
     /**
      * Implicit conversion to pointer to element

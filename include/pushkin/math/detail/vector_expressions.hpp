@@ -282,14 +282,13 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
+          typename = enable_for_compatible_axes<LHS, RHS>,
+          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((!has_axes_v<LHS, axes::polar, axes::spherical, axes::cylindrical>),
-                  "Adding two polar or spherical or cylindrical coordinates is not defined");
-    static_assert((compatible_axes_v<LHS, RHS>),
-                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_sum>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
@@ -314,14 +313,13 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
+          typename = enable_for_compatible_axes<LHS, RHS>,
+          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((!has_axes_v<LHS, axes::polar, axes::spherical, axes::cylindrical>),
-                  "Subtracting two polar or spherical or cylindrical coordinates is not defined");
-    static_assert((compatible_axes_v<LHS, RHS>),
-                  "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_diff>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 //@}
@@ -649,7 +647,10 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
+          typename = enable_for_compatible_axes<LHS, RHS>,
+          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 dot_product(LHS&& lhs, RHS&& rhs)
 {

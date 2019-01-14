@@ -388,8 +388,8 @@ TEST(Polar, XYZConversion)
     EXPECT_EQ(pc, convert<polar_coord>(v));
     EXPECT_EQ(v, convert<vector2d>(pc));
 
-    EXPECT_EQ(pc, v.convert<axes::polar>());
-    EXPECT_EQ(v, pc.convert<axes::xyzw>());
+    EXPECT_EQ(pc, v.convert<polar_coord>());
+    EXPECT_EQ(v, pc.convert<vector2d>());
 
     EXPECT_EQ(convert<polar_coord>(v) * 3, convert<polar_coord>(v * 3));
 }

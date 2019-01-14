@@ -418,6 +418,32 @@ template <typename... T>
 constexpr bool same_axes_v = same_axes_t<T...>::value;
 template <typename T>
 struct same_axes<T> : std::true_type {};
+
+template <typename... T>
+using enable_for_same_axes = std::enable_if_t<same_axes_v<T...>>;
+//@}
+
+//@{
+/** @name axes_are_compatible */
+/**
+ * Check that axes types are compatible. Compatible axes are the same axes or axes::none.
+ */
+template <typename... T>
+struct axes_are_compatible
+    : utils::bool_constant<utils::is_same_v<T...> || ((utils::is_same_v<axes::none, T> || ...))> {};
+template <typename... T>
+using axes_are_compatible_t = typename axes_are_compatible<T...>::type;
+template <typename... T>
+constexpr bool axes_are_compatible_v = axes_are_compatible_t<T...>::value;
+
+template <typename T>
+struct axes_are_compatible<T> : std::true_type {};
+
+/**
+ * Enable if the types of axes are considered compatible
+ */
+template <typename... T>
+using enable_if_compatible_axes = std::enable_if_t<axes_are_compatible_v<T...>>;
 //@}
 
 //@{
@@ -429,6 +455,12 @@ template <typename... T>
 using compatible_axes_t = typename compatible_axes<T...>::type;
 template <typename... T>
 constexpr bool compatible_axes_v = compatible_axes_t<T...>::value;
+
+/**
+ * Enable if the types of axes of expressions are considered compatible
+ */
+template <typename... T>
+using enable_for_compatible_axes = std::enable_if_t<compatible_axes_v<T...>>;
 //@}
 
 //@{
@@ -466,6 +498,7 @@ using axes_names_for_t = typename axes_names_for<T...>::type;
 //@}
 
 //@{
+/** @name vector_expression_size */
 namespace detail {
 
 template <typename T>
@@ -608,6 +641,96 @@ struct vector_expression_result {
 };
 template <typename... T>
 using vector_expression_result_t = typename vector_expression_result<T...>::type;
+
+//@{
+/** @name addition defined */
+template <typename T, typename U, typename = utils::void_t<>>
+struct addition_defined : std::false_type {};
+template <typename T, typename U>
+using addition_defined_t = typename addition_defined<T, U>::type;
+template <typename T, typename U>
+constexpr bool addition_defined_v = addition_defined_t<T, U>::value;
+
+template <typename T, typename U>
+struct addition_defined<T, U, utils::void_t<decltype(std::declval<T>() + std::declval<U>())>>
+    : std::true_type {};
+
+template <typename T, typename U>
+using enable_if_addition_defined = std::enable_if_t<addition_defined_v<T, U>>;
+//@}
+
+//@{
+/** @name difference defined */
+template <typename T, typename U, typename = utils::void_t<>>
+struct difference_defined : std::false_type {};
+template <typename T, typename U>
+using difference_defined_t = typename difference_defined<T, U>::type;
+template <typename T, typename U>
+constexpr bool difference_defined_v = difference_defined_t<T, U>::value;
+
+template <typename T, typename U>
+struct difference_defined<T, U, utils::void_t<decltype(std::declval<T>() - std::declval<U>())>>
+    : std::true_type {};
+
+template <typename T, typename U>
+using enable_if_difference_defined = std::enable_if_t<difference_defined_v<T, U>>;
+//@}
+
+//@{
+/** @name multiplication_defined */
+template <typename T, typename U, typename = utils::void_t<>>
+struct multiplication_defined : std::false_type {};
+template <typename T, typename U>
+using multiplication_defined_t = typename multiplication_defined<T, U>::type;
+template <typename T, typename U>
+constexpr bool multiplication_defined_v = multiplication_defined_t<T, U>::value;
+
+template <typename T, typename U>
+struct multiplication_defined<T, U, utils::void_t<decltype(std::declval<T>() * std::declval<U>())>>
+    : std::true_type {};
+
+template <typename T, typename U>
+using enable_if_multiplication_defined = std::enable_if_t<multiplication_defined_v<T, U>>;
+
+// template <typename T, typename U>
+// using enable_if_multiplication_defined_and_result_is_compatible = std::enable_if_t<
+// multiplication_defined_t<T, U>
+//@}
+
+//@{
+/** @name division_defined */
+template <typename T, typename U, typename = utils::void_t<>>
+struct division_defined : std::false_type {};
+template <typename T, typename U>
+using division_defined_t = typename division_defined<T, U>::type;
+template <typename T, typename U>
+constexpr bool division_defined_v = division_defined_t<T, U>::value;
+
+template <typename T, typename U>
+struct division_defined<T, U, utils::void_t<decltype(std::declval<T>() / std::declval<U>())>>
+    : std::true_type {};
+
+template <typename T, typename U>
+using enable_if_division_defined = std::enable_if_t<division_defined_v<T, U>>;
+//@}
+
+//@{
+/** @name dot_product_defined */
+template <typename T, typename U, typename = utils::void_t<>>
+struct dot_product_defined : std::false_type {};
+template <typename T, typename U>
+using dot_product_defined_t = typename dot_product_defined<T, U>::type;
+template <typename T, typename U>
+constexpr bool dot_product_defined_v = dot_product_defined_t<T, U>::value;
+
+template <typename T, typename U>
+struct dot_product_defined<
+    T, U, utils::void_t<decltype(dot_product(std::declval<T>(), std::declval<U>()))>>
+    : std::true_type {};
+
+template <typename T, typename U>
+using enable_if_dot_product_defined = std::enable_if_t<dot_product_defined_v<T, U>>;
+//@}
 
 } /* namespace math */
 } /* namespace psst */
