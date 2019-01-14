@@ -10,6 +10,11 @@
 
 #include <pushkin/math/detail/vector_expressions.hpp>
 
+// Undefine minor macro that comes with some libc libraries
+#ifdef minor
+#    undef minor
+#endif
+
 namespace psst {
 namespace math {
 namespace expr {
