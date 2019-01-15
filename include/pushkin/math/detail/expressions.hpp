@@ -6,6 +6,7 @@
 #include <pushkin/math/vector_fwd.hpp>
 
 #include <cmath>
+#include <tuple>
 #include <utility>
 
 namespace psst {

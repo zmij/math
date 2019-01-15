@@ -147,7 +147,7 @@ constexpr bool axes_have_default_value_policy_v = axes_have_default_value_policy
 
 //@{
 /** @name Default value policy */
-template <typename Axes, typename T, typename = std::void_t<>>
+template <typename Axes, typename T, typename = utils::void_t<>>
 struct default_value_policy {
     using type = no_change<T>;
 };
