@@ -114,6 +114,31 @@ struct hsla {
     // clang-format on
 };
 
+struct grayscale {
+    static constexpr std::size_t min_components = 1;
+    static constexpr std::size_t max_components = 2;
+    static constexpr std::size_t g              = 0;
+    static constexpr std::size_t a              = 1;
+    static constexpr std::size_t gray           = g;
+    static constexpr std::size_t alpha          = a;
+
+    // clang-format off
+    using value_policies = utils::template_tuple<
+            math::value_policy::clamp_zero_to_one,    // grey
+            math::value_policy::clamp_zero_to_one     // alpha
+          >;
+    // clang-format on
+};
+
+struct grayscale_hex {
+    static constexpr std::size_t min_components = 1;
+    static constexpr std::size_t max_components = 2;
+    static constexpr std::size_t g              = 0;
+    static constexpr std::size_t a              = 1;
+    static constexpr std::size_t gray           = g;
+    static constexpr std::size_t alpha          = a;
+};
+
 //@{
 /** @name axes::argb axes names */
 template <typename VectorType, typename T>
@@ -271,13 +296,57 @@ struct axis_access<4, hsla, VectorType, T> : axis_access<3, hsla, VectorType, T>
 };
 //@}
 
+//@{
+template <typename VectorType, typename T>
+struct axis_access<1, grayscale, VectorType, T> : basic_axis_access<VectorType, T, grayscale> {
+    using base_type = basic_axis_access<VectorType, T, grayscale>;
+
+    PSST_MATH_COORD_ACCESS(g)
+    PSST_MATH_COORD_ACCESS(gray)
+};
+
+template <typename VectorType, typename T>
+struct axis_access<2, grayscale, VectorType, T> : axis_access<1, grayscale, VectorType, T> {
+    using base_type = axis_access<1, grayscale, VectorType, T>;
+
+    using base_type::g;
+    using base_type::grey;
+
+    PSST_MATH_COORD_ACCESS(a)
+    PSST_MATH_COORD_ACCESS(alpha)
+};
+//@}
+
+//@{
+template <typename VectorType, typename T>
+struct axis_access<1, grayscale_hex, VectorType, T>
+    : basic_axis_access<VectorType, T, grayscale_hex> {
+    using base_type = basic_axis_access<VectorType, T, grayscale_hex>;
+
+    PSST_MATH_COORD_ACCESS(g)
+    PSST_MATH_COORD_ACCESS(gray)
+};
+
+template <typename VectorType, typename T>
+struct axis_access<2, grayscale_hex, VectorType, T> : axis_access<1, grayscale_hex, VectorType, T> {
+    using base_type = axis_access<1, grayscale_hex, VectorType, T>;
+
+    using base_type::g;
+    using base_type::grey;
+
+    PSST_MATH_COORD_ACCESS(a)
+    PSST_MATH_COORD_ACCESS(alpha)
+};
+//@}
+
 }    // namespace axes
 namespace color {
 
 //@{
 /** @name is_color */
 template <typename T>
-struct is_color : has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla, axes::hsva> {};
+struct is_color : has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla, axes::hsva,
+                             axes::grayscale, axes::grayscale_hex> {};
 template <typename T>
 using is_color_t = typename is_color<T>::type;
 template <typename T>
@@ -301,6 +370,11 @@ template <typename T>
 using hsv = vector<T, 3, axes::hsva>;
 template <typename T>
 using hsva = vector<T, 4, axes::hsva>;
+
+template <typename T>
+using grayscale = vector<T, 1, axes::grayscale>;
+template <typename T>
+using grayscale_alpha = vector<T, 2, axes::grayscale>;
 
 using rgb_hex  = vector<std::uint8_t, 3, axes::rgba_hex>;
 using rgba_hex = vector<std::uint8_t, 4, axes::rgba_hex>;
