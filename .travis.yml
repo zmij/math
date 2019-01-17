@@ -304,6 +304,7 @@ before_install:
     - eval "${MATRIX_EVAL}"
 before_script:
   - mkdir build
+  - cd build
   - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
 script:
   - make
