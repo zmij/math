@@ -19,6 +19,7 @@ set(
     # Add your sources here
     misc_tests.cpp
     vector_test.cpp
+    vector_view_tests.cpp
     matrix_test.cpp
     quaternion_tests.cpp
     color_tests.cpp

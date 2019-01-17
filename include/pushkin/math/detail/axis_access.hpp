@@ -33,6 +33,9 @@ struct basic_axis_access {
     template <std::size_t N>
     using value_policy = typename value_policies::template value_policy<N>;
 
+    template <std::size_t N>
+    using accessor_type = typename value_policy<N>::accessor_type;
+
 protected:
     expression_type&
     rebind()

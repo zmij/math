@@ -86,7 +86,7 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
     typename value_policy<N>::accessor_type
     at()
     {
-        static_assert(N < size, "Invalid value index in vector");
+        static_assert(N < size, "Invalid component index in vector");
         return value_policy<N>::accessor(std::get<N>(data_));
     }
 
@@ -94,7 +94,7 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
     constexpr const_reference
     at() const
     {
-        static_assert(N < size, "Invalid value index in vector");
+        static_assert(N < size, "Invalid component index in vector");
         return std::get<N>(data_);
     }
 
@@ -132,6 +132,7 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
         return data_.end();
     }
 
+    // FIXME Apply accessors
     lvalue_reference operator[](std::size_t idx)
     {
         assert(idx < size);
@@ -243,21 +244,21 @@ project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
 #    include <pushkin/math/spherical_coord.hpp>
 using namespace psst::math;
 
-using vec_3f  = vector<float, 3>;
-using vec_3d  = vector<double, 3>;
-using vec_3fn = vector<float, 3, axes::none>;
+using vec3f  = vector<float, 3>;
+using vec3d  = vector<double, 3>;
+using vec3fn = vector<float, 3, axes::none>;
 
-using vec_4f  = vector<float, 4>;
-using vec_4d  = vector<double, 4>;
-using vec_4fn = vector<float, 4, axes::none>;
+using vec4f  = vector<float, 4>;
+using vec4d  = vector<double, 4>;
+using vec4fn = vector<float, 4, axes::none>;
 
-vec_3f  v3f_1, v3f_2;
-vec_4f  v4f_1, v4f_2;
-vec_3fn v3f_n;
-vec_4fn v4f_n;
+vec3f  v3f_1, v3f_2;
+vec4f  v4f_1, v4f_2;
+vec3fn v3f_n;
+vec4fn v4f_n;
 
-vec_3d v3d_1, v3d_2;
-vec_4d v4d_1, v4d_2;
+vec3d v3d_1, v3d_2;
+vec4d v4d_1, v4d_2;
 
 using polar_f       = polar_coord<float>;
 using spherical_f   = spherical_coord<float>;

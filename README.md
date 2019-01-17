@@ -15,14 +15,14 @@ Library provides easy syntax for declaring, assigning vectors and matrices and m
 // Vector
 #include <pushkin/math/vector.hpp>
 
-using vector3d = ::psst::math::vector<float, 3>;
+using vector3d = psst::math::vector<float, 3>;
 
 vector3d p1{1, 2, 1.5}, p2{2, 3, 5.4};
 
 // Matrix
 #include <pushkin/math/matrix.hpp>
 
-using matrix3x3 = ::psst::math::matrix<float, 3, 3>;
+using matrix3x3 = psst::math::matrix<float, 3, 3>;
 
 matrix3x3 m1 {
   { 1,  2,  3 },
@@ -30,7 +30,7 @@ matrix3x3 m1 {
   { 7,  8,  9 }
 };
 
-using affine_matrix = ::psst::math::matrix<float, 4, 4>;
+using affine_matrix = psst::math::matrix<float, 4, 4>;
 
 affine_matrix
 rotate_x( float a )
@@ -55,7 +55,7 @@ rotate_x( float a )
 
 ```C++
 
-using vector4 = ::psst::math::vector<float, 4>;
+using vector4 = psst::math::vector<float, 4>;
 vector4 v1{1, 2, 3, 4};
 
 auto x = v1[0];
@@ -133,8 +133,8 @@ m3 /= 3;
 auto i = matrix3x3::identity(); // identity matrix
 
 // Rectangular matrices
-using matrix4x3 = ::psst::math::matrix<float, 4, 3>;
-using matrix3x4 = ::psst::math::matrix<float, 3, 4>;
+using matrix4x3 = psst::math::matrix<float, 4, 3>;
+using matrix3x4 = psst::math::matrix<float, 3, 4>;
 
 matrix4x3 r1 {
   { 1,  2,  3 },
@@ -161,7 +161,7 @@ vector3d v5 = as_row_matrix(v1) * m1; // vector by matrix multiplication
 #include <pushkin/math/vector_io.hpp>
 #include <pushkin/math/matrix_io.hpp>
 
-namespace io = ::psst::math::io;
+namespace io = psst::math::io;
 
 std::cout << v1 << "\n";
 // output {1,2,1.5}
@@ -176,6 +176,40 @@ std::cout << io::pretty << m1 << io::ugly << "\n";
 // }
 ```
 
+#### Memory buffers as vectors
+
+A memory buffer can be accessed as a container of vectors with certain properties (size, axes). A constant buffer can be used to read data in a structured manner, a non-costant buffer can be used to modify data in the buffer via `vector_view` and `memory_vector_view` utility classes. A `vector_view` is for reading a single element, `memory_vector_view` is for using a buffer as a 'container' of vectors.
+
+```C++
+#include <pushkin/math/vector_view.hpp>
+
+using namespace psst::math;
+
+// Size of the vector is 16 bytes
+using vec4f = vector<float, 4>;
+
+char const* const_buffer = "..."; // Get this buffer somewhere
+std::size_t buffer_size = 256; // this is 16 vectors
+
+auto const_mem_view = make_memory_view<vec4f>(const_buffer, buffer_size);
+
+for (auto mv : const_mem_view) {
+  // do something with the vectors, no modification is available
+}
+
+
+char const* mutable_buffer = "..."; // Get this buffer somewhere
+
+auto mem_view = make_memory_view<vec4f>(mutable_buffer, buffer_size);
+
+for (auto mv : mem_view) {
+  // do something with the vectors, modification is available
+  mv *= 2;
+}
+
+```
+
+
 ### Quaternions
 
 The libbrary provides quaternions and operations with them, such as sum, substraction, multiplication and division by scalar, quaternion multiplication, magnitude, normalize, conjugate and inverse functions. Components of a quaternion are accessible via `w()`, `x()`, `y()` and `z()` accessors, where `w()` is the real part and `x()`, `y()` and `z()` are coefficients for i, j and k respectively. Also, the scalar part is accessible via `scalar_part()` member function, and the vector part is accessible via `vector_part()`.
@@ -183,7 +217,7 @@ The libbrary provides quaternions and operations with them, such as sum, substra
 ```C++
 #include <pushkin/math/quaternion.hpp>
 
-using quat = ::psst::math::quaternion<double>;
+using quat = psst::math::quaternion<double>;
 
 quat q1{1, 2, 3, 4}, q2{5, 6, 7, 8};
 // quaternion sum and difference
@@ -206,8 +240,8 @@ auto i = inverse(q2);
 ```C++
 #include <pushkin/math/quaternion.hpp>
 
-using quat = ::psst::math::quaternion<double>;
-using vec3 = ::psst::math::std::vector<double, 3>;
+using quat = psst::math::quaternion<double>;
+using vec3 = psst::math::std::vector<double, 3>;
 
 vec3
 rotate(vec3 v, vec3 axis, double angle)
@@ -252,12 +286,12 @@ Conversion is defined for:
 #include <pushkin/math/spherical_coord.hpp>
 #include <pushkin/math/cylindrical_coord.hpp>
 
-using polar_c       = ::psst::math::polar_coord<double>;
-using spherical_c   = ::psst::math::spherical_coord<double>
-using cylindrical_c = ::psst::math::cylindrical_coord<double>;
-using vec3          = ::psst::math::vector<double, 3>;
+using polar_c       = psst::math::polar_coord<double>;
+using spherical_c   = psst::math::spherical_coord<double>
+using cylindrical_c = psst::math::cylindrical_coord<double>;
+using vec3          = psst::math::vector<double, 3>;
 
-using ::psst::math::operator "" _deg;
+using psst::math::operator "" _deg;
 
 polar_c p{10, 180_deg};
 spherical_c s = convert<spherical_c>(p);
@@ -298,11 +332,11 @@ Conversions are defined for:
 ```C++
 #include <pushkin/math/colors.hpp>
 
-using rgba = ::psst::math::colors::rgba<float>;
-using hsla = ::psst::math::colors::hsla<float>;
-using hsva = ::psst::math::colors::hsva<float>;
+using rgba = psst::math::colors::rgba<float>;
+using hsla = psst::math::colors::hsla<float>;
+using hsva = psst::math::colors::hsva<float>;
 
-using ::psst::math::operator "" _rgba;
+using psst::math::operator "" _rgba;
 
 rgba col1 = convert<rgba>( 0xff0000ff_rgba ); // red
 hsla hl1  = convert<hsla>(col1);
