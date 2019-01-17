@@ -12,7 +12,7 @@ matrix:
           packages:
             - g++-5
       env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux GCC-5 Release"
@@ -24,7 +24,7 @@ matrix:
           packages:
             - g++-5
       env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux GCC-6 Debug"
@@ -36,7 +36,7 @@ matrix:
           packages:
             - g++-6
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux GCC-6 Release"
@@ -48,7 +48,7 @@ matrix:
           packages:
             - g++-6
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux GCC-7 Debug"
@@ -211,7 +211,7 @@ matrix:
           packages:
             - clang-5.0
       env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux clang-5.0 Release"
@@ -223,7 +223,7 @@ matrix:
           packages:
             - clang-5.0
       env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux clang-6.0 Debug"
@@ -235,7 +235,7 @@ matrix:
           packages:
             - clang-6.0
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux clang-6.0 Release"
@@ -247,7 +247,7 @@ matrix:
           packages:
             - clang-6.0
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux clang-7.0 Debug"
@@ -307,6 +307,6 @@ before_script:
   - cd build
   - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
 script:
-  - make
-  - make test || cat Testing/Temporary/LastTest.log && false
+  - make && make test
+  - if [ $? != 0 ]; then test -e Testing/Temporary/LastTest.log && cat Testing/Temporary/LastTest.log; fi
  
