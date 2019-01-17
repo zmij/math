@@ -1,0 +1,10 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+before_script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_EXAMPLES=ON
+script: make && make test
+ 
