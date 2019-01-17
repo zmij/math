@@ -128,12 +128,12 @@ before_script:
   # Debug configutation
   - mkdir -p build/debug
   - pushd build/debug
-  - cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DPSST_MATH_BUILD_TESTS=ON -PSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
+  - cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
   - popd
   # Release configutation
   - mkdir -p build/release
   - pushd build/release
-  - cmake ../.. -DCMAKE_BUILD_TYPE=Release -DPSST_MATH_BUILD_TESTS=ON -PSST_MATH_BUILD_BENCHMARKS=ON -DPSST_MATH_BUILD_EXAMPLES=ON
+  - cmake ../.. -DCMAKE_BUILD_TYPE=Release -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=ON -DPSST_MATH_BUILD_EXAMPLES=ON
   - popd
 script:
   - pushd build/debug
