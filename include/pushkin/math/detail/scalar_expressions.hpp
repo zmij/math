@@ -409,7 +409,7 @@ struct scalar_square : unary_scalar_expression<scalar_square, Expression>,
     }
 };
 
-template <typename Expression, typename = enable_if_scalar_expression<Expression>>
+template <typename Expression, typename = enable_if_scalar_value<Expression>>
 constexpr auto
 square(Expression&& ex)
 {
@@ -446,7 +446,7 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Expression, typename = enable_if_scalar_expression<Expression>>
+template <typename Expression, typename = enable_if_scalar_value<Expression>>
 constexpr auto
 sqrt(Expression&& ex)
 {

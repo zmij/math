@@ -36,26 +36,29 @@ using expression_parameter_t = typename expression_parameter<T>::type;
 
 template <typename T>
 struct expression_argument {
-    using type = std::conditional_t<std::is_rvalue_reference<T>{}, extract_expression_type_t<T>&&,
-                                    extract_expression_type_t<T> const&>;
+    using type = std::conditional_t<
+        std::is_pointer<T>{}, extract_expression_type_t<T>,
+        std::conditional_t<std::is_rvalue_reference<T>{}, extract_expression_type_t<T>&&,
+                           extract_expression_type_t<T> const&>>;
 };
 template <typename T>
 using expression_argument_t = typename expression_argument<T>::type;
 
 template <typename T>
-struct expression_argument_storage {
-    using type = std::conditional_t<std::is_rvalue_reference<T>{}, extract_expression_type_t<T>,
-                                    extract_expression_type_t<T> const&>;
+struct arg_by_value : utils::bool_constant<std::is_rvalue_reference<T>{} || std::is_pointer<T>{}> {
 };
-template <typename T>
-using expression_argument_storage_t = typename expression_argument_storage<T>::type;
-
-template <typename T>
-struct arg_by_value : utils::bool_constant<std::is_rvalue_reference<T>{}> {};
 template <typename T>
 using arg_by_value_t = typename arg_by_value<T>::type;
 template <typename T>
 constexpr bool arg_by_value_v = arg_by_value_t<T>::value;
+
+template <typename T>
+struct expression_argument_storage {
+    using type = std::conditional_t<arg_by_value_v<T>, extract_expression_type_t<T>,
+                                    extract_expression_type_t<T> const&>;
+};
+template <typename T>
+using expression_argument_storage_t = typename expression_argument_storage<T>::type;
 
 //----------------------------------------------------------------------------
 template <typename Expression>
