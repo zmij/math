@@ -3,53 +3,53 @@ language: cpp
 matrix:
   include:
     # Linux GCC
-    - name: "Linux GCC-5 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
-        - TRAVIS_BUILD_TYPE=Debug
+    # - name: "Linux GCC-5 Debug"
+    #   os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - g++-5
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
+    #     - TRAVIS_BUILD_TYPE=Debug
 
-    - name: "Linux GCC-5 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-      env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
-        - TRAVIS_BUILD_TYPE=Release
+    # - name: "Linux GCC-5 Release"
+    #   os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - g++-5
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CMAKE_CXX_FLAGS=-std=c++17"
+    #     - TRAVIS_BUILD_TYPE=Release
 
-    - name: "Linux GCC-6 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
-        - TRAVIS_BUILD_TYPE=Debug
+    # - name: "Linux GCC-6 Debug"
+    #   os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - g++-6
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
+    #     - TRAVIS_BUILD_TYPE=Debug
 
-    - name: "Linux GCC-6 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
-        - TRAVIS_BUILD_TYPE=Release
+    # - name: "Linux GCC-6 Release"
+    #   os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - g++-6
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CMAKE_CXX_FLAGS=-std=c++17"
+    #     - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux GCC-7 Debug"
       os: linux
@@ -76,108 +76,6 @@ matrix:
         - TRAVIS_BUILD_TYPE=Release
 
     # Linux Clang
-    - name: "Linux clang-3.6 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-          packages:
-            - clang-3.6
-      env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-        - TRAVIS_BUILD_TYPE=Debug
-
-    - name: "Linux clang-3.6 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-          packages:
-            - clang-3.6
-      env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-        - TRAVIS_BUILD_TYPE=Release
-
-    - name: "Linux clang-3.7 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
-      env:
-        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
-        - TRAVIS_BUILD_TYPE=Debug
-
-    - name: "Linux clang-3.7 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
-      env:
-        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
-        - TRAVIS_BUILD_TYPE=Release
-
-    - name: "Linux clang-3.8 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-          packages:
-            - clang-3.8
-      env:
-        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-        - TRAVIS_BUILD_TYPE=Debug
-
-    - name: "Linux clang-3.8 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-          packages:
-            - clang-3.8
-      env:
-        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-        - TRAVIS_BUILD_TYPE=Release
-
-    - name: "Linux clang-3.9 Debug"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-3.9
-          packages:
-            - clang-3.9
-      env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
-        - TRAVIS_BUILD_TYPE=Debug
-
-    - name: "Linux clang-3.9 Release"
-      os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-3.9
-          packages:
-            - clang-3.9
-      env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
-        - TRAVIS_BUILD_TYPE=Release
-
     - name: "Linux clang-4.0 Debug"
       os: linux
       addons:
@@ -187,7 +85,7 @@ matrix:
           packages:
             - clang-4.0
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux clang-4.0 Release"
@@ -199,7 +97,7 @@ matrix:
           packages:
             - clang-4.0
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
 
     - name: "Linux clang-5.0 Debug"
@@ -210,6 +108,7 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
@@ -222,6 +121,7 @@ matrix:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
@@ -234,6 +134,9 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
+            - libllvm6.0
+            - libclang-common-6.0-dev
+            - libclang1-6.0
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Debug
@@ -246,6 +149,9 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
+            - libllvm6.0
+            - libclang-common-6.0-dev
+            - libclang1-6.0
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CMAKE_CXX_FLAGS=-std=c++17"
         - TRAVIS_BUILD_TYPE=Release
@@ -259,6 +165,7 @@ matrix:
             - llvm-toolchain-xenial-7.0
           packages:
             - clang-7.0
+            - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
         - TRAVIS_BUILD_TYPE=Debug
@@ -272,6 +179,7 @@ matrix:
             - llvm-toolchain-xenial-7.0
           packages:
             - clang-7.0
+            - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
         - TRAVIS_BUILD_TYPE=Release
@@ -289,17 +197,6 @@ matrix:
       env:
         - TRAVIS_BUILD_TYPE=Release
     
-    - name: "OS X Xcode 9.4 Debug"
-      os: osx
-      osx_image: xcode9.4    
-      env:
-        - TRAVIS_BUILD_TYPE=Debug
-
-    - name: "OS X Xcode 9.4 Release"
-      os: osx
-      osx_image: xcode9.4    
-      env:
-        - TRAVIS_BUILD_TYPE=Release
 before_install:
     - eval "${MATRIX_EVAL}"
 before_script:
@@ -308,5 +205,5 @@ before_script:
   - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
 script:
   - make && make test
-  - if [ $? != 0 ]; then test -e Testing/Temporary/LastTest.log && cat Testing/Temporary/LastTest.log; fi
+  - if [ $? != 0 ]; then test -e Testing/Temporary/LastTest.log && cat Testing/Temporary/LastTest.log || true; fi
  
