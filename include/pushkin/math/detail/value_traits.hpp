@@ -259,6 +259,8 @@ template <typename T>
 struct is_vector : std::false_type {};
 template <typename T, std::size_t S, typename Axes>
 struct is_vector<vector<T, S, Axes>> : std::true_type {};
+template <typename T, std::size_t S, typename Axes>
+struct is_vector<vector_view<T, S, Axes>> : std::true_type {};
 template <typename T>
 using is_vector_t = typename is_vector<std::decay_t<T>>::type;
 template <typename T>
@@ -267,6 +269,29 @@ template <typename T>
 struct is_vector<T&> : is_vector<T> {};
 template <typename T>
 using enable_if_vector = std::enable_if_t<is_vector_v<T>>;
+//@}
+
+//@{
+/** @name is_mutable_vector */
+template <typename T>
+struct is_mutable_vector : std::false_type {};
+template <typename T>
+using is_mutable_vector_t = typename is_mutable_vector<T>::type;
+template <typename T>
+constexpr bool is_mutable_vector_v = is_mutable_vector_t<T>::value;
+
+template <typename T, std::size_t S, typename Axes>
+struct is_mutable_vector<vector<T, S, Axes>> : std::true_type {};
+template <typename T, std::size_t S, typename Axes>
+struct is_mutable_vector<vector_view<T*, S, Axes>> : std::true_type {};
+template <typename T, std::size_t S, typename Axes>
+struct is_mutable_vector<vector_view<T const*, S, Axes>> : std::false_type {};
+
+template <typename T>
+struct is_mutable_vector<T&> : is_mutable_vector<T> {};
+
+template <typename T>
+using enable_if_mutable_vector = std::enable_if_t<is_mutable_vector_v<T>>;
 //@}
 
 //@{
