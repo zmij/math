@@ -1,12 +1,10 @@
-os:
-  - linux
-  - osx
 language: cpp
 
 matrix:
   include:
     # Linux GCC
-    - os: linux
+    - name: "Linux GCC-5 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -14,9 +12,23 @@ matrix:
           packages:
             - g++-5
       env:
-         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux GCC-5 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux GCC-6 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -25,8 +37,22 @@ matrix:
             - g++-6
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux GCC-6 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux GCC-7 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -35,8 +61,23 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - TRAVIS_BUILD_TYPE=Debug
+
+    - name: "Linux GCC-7 Debug"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - TRAVIS_BUILD_TYPE=Release
+
     # Linux Clang
-    - os: linux
+    - name: "Linux clang-3.6 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -46,8 +87,23 @@ matrix:
             - clang-3.6
       env:
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux clang-3.6 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-3.7 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -57,8 +113,23 @@ matrix:
             - clang-3.7
       env:
         - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux clang-3.7 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env:
+        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-3.8 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -68,8 +139,23 @@ matrix:
             - clang-3.8
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux clang-3.8 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-3.9 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -78,8 +164,22 @@ matrix:
             - clang-3.9
       env:
         - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux clang-3.9 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-3.9
+          packages:
+            - clang-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-4.0 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -88,8 +188,22 @@ matrix:
             - clang-4.0
       env:
         - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - TRAVIS_BUILD_TYPE=Debug
 
-    - os: linux
+    - name: "Linux clang-4.0 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-5.0 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -98,7 +212,22 @@ matrix:
             - clang-5.0
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-    - os: linux
+        - TRAVIS_BUILD_TYPE=Debug
+
+    - name: "Linux clang-5.0 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-6.0 Debug"
+      os: linux
       addons:
         apt:
           sources:
@@ -107,7 +236,23 @@ matrix:
             - clang-6.0
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-    - os: linux
+        - TRAVIS_BUILD_TYPE=Debug
+
+    - name: "Linux clang-6.0 Release"
+      os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - TRAVIS_BUILD_TYPE=Release
+
+    - name: "Linux clang-7.0 Debug"
+      os: linux
+      distrib: xenial
       addons:
         apt:
           sources:
@@ -115,32 +260,52 @@ matrix:
           packages:
             - clang-7.0
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+        - TRAVIS_BUILD_TYPE=Debug
+
+    - name: "Linux clang-7.0 Release"
+      os: linux
+      distrib: xenial
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-7.0
+          packages:
+            - clang-7.0
+      env:
+        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+        - TRAVIS_BUILD_TYPE=Release
+
     # OSX Clang
-    - os: osx
+    - name: "OS X Xcode 10 Debug"
+      os: osx
       osx_image: xcode10.1
+      env:
+        - TRAVIS_BUILD_TYPE=Debug
     
-    - os: osx
+    - name: "OS X Xcode 10 Release"
+      os: osx
+      osx_image: xcode10.1
+      env:
+        - TRAVIS_BUILD_TYPE=Release
+    
+    - name: "OS X Xcode 9.4 Debug"
+      os: osx
       osx_image: xcode9.4    
+      env:
+        - TRAVIS_BUILD_TYPE=Debug
+
+    - name: "OS X Xcode 9.4 Release"
+      os: osx
+      osx_image: xcode9.4    
+      env:
+        - TRAVIS_BUILD_TYPE=Release
 before_install:
     - eval "${MATRIX_EVAL}"
 before_script:
-  # Debug configutation
-  - mkdir -p build/debug
-  - pushd build/debug
-  - cmake ../.. -DCMAKE_BUILD_TYPE=Debug -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
-  - popd
-  # Release configutation
-  - mkdir -p build/release
-  - pushd build/release
-  - cmake ../.. -DCMAKE_BUILD_TYPE=Release -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=ON -DPSST_MATH_BUILD_EXAMPLES=ON
-  - popd
+  - mkdir build
+  - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DPSST_MATH_BUILD_TESTS=ON -DPSST_MATH_BUILD_BENCHMARKS=OFF -DPSST_MATH_BUILD_EXAMPLES=ON
 script:
-  - pushd build/debug
-  - make && make test
-  - popd
-  - pushd build/release
-  - make && make test
-  - ./benchmark/benchmark-psst-math
-  - popd
+  - make
+  - make test || cat Testing/Temporary/LastTest.log && false
  
