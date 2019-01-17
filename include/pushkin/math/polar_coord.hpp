@@ -29,12 +29,14 @@ struct polar {
     using value_policies = utils::template_tuple<math::value_policy::no_change,
                                                  math::value_policy::clamp_zero_to_two_pi>;
 };
+}    // namespace axes
 
+namespace axis_access {
 //@{
 /** @name Polar coordinates */
 template <typename VectorType, typename T>
-struct axis_access<2, polar, VectorType, T> : basic_axis_access<VectorType, T, polar> {
-    using base_type = basic_axis_access<VectorType, T, polar>;
+struct axis_access<2, axes::polar, VectorType, T> : basic_axis_access<VectorType, T, axes::polar> {
+    using base_type = basic_axis_access<VectorType, T, axes::polar>;
 
     PSST_MATH_COORD_ACCESS(r);
     PSST_MATH_COORD_ACCESS(rho);
@@ -43,7 +45,7 @@ struct axis_access<2, polar, VectorType, T> : basic_axis_access<VectorType, T, p
 };
 //@}
 
-}    // namespace axes
+}    // namespace axis_access
 
 namespace expr {
 

@@ -41,6 +41,10 @@ struct wxyz {
     static constexpr std::size_t k = z;
 };
 
+}    // namespace axes
+
+namespace axis_access {
+
 //@{
 /** @name wxyz axes names */
 template <typename VectorType, typename T>
@@ -60,7 +64,7 @@ struct axis_access<4, axes::wxyz, VectorType, T> : basic_axis_access<VectorType,
 };
 //@}
 
-}    // namespace axes
+}    // namespace axis_access
 
 namespace expr {
 inline namespace v {
@@ -211,7 +215,7 @@ inverse(Expr&& expr)
 }    // namespace v
 }    // namespace expr
 
-namespace axes {
+namespace axis_access {
 
 template <typename VectorType, typename T>
 constexpr auto
@@ -227,7 +231,7 @@ axis_access<4, axes::wxyz, VectorType, T>::vector_part() const
     return expr::make_unary_expression<expr::v::quaternion_vector_part>(base_type::rebind());
 }
 
-}    // namespace axes
+}    // namespace axis_access
 
 template <typename T>
 using quaternion = vector<T, 4, axes::wxyz>;

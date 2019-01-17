@@ -32,11 +32,15 @@ struct spherical {
                                                  math::value_policy::clamp_zero_to_two_pi>;
 };
 
+}    // namespace axes
+
+namespace axis_access {
 //@{
 /** @name Spherical coordinates */
 template <typename VectorType, typename T>
-struct axis_access<3, spherical, VectorType, T> : basic_axis_access<VectorType, T, spherical> {
-    using base_type = basic_axis_access<VectorType, T, spherical>;
+struct axis_access<3, axes::spherical, VectorType, T>
+    : basic_axis_access<VectorType, T, axes::spherical> {
+    using base_type = basic_axis_access<VectorType, T, axes::spherical>;
 
     PSST_MATH_COORD_ACCESS(r);
     PSST_MATH_COORD_ACCESS(rho);
@@ -47,7 +51,7 @@ struct axis_access<3, spherical, VectorType, T> : basic_axis_access<VectorType, 
 };
 //@}
 
-}    // namespace axes
+}    // namespace axis_access
 
 namespace expr {
 
