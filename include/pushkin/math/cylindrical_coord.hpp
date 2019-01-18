@@ -31,12 +31,15 @@ struct cylindrical {
                                                  math::value_policy::clamp_zero_to_two_pi,
                                                  math::value_policy::no_change>;
 };
+}    // namespace axes
 
+namespace axis_access {
 //@{
 /** @name Cylindrical coordinates */
 template <typename VectorType, typename T>
-struct axis_access<3, cylindrical, VectorType, T> : basic_axis_access<VectorType, T, cylindrical> {
-    using base_type = basic_axis_access<VectorType, T, cylindrical>;
+struct axis_access<3, axes::cylindrical, VectorType, T>
+    : basic_axis_access<VectorType, T, axes::cylindrical> {
+    using base_type = basic_axis_access<VectorType, T, axes::cylindrical>;
 
     PSST_MATH_COORD_ACCESS(r);
     PSST_MATH_COORD_ACCESS(rho);
@@ -47,7 +50,7 @@ struct axis_access<3, cylindrical, VectorType, T> : basic_axis_access<VectorType
 };
 //@}
 
-}    // namespace axes
+}    // namespace axis_access
 
 namespace expr {
 inline namespace v {
