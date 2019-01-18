@@ -69,7 +69,7 @@ matrix:
       #       - clang-7
       #       # - libc++-dev
       env:
-        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux clang-7.0 Release"
@@ -83,7 +83,7 @@ matrix:
       #       - clang-7
       #       # - libc++-dev
       env:
-        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
         - TRAVIS_BUILD_TYPE=Release
 
     # OSX Clang
