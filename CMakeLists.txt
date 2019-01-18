@@ -33,6 +33,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-Wall -Werror -Wpedantic)
+add_definitions(-ffast-math)
 
 option(USE_CCACHE "Use ccache for build" ON)
 if (USE_CCACHE)
