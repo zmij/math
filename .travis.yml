@@ -12,8 +12,6 @@ matrix:
           packages:
             - g++-7
       env:
-        - CC=gcc-7
-        - CXX=g++7
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - TRAVIS_BUILD_TYPE=Debug
 
@@ -26,8 +24,6 @@ matrix:
           packages:
             - g++-7
       env:
-        - CC=gcc-7
-        - CXX=g++7
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - TRAVIS_BUILD_TYPE=Release
 
@@ -64,26 +60,28 @@ matrix:
 
     - name: "Linux clang-7.0 Debug"
       os: linux
-      addons:
-        apt:
-          # sources:
-          #   - llvm-toolchain-xenial-7.0
-          packages:
-            - clang-7
-            # - libc++-dev
+      dist: xenial
+      # addons:
+      #   apt:
+      #     # sources:
+      #     #   - llvm-toolchain-xenial-7.0
+      #     packages:
+      #       - clang-7
+      #       # - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
         - TRAVIS_BUILD_TYPE=Debug
 
     - name: "Linux clang-7.0 Release"
       os: linux
-      addons:
-        apt:
-          # sources:
-          #   - llvm-toolchain-xenial-7.0
-          packages:
-            - clang-7
-            # - libc++-dev
+      dist: xenial
+      # addons:
+      #   apt:
+      #     # sources:
+      #     #   - llvm-toolchain-xenial-7.0
+      #     packages:
+      #       - clang-7
+      #       # - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
         - TRAVIS_BUILD_TYPE=Release
