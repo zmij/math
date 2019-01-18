@@ -65,9 +65,6 @@ matrix:
         apt:
           sources:
             - llvm-toolchain-7
-      #     packages:
-      #       - clang-7
-      #       # - libc++-dev
       env:
         - MATRIX_EVAL="CC=clang-7 && CXX=clang++"
         - TRAVIS_BUILD_TYPE=Debug
@@ -75,13 +72,10 @@ matrix:
     - name: "Linux clang-7.0 Release"
       os: linux
       dist: xenial
-      # addons:
-      #   apt:
-      #     # sources:
-      #     #   - llvm-toolchain-xenial-7.0
-      #     packages:
-      #       - clang-7
-      #       # - libc++-dev
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-7
       env:
         - MATRIX_EVAL="CC=clang-7 && CXX=clang++"
         - TRAVIS_BUILD_TYPE=Release
