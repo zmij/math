@@ -149,7 +149,7 @@ struct vector_normalize<axes::wxyz, Expr>
     at() const
     {
         static_assert(N < base_type::size, "Invalid quaternion component index");
-        auto mag = magnitude(this->arg_);
+        value_type mag = magnitude(this->arg_);
         if (mag == 0)
             throw std::runtime_error("Cannot normalise a zero quaternion");
         if constexpr (N == axes::wxyz::w) {
