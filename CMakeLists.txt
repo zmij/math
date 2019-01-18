@@ -48,6 +48,9 @@ else()
     message(STATUS "ccache disabled")
 endif()
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_definitions(-Wno-error=unused-command-line-argument)
+endif()
 
 add_subdirectory(include)
 

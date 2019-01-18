@@ -20,8 +20,3 @@ target_link_libraries(benchmark-psst-math
     ${GBENCH_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
-
-add_test(
-    NAME benchmark-psst-math
-    COMMAND benchmark-psst-math
-)

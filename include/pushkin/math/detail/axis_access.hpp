@@ -18,7 +18,7 @@
 namespace psst {
 namespace math {
 
-namespace axes {
+namespace axis_access {
 
 template <typename VectorType, typename T, typename Axes>
 struct basic_axis_access {
@@ -128,20 +128,20 @@ struct axis_access<4, axes::xyzw, VectorType, T> : axis_access<3, axes::xyzw, Ve
 };
 //@}
 
-}    // namespace axes
+}    // namespace axis_access
 
 namespace detail {
 
 template <typename Tag>
 struct axes_names {
     template <std::size_t AxesCount, typename VectorType, typename T>
-    using type = axes::axis_access<AxesCount, Tag, VectorType, T>;
+    using type = axis_access::axis_access<AxesCount, Tag, VectorType, T>;
 };
 
 template <>
 struct axes_names<axes::none> {
     template <std::size_t AxesCount, typename VectorType, typename T>
-    using type = axes::basic_axis_access<VectorType, T, axes::none>;
+    using type = axis_access::basic_axis_access<VectorType, T, axes::none>;
 };
 
 template <std::size_t Size, typename Axes, typename VectorType, typename T>
