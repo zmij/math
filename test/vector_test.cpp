@@ -146,7 +146,7 @@ TEST(Vector, IO)
     std::istringstream is(os.str());
     is >> v2;
     EXPECT_TRUE(is.good());
-    EXPECT_EQ(v1, v2);
+    EXPECT_EQ(v1, v2) << "Failed to read value from " << os.str();
 
     os.str("");
     os << io::pretty << v1 << io::ugly;
@@ -155,7 +155,7 @@ TEST(Vector, IO)
     is.str(os.str());
     is >> v2;
     EXPECT_TRUE(is.good());
-    EXPECT_EQ(v1, v2);
+    EXPECT_EQ(v1, v2) << "Failed to read value from " << os.str();
 }
 
 TEST(Vector, BinaryIO)
@@ -171,7 +171,7 @@ TEST(Vector, BinaryIO)
         EXPECT_EQ(0, tgt) << "No value read from an empty stream";
         is.str(os.str());
         io::read_binary(is, tgt);
-        EXPECT_EQ(src, tgt) << "No value read from an empty stream";
+        EXPECT_EQ(src, tgt) << "Correct value read from stream";
     }
     {
         vector3d           src{1, 2, 3}, tgt{};

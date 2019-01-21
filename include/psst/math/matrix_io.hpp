@@ -26,23 +26,33 @@ struct matrix_output {
     static void
     output(std::ostream& os, Matrix const& m)
     {
-        matrix_output<N - 1, Matrix>::output(os, m);
         auto const& fct = io::get_facet(os);
+        write_row(os, fct, row<0>(m), false);
+        if constexpr (N > 0) {
+            using index_sequence = std::make_index_sequence<N>;
+            write_tail(os, fct, m, index_sequence{});
+        }
+    }
+
+private:
+    template <std::size_t... Indexes>
+    static void
+    write_tail(std::ostream& os, io::vector_facet<char> const& fct, Matrix const& m,
+               std::index_sequence<Indexes...>)
+    {
+        (write_row(os, fct, row<Indexes + 1>(m)), ...);
+    }
+    template <typename Row>
+    static void
+    write_row(std::ostream& os, io::vector_facet<char> const& fct, Row const& r, bool delim = true)
+    {
         if (!fct.binmode()) {
-            os << fct.delim();
+            if (delim)
+                os << fct.delim();
             if (fct.pretty())
                 os << fct.row_separator() << fct.offset();
         }
-        os << row<N>(m);
-    }
-};
-
-template <typename Matrix>
-struct matrix_output<0, Matrix> {
-    static void
-    output(std::ostream& out, Matrix const& m)
-    {
-        out << row<0>(m);
+        os << r;
     }
 };
 

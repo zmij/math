@@ -154,7 +154,7 @@ TEST(Matrix, IO)
     std::istringstream is(os.str());
     is >> m2;
     EXPECT_TRUE(is.good());
-    EXPECT_EQ(m1, m2);
+    EXPECT_EQ(m1, m2) << "Failed to read value from " << os.str();
 
     os.str("");
     os << io::pretty << m1 << io::ugly;
@@ -164,7 +164,7 @@ TEST(Matrix, IO)
     is.str(os.str());
     is >> m2;
     EXPECT_TRUE(is.good());
-    EXPECT_EQ(m1, m2);
+    EXPECT_EQ(m1, m2) << "Failed to read value from " << os.str();
 }
 
 TEST(Matrix, Iteration)

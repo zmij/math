@@ -10,6 +10,7 @@
 
 #include <psst/math/vector.hpp>
 
+#include <functional>
 #include <iomanip>
 #include <iostream>
 
@@ -408,9 +409,30 @@ struct vector_output {
     static void
     output(std::ostream& os, Vector const& v)
     {
-        vector_output<N - 1, Vector>::output(os, v);
         auto const& fct = io::get_facet(os);
-        os << fct.delim();
+        write_value(os, fct, get<0>(v), false);
+        if constexpr (N > 0) {
+            // TODO Use unwrapping threshold
+            using index_sequence = std::make_index_sequence<N>;
+            write_tail(os, fct, v, index_sequence{});
+        }
+    }
+
+private:
+    template <std::size_t... Indexes>
+    static void
+    write_tail(std::ostream& os, io::vector_facet<char> const& fct, Vector const& v,
+               std::index_sequence<Indexes...>)
+    {
+        (write_value(os, fct, get<Indexes + 1>(v)), ...);
+    }
+    static void
+    write_value(std::ostream& os, io::vector_facet<char> const& fct,
+                typename Vector::value_type const& v, bool delim = true)
+    {
+        if (delim) {
+            os << fct.delim();
+        }
         if (fct.pretty()) {
             os << fct.separator();
             if (fct.col_width() != io::vector_facet<char>::npos) {
@@ -418,23 +440,7 @@ struct vector_output {
                    << std::setprecision(fct.col_width() - 2);
             }
         }
-        os << get<N>(v);
-    }
-};
-
-template <typename Vector>
-struct vector_output<0, Vector> {
-    static void
-    output(std::ostream& os, Vector const& v)
-    {
-        auto const& fct = io::get_facet(os);
-        if (fct.pretty()) {
-            if (fct.col_width() != io::vector_facet<char>::npos) {
-                os << std::setw(fct.col_width()) << std::setfill(' ')
-                   << std::setprecision(fct.col_width() - 2);
-            }
-        }
-        os << get<0>(v);
+        os << v;
     }
 };
 
@@ -485,7 +491,27 @@ struct data_input {
     input(std::istream& is, Vector& v)
     {
         auto const& fct = io::get_facet(is);
-        data_input<N - 1, Vector>::input(is, v);
+        is >> get<0>(v);
+        if constexpr (N > 0) {
+            using index_sequence = std::make_index_sequence<N>;
+            read_tail(is, fct, v, index_sequence{});
+        }
+    }
+
+private:
+    template <std::size_t... Indexes>
+    static void
+    read_tail(std::istream& is, io::vector_facet<char> const& fct, Vector& v,
+              std::index_sequence<Indexes...>)
+    {
+        (read_value(is, fct, get<Indexes + 1>(v)), ...);
+    }
+    template <typename ValueAccessor>
+    static void
+    read_value(std::istream& is, io::vector_facet<char> const& fct, ValueAccessor&& v)
+    {
+        if (!is)
+            return;
         char c = '\0';
         if (!(is >> c))
             return;
@@ -493,16 +519,7 @@ struct data_input {
             is.setstate(std::ios::failbit);
             return;
         }
-        is >> get<N>(v);
-    }
-};
-
-template <typename Vector>
-struct data_input<0, Vector> {
-    static void
-    input(std::istream& is, Vector& v)
-    {
-        is >> get<0>(v);
+        is >> std::forward<ValueAccessor>(v);
     }
 };
 
