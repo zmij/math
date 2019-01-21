@@ -15,9 +15,9 @@ namespace psst {
 namespace math {
 namespace detail {
 
-template <typename T, std::size_t Size, typename Axes>
+template <typename T, std::size_t Size, typename Components>
 struct vector_ops {
-    using vector_type      = vector<T, Size, Axes>;
+    using vector_type      = vector<T, Size, Components>;
     using value_traits     = traits::scalar_value_traits<T>;
     using value_type       = typename value_traits::value_type;
     using lvalue_reference = typename value_traits::lvalue_reference;

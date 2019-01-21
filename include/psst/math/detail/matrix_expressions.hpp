@@ -30,7 +30,7 @@ struct matrix_expression {
     using traits           = traits::value_traits_t<Result>;
     using value_type       = typename traits::value_type;
     using value_tag        = typename traits::value_tag;
-    using axes_names       = typename traits::axes_names;
+    using component_names       = typename traits::component_names;
     using matrix_type      = typename traits::matrix_type;
     using transposed_type  = typename traits::transposed_type;
     using row_type         = typename traits::row_type;
@@ -107,7 +107,7 @@ struct vector_to_row_matrix {
     static_assert(traits::is_vector_expression_v<Vector>,
                   "Argument to the expression must be a vector");
     using traits = typename std::decay_t<Vector>::traits;
-    using type = matrix<typename traits::value_type, 1, traits::size, typename traits::axes_names>;
+    using type = matrix<typename traits::value_type, 1, traits::size, typename traits::component_names>;
 };
 template <typename Vector>
 using vector_to_row_matrix_t = typename vector_to_row_matrix<Vector>::type;
@@ -150,7 +150,7 @@ struct vector_to_col_matrix {
     static_assert(traits::is_vector_expression_v<Vector>,
                   "Argument to the expression must be a vector");
     using traits = typename std::decay_t<Vector>::traits;
-    using type = matrix<typename traits::value_type, traits::size, 1, typename traits::axes_names>;
+    using type = matrix<typename traits::value_type, traits::size, 1, typename traits::component_names>;
 };
 template <typename Vector>
 using vector_to_col_matrix_t = typename vector_to_col_matrix<Vector>::type;
@@ -252,9 +252,9 @@ template <typename Matrix>
 struct matrix_as_row_result {
     using original_matrix_type = typename std::decay_t<Matrix>::matrix_type;
     using value_type           = typename original_matrix_type::value_type;
-    using axes_names           = typename original_matrix_type::axes_names;
+    using component_names           = typename original_matrix_type::component_names;
     static constexpr auto size = original_matrix_type::size;
-    using type                 = vector<value_type, size, axes_names>;
+    using type                 = vector<value_type, size, component_names>;
 };
 template <typename Matrix>
 using matrix_as_row_result_t = typename matrix_as_row_result<Matrix>::type;
@@ -299,11 +299,11 @@ template <typename Matrix>
 struct remove_row_result {
     using original_matrix_type = typename std::decay_t<Matrix>::matrix_type;
     using value_type           = typename original_matrix_type::value_type;
-    using axes_names           = typename original_matrix_type::axes_names;
+    using component_names           = typename original_matrix_type::component_names;
     static_assert(original_matrix_type::rows > 0, "Matrix is empty");
     static constexpr auto rows = original_matrix_type::rows - 1;
     static constexpr auto cols = original_matrix_type::cols;
-    using type                 = matrix<value_type, rows, cols, axes_names>;
+    using type                 = matrix<value_type, rows, cols, component_names>;
 };
 
 template <typename Matrix>
@@ -346,11 +346,11 @@ template <typename Matrix>
 struct remove_col_result {
     using original_matrix_type = typename std::decay_t<Matrix>::matrix_type;
     using value_type           = typename original_matrix_type::value_type;
-    using axes_names           = typename original_matrix_type::axes_names;
+    using component_names           = typename original_matrix_type::component_names;
     static_assert(original_matrix_type::cols > 0, "Matrix is empty");
     static constexpr auto rows = original_matrix_type::rows;
     static constexpr auto cols = original_matrix_type::cols - 1;
-    using type                 = matrix<value_type, rows, cols, axes_names>;
+    using type                 = matrix<value_type, rows, cols, component_names>;
 };
 
 template <typename Matrix>
@@ -803,10 +803,10 @@ struct matrix_sum_result {
     static_assert(lhs_type::cols == rhs_type::cols, "Matrices must be of equal size");
     static_assert(lhs_type::rows == rhs_type::rows, "Matrices must be of equal size");
     static_assert(
-        (std::is_same<typename lhs_type::axes_names, typename rhs_type::axes_names>::value),
-        "Matrices must have the same axes");
+        (std::is_same<typename lhs_type::component_names, typename rhs_type::component_names>::value),
+        "Matrices must have the same components");
     using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
-    using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::axes_names>;
+    using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::component_names>;
 };
 template <typename LHS, typename RHS>
 using matrix_sum_result_t = typename matrix_sum_result<LHS, RHS>::type;
@@ -879,7 +879,7 @@ struct matrix_scalar_mul_result {
     using lhs_type   = std::decay_t<LHS>;
     using rhs_type   = std::decay_t<RHS>;
     using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
-    using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::axes_names>;
+    using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::component_names>;
 };
 template <typename LHS, typename RHS>
 using matrix_scalar_mul_result_t = typename matrix_scalar_mul_result<LHS, RHS>::type;
@@ -952,10 +952,10 @@ struct matrix_matrix_mul_result {
     using rhs_type = std::decay_t<RHS>;
     static_assert(lhs_type::cols == rhs_type::rows,
                   "Left hand columns must be equal to right hand rows");
-    static_assert((traits::compatible_axes_v<LHS, RHS>), "Matrices must have the same axes");
+    static_assert((traits::compatible_components_v<LHS, RHS>), "Matrices must have the same components");
     using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
-    using axes_names = traits::axes_names_for_t<LHS, RHS>;
-    using type       = matrix<value_type, lhs_type::rows, rhs_type::cols, axes_names>;
+    using component_names = traits::component_names_for_t<LHS, RHS>;
+    using type       = matrix<value_type, lhs_type::rows, rhs_type::cols, component_names>;
 };
 
 template <typename LHS, typename RHS>

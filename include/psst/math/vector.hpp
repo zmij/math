@@ -22,12 +22,13 @@
 namespace psst {
 namespace math {
 
-template <typename T, std::size_t Size, typename Axes>
-struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_ops<T, Size, Axes> {
+template <typename T, std::size_t Size, typename Components>
+struct vector : expr::vector_expression<vector<T, Size, Components>>,
+                detail::vector_ops<T, Size, Components> {
 
-    using this_type            = vector<T, Size, Axes>;
+    using this_type            = vector<T, Size, Components>;
     using traits               = traits::vector_traits<this_type>;
-    using base_expression_type = expr::vector_expression<vector<T, Size, Axes>>;
+    using base_expression_type = expr::vector_expression<vector<T, Size, Components>>;
     using value_type           = typename traits::value_type;
     using lvalue_reference     = typename traits::lvalue_reference;
     using const_reference      = typename traits::const_reference;
@@ -38,9 +39,9 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
     using iterator             = typename traits::iterator;
     using const_iterator       = typename traits::const_iterator;
     using init_list            = std::initializer_list<value_type>;
-    using axis_access          = typename base_expression_type::axis_access;
+    using component_access     = typename base_expression_type::component_access;
     template <std::size_t N>
-    using value_policy = typename axis_access::template value_policy<N>;
+    using value_policy = typename component_access::template value_policy<N>;
 
     static constexpr auto size = traits::size;
 
@@ -58,13 +59,13 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
 
     constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
 
-    template <typename U, std::size_t SizeR, typename AxesR,
-              typename = math::traits::enable_if_compatible_axes<Axes, AxesR>>
-    constexpr /* implicit */ vector(vector<U, SizeR, AxesR> const& rhs)
+    template <typename U, std::size_t SizeR, typename ComponentsR,
+              typename = math::traits::enable_if_compatible_components<Components, ComponentsR>>
+    constexpr /* implicit */ vector(vector<U, SizeR, ComponentsR> const& rhs)
         : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{})
     {}
     template <typename Expression, typename = math::traits::enable_if_vector_expression<Expression>,
-              typename = math::traits::enable_for_compatible_axes<this_type, Expression>>
+              typename = math::traits::enable_for_compatible_components<this_type, Expression>>
     constexpr /* implicit */ vector(Expression&& rhs)
         : vector(
             std::forward<Expression>(rhs),
@@ -171,8 +172,8 @@ private:
     constexpr vector(const_pointer p, std::index_sequence<Indexes...>)
         : data_({value_policy<Indexes>::apply(*(p + Indexes))...})
     {}
-    template <typename U, std::size_t SizeR, typename AxesR, std::size_t... Indexes>
-    constexpr vector(vector<U, SizeR, AxesR> const& rhs, std::index_sequence<Indexes...>)
+    template <typename U, std::size_t SizeR, typename ComponentsR, std::size_t... Indexes>
+    constexpr vector(vector<U, SizeR, ComponentsR> const& rhs, std::index_sequence<Indexes...>)
         : data_({value_policy<Indexes>::apply(rhs.template at<Indexes>())...})
     {}
     template <typename Expr, std::size_t... Indexes>
@@ -185,9 +186,9 @@ private:
     data_type data_;
 };
 
-template <std::size_t N, typename T, std::size_t Size, typename Axes>
-constexpr typename vector<T, Size, Axes>::template value_policy<N>::accessor_type
-get(vector<T, Size, Axes>& v)
+template <std::size_t N, typename T, std::size_t Size, typename Components>
+constexpr typename vector<T, Size, Components>::template value_policy<N>::accessor_type
+get(vector<T, Size, Components>& v)
 {
     return v.template at<N>();
 }
@@ -198,9 +199,9 @@ get(vector<T, Size, Axes>& v)
  * @param v Source vector
  * @return Vector that is parallel to n
  */
-template <typename T, size_t Size, typename Axes>
-vector<typename vector<T, Size, Axes>::value_type, Size, Axes>
-projection(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
+template <typename T, size_t Size, typename Components>
+vector<typename vector<T, Size, Components>::value_type, Size, Components>
+projection(vector<T, Size, Components> const& n, vector<T, Size, Components> const& v)
 {
     return n * (v * n / n.magnitude_square());
 }
@@ -211,9 +212,9 @@ projection(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
  * @param v
  * @return
  */
-template <typename T, size_t Size, typename Axes>
-vector<typename vector<T, Size, Axes>::value_type, Size, Axes>
-perpendicular(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
+template <typename T, size_t Size, typename Components>
+vector<typename vector<T, Size, Components>::value_type, Size, Components>
+perpendicular(vector<T, Size, Components> const& n, vector<T, Size, Components> const& v)
 {
     return v - projection(n, v);
 }
@@ -224,10 +225,10 @@ perpendicular(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
  * @param v
  * @return Pair of vectors vǁ, vⱶ. vǁ is parallel to n, vǁ + vⱶ = v
  */
-template <typename T, size_t Size, typename Axes>
-std::pair<vector<typename vector<T, Size, Axes>::value_type, Size, Axes>,
-          vector<typename vector<T, Size, Axes>::value_type, Size, Axes>>
-project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
+template <typename T, size_t Size, typename Components>
+std::pair<vector<typename vector<T, Size, Components>::value_type, Size, Components>,
+          vector<typename vector<T, Size, Components>::value_type, Size, Components>>
+project(vector<T, Size, Components> const& n, vector<T, Size, Components> const& v)
 {
     auto p = projection(n, v);
     return std::make_pair(p, v - p);
@@ -248,11 +249,11 @@ using namespace psst::math;
 
 using vec3f  = vector<float, 3>;
 using vec3d  = vector<double, 3>;
-using vec3fn = vector<float, 3, axes::none>;
+using vec3fn = vector<float, 3, components::none>;
 
 using vec4f  = vector<float, 4>;
 using vec4d  = vector<double, 4>;
-using vec4fn = vector<float, 4, axes::none>;
+using vec4fn = vector<float, 4, components::none>;
 
 vec3f  v3f_1, v3f_2;
 vec4f  v4f_1, v4f_2;

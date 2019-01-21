@@ -31,10 +31,10 @@ template <typename Source, typename Target>
 constexpr bool conversion_exists_v = conversion_exists_t<Source, Target>::value;
 //@}
 
-// Conversion within same axes is always defined
-template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+// Conversion within same components is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Components,
           typename Expression>
-struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression>
+struct conversion<vector<RHS, RSize, Components>, vector<LHS, LSize, Components>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -46,10 +46,10 @@ struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, Axes>, Expression
     }
 };
 
-// Conversion to axes::none is always defined
-template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+// Conversion to components::none is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Components,
           typename Expression>
-struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expression>
+struct conversion<vector<RHS, RSize, Components>, vector<LHS, LSize, components::none>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -61,10 +61,10 @@ struct conversion<vector<RHS, RSize, Axes>, vector<LHS, LSize, axes::none>, Expr
     }
 };
 
-// Conversion from axes::none is always defined
-template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Axes,
+// Conversion from components::none is always defined
+template <typename RHS, std::size_t RSize, typename LHS, std::size_t LSize, typename Components,
           typename Expression>
-struct conversion<vector<RHS, RSize, axes::none>, vector<LHS, LSize, Axes>, Expression>
+struct conversion<vector<RHS, RSize, components::none>, vector<LHS, LSize, Components>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -93,8 +93,8 @@ convert(Expression&& expr)
                   "Source expression must be a vector expression");
     static_assert(traits::is_vector_v<Target>, "Conversion target must be a vector type");
     static_assert((expr::conversion_exists_v<Expression, Target>),
-                  "Conversion between theses axes is not defined");
-    if constexpr (traits::same_axes_v<Expression, Target>) {
+                  "Conversion between theses components is not defined");
+    if constexpr (traits::same_components_v<Expression, Target>) {
         return std::forward<Expression>(expr);
     } else {
         using source_vector_type = traits::vector_expression_result_t<Expression>;

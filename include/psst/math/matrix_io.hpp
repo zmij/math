@@ -88,11 +88,11 @@ matrix_read_binary(std::basic_istream<CharT>& is, Matrix& m, std::index_sequence
 
 }    // namespace detail
 
-template <typename T, std::size_t RC, std::size_t CC, typename Axes>
+template <typename T, std::size_t RC, std::size_t CC, typename Components>
 std::istream&
-operator>>(std::istream& is, matrix<T, RC, CC, Axes>& mtx)
+operator>>(std::istream& is, matrix<T, RC, CC, Components>& mtx)
 {
-    using matrix_type = matrix<T, RC, CC, Axes>;
+    using matrix_type = matrix<T, RC, CC, Components>;
     std::istream::sentry s(is);
     if (s) {
         auto const& fct = io::get_facet(is);
@@ -113,7 +113,7 @@ operator>>(std::istream& is, matrix<T, RC, CC, Axes>& mtx)
                 is.setstate(std::ios::failbit);
                 return is;
             }
-            detail::data_input<RC - 1, matrix<T, RC, CC, Axes>>::input(is, mtx);
+            detail::data_input<RC - 1, matrix<T, RC, CC, Components>>::input(is, mtx);
             if (!(is >> c)) {
                 return is;
             }

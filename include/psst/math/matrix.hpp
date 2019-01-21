@@ -8,7 +8,7 @@
 #ifndef PSST_MATH_MATRIX_HPP_
 #define PSST_MATH_MATRIX_HPP_
 
-#include <psst/math/detail/axis_access.hpp>
+#include <psst/math/detail/component_access.hpp>
 #include <psst/math/detail/matrix_expressions.hpp>
 #include <psst/math/vector.hpp>
 
@@ -23,12 +23,14 @@ namespace math {
  * @tparam RC row count
  * @tparam CC column count;
  */
-template <typename T, std::size_t RC, std::size_t CC, typename Axes>
-struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>> {    //,
-    // detail::axes_names_t<RC, Axes, matrix<T, RC, CC, Axes>, vector<T, CC, Axes>> {
+template <typename T, std::size_t RC, std::size_t CC, typename Components>
+struct matrix : expr::matrix_expression<matrix<T, RC, CC, Components>> {    //,
+    // detail::component_names_t<RC, Components, matrix<T, RC, CC, Components, vector<T, CC,
+    // Components>>
+    // {
 
-    using this_type       = matrix<T, RC, CC, Axes>;
-    using transposed_type = matrix<T, CC, RC, Axes>;
+    using this_type       = matrix<T, RC, CC, Components>;
+    using transposed_type = matrix<T, CC, RC, Components>;
     using traits          = traits::matrix_traits<this_type>;
 
     using row_type         = typename traits::row_type;
@@ -192,14 +194,14 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>> {    //,
 
     template <typename U>
     this_type&
-    operator+=(matrix<U, RC, CC, Axes> const& rhs)
+    operator+=(matrix<U, RC, CC, Components> const& rhs)
     {
         return *this = *this + rhs;
     }
 
     template <typename U>
     this_type&
-    operator-=(matrix<U, RC, CC, Axes> const& rhs)
+    operator-=(matrix<U, RC, CC, Components> const& rhs)
     {
         return *this = *this - rhs;
     }
@@ -234,7 +236,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>> {    //,
     operator const_pointer() const { return data(); }
 
     template <typename U = T>
-    constexpr static typename std::enable_if<RC == CC, matrix<U, RC, CC, Axes>>::type
+    constexpr static typename std::enable_if<RC == CC, matrix<U, RC, CC, Components>>::type
     identity()
     {
         return expr::identity<this_type>();
@@ -266,9 +268,9 @@ private:
     data_type data_;
 };
 
-template <std::size_t R, typename T, std::size_t RC, std::size_t CC, typename Axes>
+template <std::size_t R, typename T, std::size_t RC, std::size_t CC, typename Components>
 constexpr auto&
-get(matrix<T, RC, CC, Axes>& mtx)
+get(matrix<T, RC, CC, Components>& mtx)
 {
     return mtx.template at<R>();
 }

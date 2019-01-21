@@ -24,9 +24,9 @@ inline namespace v {
 
 template <typename T, typename Distribution, typename Engine = std::mt19937_64>
 struct random_vector_generator : vector_expression<random_vector_generator<T, Distribution, Engine>,
-                                                   vector<T, 0, axes::none>> {
+                                                   vector<T, 0, components::none>> {
     using base_type  = vector_expression<random_vector_generator<T, Distribution, Engine>,
-                                        vector<T, 0, axes::none>>;
+                                        vector<T, 0, components::none>>;
     using value_type = typename base_type::value_type;
 
     static constexpr std::size_t size = utils::npos_v;
@@ -54,9 +54,9 @@ inline namespace m {
 
 template <typename T, typename Distribution, typename Engine = std::mt19937_64>
 struct random_matrix_generator : matrix_expression<random_matrix_generator<T, Distribution, Engine>,
-                                                   matrix<T, 0, 0, axes::none>> {
+                                                   matrix<T, 0, 0, components::none>> {
     using base_type  = matrix_expression<random_matrix_generator<T, Distribution, Engine>,
-                                        matrix<T, 0, 0, axes::none>>;
+                                        matrix<T, 0, 0, components::none>>;
     using value_type = typename base_type::value_type;
 
     static constexpr auto rows = utils::npos_v;
@@ -83,11 +83,11 @@ private:
 template <std::size_t RN, typename T, typename Distribution, typename Engine>
 struct nth_row<random_matrix_generator<T, Distribution, Engine>, RN>
     : vector_expression<nth_row<random_matrix_generator<T, Distribution, Engine>, RN>,
-                        vector<T, 0, axes::none>>,
+                        vector<T, 0, components::none>>,
       unary_expression<random_matrix_generator<T, Distribution, Engine>> {
     using base_type
         = vector_expression<nth_row<random_matrix_generator<T, Distribution, Engine>, RN>,
-                            vector<T, 0, axes::none>>;
+                            vector<T, 0, components::none>>;
     using value_type = typename base_type::value_type;
 
     static constexpr std::size_t size = utils::npos_v;

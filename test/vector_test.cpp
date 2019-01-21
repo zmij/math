@@ -379,8 +379,8 @@ TEST(Polar, Normalize)
 
 TEST(Polar, XYZConversion)
 {
-    using vector2d    = vector<double, 2, axes::xyzw>;
-    using polar_coord = vector<double, 2, axes::polar>;
+    using vector2d    = vector<double, 2, components::xyzw>;
+    using polar_coord = vector<double, 2, components::polar>;
 
     vector2d    v{1, 0};
     polar_coord pc{1, 0};
@@ -447,7 +447,7 @@ TEST(Spherical, Normalize)
 
 TEST(Spherical, XYZConversion)
 {
-    using vector3d    = vector<double, 3, axes::xyzw>;
+    using vector3d    = vector<double, 3, components::xyzw>;
     using spherical_d = spherical_coord<double>;
 
     {
@@ -587,7 +587,7 @@ TEST(Cylindrical, Normalize)
 
 TEST(Cylindrical, XYZConversion)
 {
-    using vector3d      = vector<double, 3, axes::xyzw>;
+    using vector3d      = vector<double, 3, components::xyzw>;
     using cylindrical_d = cylindrical_coord<double>;
 
     {

@@ -15,7 +15,7 @@
 
 namespace psst {
 namespace math {
-namespace axes {
+namespace components {
 
 struct cylindrical {
     static constexpr std::size_t min_components = 3;
@@ -31,37 +31,37 @@ struct cylindrical {
                                                  math::value_policy::clamp_zero_to_two_pi,
                                                  math::value_policy::no_change>;
 };
-}    // namespace axes
+}    // namespace components
 
-namespace axis_access {
+namespace component_access {
 //@{
 /** @name Cylindrical coordinates */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::cylindrical, VectorType, T>
-    : basic_axis_access<VectorType, T, axes::cylindrical> {
-    using base_type = basic_axis_access<VectorType, T, axes::cylindrical>;
+struct component_access<3, components::cylindrical, VectorType, T>
+    : basic_component_access<VectorType, T, components::cylindrical> {
+    using base_type = basic_component_access<VectorType, T, components::cylindrical>;
 
-    PSST_MATH_COORD_ACCESS(r);
-    PSST_MATH_COORD_ACCESS(rho);
-    PSST_MATH_COORD_ACCESS(phi);
-    PSST_MATH_COORD_ACCESS(azimuth);
-    PSST_MATH_COORD_ACCESS(z);
-    PSST_MATH_COORD_ACCESS(elevation);
+    PSST_MATH_COMPONENT_ACCESS(r);
+    PSST_MATH_COMPONENT_ACCESS(rho);
+    PSST_MATH_COMPONENT_ACCESS(phi);
+    PSST_MATH_COMPONENT_ACCESS(azimuth);
+    PSST_MATH_COMPONENT_ACCESS(z);
+    PSST_MATH_COMPONENT_ACCESS(elevation);
 };
 //@}
 
-}    // namespace axis_access
+}    // namespace component_access
 
 namespace expr {
 inline namespace v {
 //@{
 /** @name Vector scalar muliply for spherical coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_multiply<axes::cylindrical, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_multiply, axes::cylindrical, LHS, RHS>,
+struct vector_scalar_multiply<components::cylindrical, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_multiply, components::cylindrical, LHS, RHS>,
       binary_expression<LHS, RHS> {
     using base_type
-        = binary_vector_expression_axes<vector_scalar_multiply, axes::cylindrical, LHS, RHS>;
+        = binary_vector_expression_components<vector_scalar_multiply, components::cylindrical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -72,7 +72,7 @@ struct vector_scalar_multiply<axes::cylindrical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply element index is out of range");
-        if constexpr (N == axes::cylindrical::rho || N == axes::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is multiplied
             return this->lhs_.template at<N>() * this->rhs_;
         } else {
@@ -85,11 +85,11 @@ struct vector_scalar_multiply<axes::cylindrical, LHS, RHS>
 //@{
 /** @name Vector scalar division for spherical coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_divide<axes::cylindrical, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_divide, axes::cylindrical, LHS, RHS>,
+struct vector_scalar_divide<components::cylindrical, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_divide, components::cylindrical, LHS, RHS>,
       binary_expression<LHS, RHS> {
     using base_type
-        = binary_vector_expression_axes<vector_scalar_divide, axes::cylindrical, LHS, RHS>;
+        = binary_vector_expression_components<vector_scalar_divide, components::cylindrical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -100,7 +100,7 @@ struct vector_scalar_divide<axes::cylindrical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        if constexpr (N == axes::cylindrical::rho || N == axes::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is divided
             return this->lhs_.template at<N>() / this->rhs_;
         } else {
@@ -112,8 +112,8 @@ struct vector_scalar_divide<axes::cylindrical, LHS, RHS>
 //@{
 /** @name Magnitude squared for spherical coordinates */
 template <typename Expr>
-struct vector_magnitude_squared<axes::cylindrical, Expr>
-    : scalar_expression<vector_magnitude_squared<axes::cylindrical, Expr>,
+struct vector_magnitude_squared<components::cylindrical, Expr>
+    : scalar_expression<vector_magnitude_squared<components::cylindrical, Expr>,
                         traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
     static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
@@ -133,10 +133,10 @@ struct vector_magnitude_squared<axes::cylindrical, Expr>
 
 //@{
 template <typename Expr>
-struct vector_normalize<axes::cylindrical, Expr>
-    : unary_vector_expression_axes<vector_normalize, axes::cylindrical, Expr>,
+struct vector_normalize<components::cylindrical, Expr>
+    : unary_vector_expression_components<vector_normalize, components::cylindrical, Expr>,
       unary_expression<Expr> {
-    using base_type       = unary_vector_expression_axes<vector_normalize, axes::cylindrical, Expr>;
+    using base_type       = unary_vector_expression_components<vector_normalize, components::cylindrical, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -146,7 +146,7 @@ struct vector_normalize<axes::cylindrical, Expr>
     at() const
     {
         static_assert(N < base_type::size, "Vector normalize component index is out of range");
-        if constexpr (N == axes::cylindrical::rho || N == axes::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
             return this->arg_.template at<N>() / magnitude(this->arg_);
         } else {
             return this->arg_.template at<N>();
@@ -159,7 +159,7 @@ struct vector_normalize<axes::cylindrical, Expr>
 }    // namespace expr
 
 template <typename T>
-using cylindrical_coord = vector<T, 3, axes::cylindrical>;
+using cylindrical_coord = vector<T, 3, components::cylindrical>;
 
 }    // namespace math
 }    // namespace psst

@@ -8,13 +8,13 @@
 #ifndef PSST_MATH_MATRIX_FWD_HPP_
 #define PSST_MATH_MATRIX_FWD_HPP_
 
-#include <psst/math/axes.hpp>
+#include <psst/math/components.hpp>
 
 namespace psst {
 namespace math {
 
 template <typename T, size_t RC, size_t CC,
-          typename Axes = axes::default_axes_t<(CC > RC) ? CC : RC>>
+          typename Components = components::default_components_t<(CC > RC) ? CC : RC>>
 struct matrix;
 
 } /* namespace math */

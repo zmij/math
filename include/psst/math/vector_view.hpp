@@ -19,13 +19,13 @@ namespace math {
 // TODO Deal with alignment stuff
 
 // Mutating vector_view
-template <typename T, std::size_t Size, typename Axes>
-struct vector_view<T*, Size, Axes>
-    : expr::vector_expression<vector_view<T*, Size, Axes>, vector<T, Size, Axes>> {
+template <typename T, std::size_t Size, typename Components>
+struct vector_view<T*, Size, Components>
+    : expr::vector_expression<vector_view<T*, Size, Components>, vector<T, Size, Components>> {
 
-    using this_type = vector_view<T*, Size, Axes>;
+    using this_type = vector_view<T*, Size, Components>;
     using base_expression_type
-        = expr::vector_expression<vector_view<T*, Size, Axes>, vector<T, Size, Axes>>;
+        = expr::vector_expression<vector_view<T*, Size, Components>, vector<T, Size, Components>>;
 
     using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
@@ -37,16 +37,16 @@ struct vector_view<T*, Size, Axes>
     using index_sequence_type = typename traits::index_sequence_type;
     using iterator            = typename traits::iterator;
     using const_iterator      = typename traits::const_iterator;
-    using axis_access         = typename base_expression_type::axis_access;
+    using component_access    = typename base_expression_type::component_access;
     template <std::size_t N>
-    using value_policy = typename axis_access::template value_policy<N>;
+    using value_policy = typename component_access::template value_policy<N>;
 
     static constexpr auto size = traits::size;
 
     constexpr explicit vector_view(pointer p) : data_{p} {}
 
     template <typename Expression, typename = math::traits::enable_if_vector_expression<Expression>,
-              typename = math::traits::enable_for_compatible_axes<this_type, Expression>>
+              typename = math::traits::enable_for_compatible_components<this_type, Expression>>
     vector_view&
     operator=(Expression const& rhs)
     {
@@ -157,13 +157,14 @@ private:
 };
 
 // Constant vector_view
-template <typename T, std::size_t Size, typename Axes>
-struct vector_view<T const*, Size, Axes>
-    : expr::vector_expression<vector_view<T const*, Size, Axes>, vector<T, Size, Axes>> {
+template <typename T, std::size_t Size, typename Components>
+struct vector_view<T const*, Size, Components>
+    : expr::vector_expression<vector_view<T const*, Size, Components>,
+                              vector<T, Size, Components>> {
 
-    using this_type = vector_view<T const*, Size, Axes>;
-    using base_expression_type
-        = expr::vector_expression<vector_view<T const*, Size, Axes>, vector<T, Size, Axes>>;
+    using this_type            = vector_view<T const*, Size, Components>;
+    using base_expression_type = expr::vector_expression<vector_view<T const*, Size, Components>,
+                                                         vector<T, Size, Components>>;
 
     using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
@@ -175,9 +176,9 @@ struct vector_view<T const*, Size, Axes>
     using index_sequence_type = typename traits::index_sequence_type;
     using iterator            = typename traits::iterator;
     using const_iterator      = typename traits::const_iterator;
-    using axis_access         = typename base_expression_type::axis_access;
+    using component_access    = typename base_expression_type::component_access;
     template <std::size_t N>
-    using value_policy = typename axis_access::template value_policy<N>;
+    using value_policy = typename component_access::template value_policy<N>;
 
     static constexpr auto size = traits::size;
 
@@ -244,14 +245,15 @@ private:
 /**
  * Utility to treat a region of memory as a 'container' of vectors of certain type
  */
-template <typename T, std::size_t Size, typename Axes = axes::default_axes_t<Size>>
+template <typename T, std::size_t Size,
+          typename Components = components::default_components_t<Size>>
 struct memory_vector_view;
 
-template <typename T, std::size_t Size, typename Axes>
-struct memory_vector_view<T*, Size, Axes> {
+template <typename T, std::size_t Size, typename Components>
+struct memory_vector_view<T*, Size, Components> {
     using pointer_type       = T*;
     using const_pointer_type = T const*;
-    using view_type          = vector_view<T*, Size, Axes>;
+    using view_type          = vector_view<T*, Size, Components>;
 
     static constexpr std::size_t component_count = Size;
     static constexpr std::size_t element_size    = sizeof(T) * component_count;
@@ -421,11 +423,11 @@ template <typename T, typename U, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(U* buffer)
 {
-    using value_type    = traits::scalar_expression_result_t<T>;
-    using axes_type     = traits::axes_names_t<T>;
-    constexpr auto size = traits::vector_expression_size_v<T>;
+    using value_type      = traits::scalar_expression_result_t<T>;
+    using components_type = traits::component_names_t<T>;
+    constexpr auto size   = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
-    return vector_view<U*, size, axes_type>(buffer);
+    return vector_view<U*, size, components_type>(buffer);
 }
 
 template <typename T, typename = traits::enable_if_vector<T>>
@@ -448,11 +450,11 @@ template <typename T, typename U, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(U* val, std::size_t buffer_size)
 {
-    using value_type    = traits::scalar_expression_result_t<T>;
-    using axes_type     = traits::axes_names_t<T>;
-    constexpr auto size = traits::vector_expression_size_v<T>;
+    using value_type      = traits::scalar_expression_result_t<T>;
+    using components_type = traits::component_names_t<T>;
+    constexpr auto size   = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
-    return memory_vector_view<U*, size, axes_type>(val, buffer_size);
+    return memory_vector_view<U*, size, components_type>(val, buffer_size);
 }
 
 template <typename T, typename = traits::enable_if_vector<T>>
@@ -497,8 +499,8 @@ using vec3d_const_view = vector_view<double const*, 3>;
 vec3f_const_view v3f_cv{fp};
 vec3d_const_view v3d_cv{dp};
 
-using rgba_view_f       = vector_view<float*, 4, axes::rgba>;
-using rgba_const_view_f = vector_view<float const*, 4, axes::rgba>;
+using rgba_view_f       = vector_view<float*, 4, components::rgba>;
+using rgba_const_view_f = vector_view<float const*, 4, components::rgba>;
 
 rgba_view_f       rgba_v{fp};
 rgba_const_view_f rgba_cv{fp};

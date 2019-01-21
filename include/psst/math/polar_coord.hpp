@@ -16,7 +16,7 @@
 namespace psst {
 namespace math {
 
-namespace axes {
+namespace components {
 
 struct polar {
     static constexpr std::size_t min_components = 2;
@@ -29,23 +29,23 @@ struct polar {
     using value_policies = utils::template_tuple<math::value_policy::no_change,
                                                  math::value_policy::clamp_zero_to_two_pi>;
 };
-}    // namespace axes
+}    // namespace components
 
-namespace axis_access {
+namespace component_access {
 //@{
 /** @name Polar coordinates */
 template <typename VectorType, typename T>
-struct axis_access<2, axes::polar, VectorType, T> : basic_axis_access<VectorType, T, axes::polar> {
-    using base_type = basic_axis_access<VectorType, T, axes::polar>;
+struct component_access<2, components::polar, VectorType, T> : basic_component_access<VectorType, T, components::polar> {
+    using base_type = basic_component_access<VectorType, T, components::polar>;
 
-    PSST_MATH_COORD_ACCESS(r);
-    PSST_MATH_COORD_ACCESS(rho);
-    PSST_MATH_COORD_ACCESS(phi);
-    PSST_MATH_COORD_ACCESS(azimuth);
+    PSST_MATH_COMPONENT_ACCESS(r);
+    PSST_MATH_COMPONENT_ACCESS(rho);
+    PSST_MATH_COMPONENT_ACCESS(phi);
+    PSST_MATH_COMPONENT_ACCESS(azimuth);
 };
 //@}
 
-}    // namespace axis_access
+}    // namespace component_access
 
 namespace expr {
 
@@ -54,10 +54,10 @@ inline namespace v {
 //@{
 /** @name Vector scalar muliply for polar coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_multiply<axes::polar, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_multiply, axes::polar, LHS, RHS>,
+struct vector_scalar_multiply<components::polar, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_multiply, components::polar, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_axes<vector_scalar_multiply, axes::polar, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_multiply, components::polar, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -68,7 +68,7 @@ struct vector_scalar_multiply<axes::polar, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply component index is out of range");
-        if constexpr (N != axes::polar::rho) {
+        if constexpr (N != components::polar::rho) {
             // In polar coordinates only the first component (rho) is multiplied
             return this->lhs_.template at<N>();
         } else {
@@ -81,10 +81,10 @@ struct vector_scalar_multiply<axes::polar, LHS, RHS>
 //@{
 /** @name Vector scalar division for polar coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_divide<axes::polar, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_divide, axes::polar, LHS, RHS>,
+struct vector_scalar_divide<components::polar, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_divide, components::polar, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_axes<vector_scalar_divide, axes::polar, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_divide, components::polar, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -95,7 +95,7 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector divide component index is out of range");
-        if constexpr (N != axes::polar::rho) {
+        if constexpr (N != components::polar::rho) {
             // In polar coordinates only the first component (rho) is divided
             return this->lhs_.template at<N>();
         } else {
@@ -107,8 +107,8 @@ struct vector_scalar_divide<axes::polar, LHS, RHS>
 //@{
 /** @name Magnitude squared for polar coordinates */
 template <typename Expr>
-struct vector_magnitude_squared<axes::polar, Expr>
-    : scalar_expression<vector_magnitude_squared<axes::polar, Expr>,
+struct vector_magnitude_squared<components::polar, Expr>
+    : scalar_expression<vector_magnitude_squared<components::polar, Expr>,
                         traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
     static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
@@ -127,8 +127,8 @@ struct vector_magnitude_squared<axes::polar, Expr>
 //@{
 /** @name Magnitude for polar coordinates */
 template <typename Expr>
-struct vector_magnitude<axes::polar, Expr>
-    : scalar_expression<vector_magnitude<axes::polar, Expr>,
+struct vector_magnitude<components::polar, Expr>
+    : scalar_expression<vector_magnitude<components::polar, Expr>,
                         traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
     static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
@@ -148,9 +148,9 @@ struct vector_magnitude<axes::polar, Expr>
 
 //@{
 template <typename Expr>
-struct vector_normalize<axes::polar, Expr>
-    : unary_vector_expression_axes<vector_normalize, axes::polar, Expr>, unary_expression<Expr> {
-    using base_type       = unary_vector_expression_axes<vector_normalize, axes::polar, Expr>;
+struct vector_normalize<components::polar, Expr>
+    : unary_vector_expression_components<vector_normalize, components::polar, Expr>, unary_expression<Expr> {
+    using base_type       = unary_vector_expression_components<vector_normalize, components::polar, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -160,7 +160,7 @@ struct vector_normalize<axes::polar, Expr>
     at() const
     {
         static_assert(N < base_type::size, "Vector normalize component index is out of range");
-        if (N == axes::polar::rho) {
+        if (N == components::polar::rho) {
             return value_type{1};
         } else {
             if (this->arg_.rho() < 0) {
@@ -179,7 +179,7 @@ struct vector_normalize<axes::polar, Expr>
 }    // namespace expr
 
 template <typename T>
-using polar_coord = vector<T, 2, axes::polar>;
+using polar_coord = vector<T, 2, components::polar>;
 
 }    // namespace math
 }    // namespace psst

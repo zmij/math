@@ -1,13 +1,13 @@
 /**
  * Copyright 2018 Sergei A. Fedorov
- * axes.hpp
+ * components.hpp
  *
  *  Created on: Dec 30, 2018
  *      Author: ser-fedorov
  */
 
-#ifndef PSST_MATH_AXES_HPP_
-#define PSST_MATH_AXES_HPP_
+#ifndef PSST_MATH_COMPONENTS_HPP_
+#define PSST_MATH_COMPONENTS_HPP_
 
 #include <cstddef>
 #include <limits>
@@ -15,11 +15,20 @@
 namespace psst {
 namespace math {
 
-namespace axes {
+/**
+ * Namespace for definitions of vector components.
+ */
+namespace components {
+/**
+ * No specific vector components, they are accessed by their index only.
+ */
 struct none {
     static constexpr std::size_t min_components = 0;
     static constexpr std::size_t max_components = std::numeric_limits<std::size_t>::max();
 };
+/**
+ * Components of Cartesian vector
+ */
 struct xyzw {
     static constexpr std::size_t min_components = 1;
     static constexpr std::size_t max_components = 4;
@@ -30,32 +39,31 @@ struct xyzw {
 };
 struct wxyz;    // Quaternion
 
-// FIXME Calculus for non-Cartesian coordinates
 struct polar;
 struct spherical;
 struct cylindrical;
 
 template <std::size_t Size>
-struct default_axes {
+struct default_components {
     using type = none;
 };
 template <std::size_t Size>
-using default_axes_t = typename default_axes<Size>::type;
+using default_components_t = typename default_components<Size>::type;
 
 template <>
-struct default_axes<1> {
+struct default_components<1> {
     using type = xyzw;
 };
 template <>
-struct default_axes<2> {
+struct default_components<2> {
     using type = xyzw;
 };
 template <>
-struct default_axes<3> {
+struct default_components<3> {
     using type = xyzw;
 };
 template <>
-struct default_axes<4> {
+struct default_components<4> {
     using type = xyzw;
 };
 
@@ -70,9 +78,9 @@ constexpr bool undefined_v = undefined_t<T>::value;
 template <>
 struct undefined<none> : std::true_type {};
 //@}
-} /* namespace axes */
+}    // namespace components
 
 }    // namespace math
 }    // namespace psst
 
-#endif /* PSST_MATH_AXES_HPP_ */
+#endif /* PSST_MATH_COMPONENTS_HPP_ */

@@ -22,7 +22,7 @@ using dimension_count = std::integral_constant<std::size_t, N>;
 //  Vector 3
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr vector<T, 3, axes::xyzw> make_test_vector(dimension_count<3> const&)
+constexpr vector<T, 3, components::xyzw> make_test_vector(dimension_count<3> const&)
 {
     return {1, 2, 3};
 }
@@ -31,7 +31,7 @@ constexpr vector<T, 3, axes::xyzw> make_test_vector(dimension_count<3> const&)
 //  Vector 4
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr vector<T, 4, axes::xyzw> make_test_vector(dimension_count<4> const&)
+constexpr vector<T, 4, components::xyzw> make_test_vector(dimension_count<4> const&)
 {
     return {1, 2, 3, 4};
 }
@@ -40,7 +40,7 @@ constexpr vector<T, 4, axes::xyzw> make_test_vector(dimension_count<4> const&)
 //  Vector 10
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr vector<T, 10, axes::none> make_test_vector(dimension_count<10> const&)
+constexpr vector<T, 10, components::none> make_test_vector(dimension_count<10> const&)
 {
     return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 }
@@ -115,7 +115,7 @@ constexpr matrix<T, 4, 3> make_test_matrix(traits::matrix_size<4, 3> const&)
 //  Matrix 10x10
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 10, 10, axes::none> make_test_matrix(traits::matrix_size<10, 10> const&)
+constexpr matrix<T, 10, 10, components::none> make_test_matrix(traits::matrix_size<10, 10> const&)
 {
     // clang-format off
     return

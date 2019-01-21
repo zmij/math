@@ -25,7 +25,7 @@ struct quaternion_vector_part;
 }    // namespace v
 }    // namespace expr
 
-namespace axes {
+namespace components {
 
 struct wxyz {
     static constexpr std::size_t min_components = 4;
@@ -41,21 +41,21 @@ struct wxyz {
     static constexpr std::size_t k = z;
 };
 
-}    // namespace axes
+}    // namespace components
 
-namespace axis_access {
+namespace component_access {
 
 //@{
-/** @name wxyz axes names */
+/** @name wxyz components names */
 template <typename VectorType, typename T>
-struct axis_access<4, axes::wxyz, VectorType, T> : basic_axis_access<VectorType, T, axes::wxyz> {
+struct component_access<4, components::wxyz, VectorType, T> : basic_component_access<VectorType, T, components::wxyz> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::wxyz>;
+    using base_type = basic_component_access<VectorType, T, components::wxyz>;
 
-    PSST_MATH_COORD_ACCESS(w)
-    PSST_MATH_COORD_ACCESS(x)
-    PSST_MATH_COORD_ACCESS(y)
-    PSST_MATH_COORD_ACCESS(z)
+    PSST_MATH_COMPONENT_ACCESS(w)
+    PSST_MATH_COMPONENT_ACCESS(x)
+    PSST_MATH_COMPONENT_ACCESS(y)
+    PSST_MATH_COMPONENT_ACCESS(z)
 
     constexpr auto
     scalar_part() const;
@@ -64,7 +64,7 @@ struct axis_access<4, axes::wxyz, VectorType, T> : basic_axis_access<VectorType,
 };
 //@}
 
-}    // namespace axis_access
+}    // namespace component_access
 
 namespace expr {
 inline namespace v {
@@ -87,11 +87,11 @@ struct quaternion_scalar_part : unary_scalar_expression<quaternion_scalar_part, 
 template <typename Expr>
 struct quaternion_vector_part
     : unary_vector_expression<quaternion_vector_part, Expr,
-                              vector<traits::scalar_expression_result_t<Expr>, 3, axes::xyzw>>,
+                              vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>,
       unary_expression<Expr> {
     using base_type
         = unary_vector_expression<quaternion_vector_part, Expr,
-                                  vector<traits::scalar_expression_result_t<Expr>, 3, axes::xyzw>>;
+                                  vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -105,10 +105,10 @@ struct quaternion_vector_part
 };
 
 template <typename LHS, typename RHS>
-struct vector_vector_multiply<axes::wxyz, LHS, RHS>
-    : binary_vector_expression_axes<vector_vector_multiply, axes::wxyz, LHS, RHS>,
+struct vector_vector_multiply<components::wxyz, LHS, RHS>
+    : binary_vector_expression_components<vector_vector_multiply, components::wxyz, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type = binary_vector_expression_axes<vector_vector_multiply, axes::wxyz, LHS, RHS>;
+    using base_type = binary_vector_expression_components<vector_vector_multiply, components::wxyz, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
@@ -127,13 +127,13 @@ struct vector_vector_multiply<axes::wxyz, LHS, RHS>
         static_assert(N < base_type::size, "Invalid quaternion component index");
         auto const& lhs = this->lhs_;
         auto const& rhs = this->rhs_;
-        if constexpr (N == axes::wxyz::w) {
+        if constexpr (N == components::wxyz::w) {
             return lhs.w() * rhs.w() - lhs.x() * rhs.x() - lhs.y() * rhs.y() - lhs.z() * rhs.z();
-        } else if constexpr (N == axes::wxyz::x) {
+        } else if constexpr (N == components::wxyz::x) {
             return lhs.w() * rhs.x() + lhs.x() * rhs.w() + lhs.y() * rhs.z() - lhs.z() * rhs.y();
-        } else if constexpr (N == axes::wxyz::y) {
+        } else if constexpr (N == components::wxyz::y) {
             return lhs.w() * rhs.y() - lhs.x() * rhs.z() + lhs.y() * rhs.w() + lhs.z() * rhs.x();
-        } else if constexpr (N == axes::wxyz::z) {
+        } else if constexpr (N == components::wxyz::z) {
             return lhs.w() * rhs.z() + lhs.x() * rhs.y() - lhs.y() * rhs.x() + lhs.z() * rhs.w();
         }
     }
@@ -141,9 +141,9 @@ struct vector_vector_multiply<axes::wxyz, LHS, RHS>
 
 //@{
 template <typename Expr>
-struct vector_normalize<axes::wxyz, Expr>
-    : unary_vector_expression_axes<vector_normalize, axes::wxyz, Expr>, unary_expression<Expr> {
-    using base_type       = unary_vector_expression_axes<vector_normalize, axes::wxyz, Expr>;
+struct vector_normalize<components::wxyz, Expr>
+    : unary_vector_expression_components<vector_normalize, components::wxyz, Expr>, unary_expression<Expr> {
+    using base_type       = unary_vector_expression_components<vector_normalize, components::wxyz, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -156,7 +156,7 @@ struct vector_normalize<axes::wxyz, Expr>
         value_type mag = magnitude(this->arg_);
         if (mag == 0)
             throw std::runtime_error("Cannot normalise a zero quaternion");
-        if constexpr (N == axes::wxyz::w) {
+        if constexpr (N == components::wxyz::w) {
             return this->arg_.template at<N>() / mag;
         } else {
             auto val = this->arg_.template at<N>();
@@ -184,7 +184,7 @@ struct quaternion_conjugate : unary_vector_expression<quaternion_conjugate, Expr
     at() const
     {
         static_assert(N < base_type::size, "Invalid quaternion component index");
-        if constexpr (N == axes::wxyz::w) {
+        if constexpr (N == components::wxyz::w) {
             return this->arg_.template at<N>();
         } else {
             return -this->arg_.template at<N>();
@@ -192,7 +192,7 @@ struct quaternion_conjugate : unary_vector_expression<quaternion_conjugate, Expr
     }
 };
 
-template <typename Expr, typename = traits::enable_for_axes<Expr, axes::wxyz>>
+template <typename Expr, typename = traits::enable_for_components<Expr, components::wxyz>>
 constexpr auto
 conjugate(Expr&& expr)
 {
@@ -201,7 +201,7 @@ conjugate(Expr&& expr)
 //@}
 
 //@{
-template <typename Expr, typename = traits::enable_for_axes<Expr, axes::wxyz>>
+template <typename Expr, typename = traits::enable_for_components<Expr, components::wxyz>>
 constexpr auto
 inverse(Expr&& expr)
 {
@@ -215,26 +215,26 @@ inverse(Expr&& expr)
 }    // namespace v
 }    // namespace expr
 
-namespace axis_access {
+namespace component_access {
 
 template <typename VectorType, typename T>
 constexpr auto
-axis_access<4, axes::wxyz, VectorType, T>::scalar_part() const
+component_access<4, components::wxyz, VectorType, T>::scalar_part() const
 {
     return expr::make_unary_expression<expr::v::quaternion_scalar_part>(base_type::rebind());
 }
 
 template <typename VectorType, typename T>
 constexpr auto
-axis_access<4, axes::wxyz, VectorType, T>::vector_part() const
+component_access<4, components::wxyz, VectorType, T>::vector_part() const
 {
     return expr::make_unary_expression<expr::v::quaternion_vector_part>(base_type::rebind());
 }
 
-}    // namespace axis_access
+}    // namespace component_access
 
 template <typename T>
-using quaternion = vector<T, 4, axes::wxyz>;
+using quaternion = vector<T, 4, components::wxyz>;
 
 }    // namespace math
 }    // namespace psst

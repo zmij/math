@@ -180,7 +180,7 @@ std::cout << io::pretty << m1 << io::ugly << "\n";
 
 #### Memory buffers as vectors
 
-A memory buffer can be accessed as a container of vectors with certain properties (size, axes). A constant buffer can be used to read data in a structured manner, a non-costant buffer can be used to modify data in the buffer via `vector_view` and `memory_vector_view` utility classes. A `vector_view` is for reading a single element, `memory_vector_view` is for using a buffer as a 'container' of vectors.
+A memory buffer can be accessed as a container of vectors with certain properties (size, components). A constant buffer can be used to read data in a structured manner, a non-costant buffer can be used to modify data in the buffer via `vector_view` and `memory_vector_view` utility classes. A `vector_view` is for reading a single element, `memory_vector_view` is for using a buffer as a 'container' of vectors.
 
 ```C++
 #include <psst/math/vector_view.hpp>

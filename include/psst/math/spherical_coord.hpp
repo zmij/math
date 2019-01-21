@@ -15,7 +15,7 @@
 
 namespace psst {
 namespace math {
-namespace axes {
+namespace components {
 
 struct spherical {
     static constexpr std::size_t min_components = 3;
@@ -32,26 +32,26 @@ struct spherical {
                                                  math::value_policy::clamp_zero_to_two_pi>;
 };
 
-}    // namespace axes
+}    // namespace components
 
-namespace axis_access {
+namespace component_access {
 //@{
 /** @name Spherical coordinates */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::spherical, VectorType, T>
-    : basic_axis_access<VectorType, T, axes::spherical> {
-    using base_type = basic_axis_access<VectorType, T, axes::spherical>;
+struct component_access<3, components::spherical, VectorType, T>
+    : basic_component_access<VectorType, T, components::spherical> {
+    using base_type = basic_component_access<VectorType, T, components::spherical>;
 
-    PSST_MATH_COORD_ACCESS(r);
-    PSST_MATH_COORD_ACCESS(rho);
-    PSST_MATH_COORD_ACCESS(phi);
-    PSST_MATH_COORD_ACCESS(inclination);
-    PSST_MATH_COORD_ACCESS(theta);
-    PSST_MATH_COORD_ACCESS(azimuth);
+    PSST_MATH_COMPONENT_ACCESS(r);
+    PSST_MATH_COMPONENT_ACCESS(rho);
+    PSST_MATH_COMPONENT_ACCESS(phi);
+    PSST_MATH_COMPONENT_ACCESS(inclination);
+    PSST_MATH_COMPONENT_ACCESS(theta);
+    PSST_MATH_COMPONENT_ACCESS(azimuth);
 };
 //@}
 
-}    // namespace axis_access
+}    // namespace component_access
 
 namespace expr {
 
@@ -59,11 +59,11 @@ inline namespace v {
 //@{
 /** @name Vector scalar muliply for spherical coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_multiply<axes::spherical, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_multiply, axes::spherical, LHS, RHS>,
+struct vector_scalar_multiply<components::spherical, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_multiply, components::spherical, LHS, RHS>,
       binary_expression<LHS, RHS> {
     using base_type
-        = binary_vector_expression_axes<vector_scalar_multiply, axes::spherical, LHS, RHS>;
+        = binary_vector_expression_components<vector_scalar_multiply, components::spherical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -74,7 +74,7 @@ struct vector_scalar_multiply<axes::spherical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply element index is out of range");
-        if constexpr (N != axes::spherical::rho) {
+        if constexpr (N != components::spherical::rho) {
             // In spherical coordinates only the first component (rho) is multiplied
             return this->lhs_.template at<N>();
         } else {
@@ -87,11 +87,11 @@ struct vector_scalar_multiply<axes::spherical, LHS, RHS>
 //@{
 /** @name Vector scalar division for spherical coordinates */
 template <typename LHS, typename RHS>
-struct vector_scalar_divide<axes::spherical, LHS, RHS>
-    : binary_vector_expression_axes<vector_scalar_divide, axes::spherical, LHS, RHS>,
+struct vector_scalar_divide<components::spherical, LHS, RHS>
+    : binary_vector_expression_components<vector_scalar_divide, components::spherical, LHS, RHS>,
       binary_expression<LHS, RHS> {
     using base_type
-        = binary_vector_expression_axes<vector_scalar_divide, axes::spherical, LHS, RHS>;
+        = binary_vector_expression_components<vector_scalar_divide, components::spherical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -102,7 +102,7 @@ struct vector_scalar_divide<axes::spherical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        if constexpr (N != axes::spherical::rho) {
+        if constexpr (N != components::spherical::rho) {
             // In spherical coordinates only the first component (rho) is divided
             return this->lhs_.template at<N>();
         } else {
@@ -115,8 +115,8 @@ struct vector_scalar_divide<axes::spherical, LHS, RHS>
 //@{
 /** @name Magnitude squared for spherical coordinates */
 template <typename Expr>
-struct vector_magnitude_squared<axes::spherical, Expr>
-    : scalar_expression<vector_magnitude_squared<axes::spherical, Expr>,
+struct vector_magnitude_squared<components::spherical, Expr>
+    : scalar_expression<vector_magnitude_squared<components::spherical, Expr>,
                         traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
     static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
@@ -135,8 +135,8 @@ struct vector_magnitude_squared<axes::spherical, Expr>
 //@{
 /** @name Magnitude for spherical coordinates */
 template <typename Expr>
-struct vector_magnitude<axes::spherical, Expr>
-    : scalar_expression<vector_magnitude<axes::spherical, Expr>,
+struct vector_magnitude<components::spherical, Expr>
+    : scalar_expression<vector_magnitude<components::spherical, Expr>,
                         traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
     static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
@@ -155,10 +155,10 @@ struct vector_magnitude<axes::spherical, Expr>
 
 //@{
 template <typename Expr>
-struct vector_normalize<axes::spherical, Expr>
-    : unary_vector_expression_axes<vector_normalize, axes::spherical, Expr>,
+struct vector_normalize<components::spherical, Expr>
+    : unary_vector_expression_components<vector_normalize, components::spherical, Expr>,
       unary_expression<Expr> {
-    using base_type       = unary_vector_expression_axes<vector_normalize, axes::spherical, Expr>;
+    using base_type       = unary_vector_expression_components<vector_normalize, components::spherical, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -168,9 +168,9 @@ struct vector_normalize<axes::spherical, Expr>
     at() const
     {
         static_assert(N < base_type::size, "Vector normalize component index is out of range");
-        if constexpr (N == axes::spherical::rho) {
+        if constexpr (N == components::spherical::rho) {
             return value_type{1};
-        } else if constexpr (N == axes::spherical::inclination) {
+        } else if constexpr (N == components::spherical::inclination) {
             if (this->arg_.rho() < 0) {
                 return -this->arg_.inclination();
             } else {
@@ -191,7 +191,7 @@ struct vector_normalize<axes::spherical, Expr>
 }    // namespace expr
 
 template <typename T>
-using spherical_coord = vector<T, 3, axes::spherical>;
+using spherical_coord = vector<T, 3, components::spherical>;
 
 }    // namespace math
 }    // namespace psst

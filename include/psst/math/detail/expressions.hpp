@@ -221,22 +221,22 @@ make_n_ary_expression(Args&&... args)
 }
 
 //----------------------------------------------------------------------------
-template <typename Axes, template <typename, typename> class Expression>
+template <typename Components, template <typename, typename> class Expression>
 struct select_unary_impl {
     template <typename T>
-    using type = Expression<Axes, T>;
+    using type = Expression<Components, T>;
 };
 
-template <typename Axes, template <typename, typename, typename> class Expression>
+template <typename Components, template <typename, typename, typename> class Expression>
 struct select_binary_impl {
     template <typename T, typename U>
-    using type = Expression<Axes, T, U>;
+    using type = Expression<Components, T, U>;
 };
 
-template <template <typename, typename...> class Expression, typename Axes>
+template <template <typename, typename...> class Expression, typename Components>
 struct select_n_ary_impl {
     template <typename... T>
-    using type = Expression<Axes, T...>;
+    using type = Expression<Components, T...>;
 };
 
 }    // namespace expr

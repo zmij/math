@@ -8,12 +8,13 @@
 #ifndef PSST_MATH_VECTOR_FWD_HPP_
 #define PSST_MATH_VECTOR_FWD_HPP_
 
-#include <psst/math/axes.hpp>
+#include <psst/math/components.hpp>
 
 namespace psst {
 namespace math {
 
-template <typename T, std::size_t Size, typename Axes = axes::default_axes_t<Size>>
+template <typename T, std::size_t Size,
+          typename Components = components::default_components_t<Size>>
 struct vector;
 
 /**
@@ -24,7 +25,8 @@ struct vector;
  * For a const pointer the vector_view is read-only, for a non-const pointer the vector view can be
  * used to modify the underlying data.
  */
-template <typename T, std::size_t Size, typename Axes = axes::default_axes_t<Size>>
+template <typename T, std::size_t Size,
+          typename Components = components::default_components_t<Size>>
 struct vector_view;
 
 } /* namespace math */

@@ -45,12 +45,12 @@ struct value_tag : detail::value_tag_impl<T> {};
 template <typename T>
 using value_tag_t = typename value_tag<T>::type;
 
-template <typename T, std::size_t Size, typename Axes>
-struct value_tag<vector<T, Size, Axes>> {
+template <typename T, std::size_t Size, typename Components>
+struct value_tag<vector<T, Size, Components>> {
     using type = tag::vector;
 };
-template <typename T, std::size_t RC, std::size_t CC, typename Axes>
-struct value_tag<matrix<T, RC, CC, Axes>> {
+template <typename T, std::size_t RC, std::size_t CC, typename Components>
+struct value_tag<matrix<T, RC, CC, Components>> {
     using type = tag::matrix;
 };
 
@@ -171,10 +171,10 @@ struct scalar_value_traits : detail::compare_traits<std::decay_t<T>> {
 template <typename VectorType>
 struct vector_traits;
 
-template <typename T, std::size_t Size, typename Axes>
-struct vector_traits<vector<T, Size, Axes>> {
-    using vector_type      = vector<T, Size, Axes>;
-    using axes_names       = Axes;
+template <typename T, std::size_t Size, typename Components>
+struct vector_traits<vector<T, Size, Components>> {
+    using vector_type      = vector<T, Size, Components>;
+    using component_names  = Components;
     using element_type     = T;
     using type             = vector_type;
     using value_tag        = tag::vector;
@@ -205,16 +205,16 @@ struct matrix_size {
 template <typename MatrixType>
 struct matrix_traits;
 
-template <typename T, std::size_t RC, std::size_t CC, typename Axes>
-struct matrix_traits<matrix<T, RC, CC, Axes>> {
-    using matrix_type      = matrix<T, RC, CC, Axes>;
-    using transposed_type  = matrix<T, CC, RC, Axes>;
+template <typename T, std::size_t RC, std::size_t CC, typename Components>
+struct matrix_traits<matrix<T, RC, CC, Components>> {
+    using matrix_type      = matrix<T, RC, CC, Components>;
+    using transposed_type  = matrix<T, CC, RC, Components>;
     using type             = matrix_type;
     using value_tag        = tag::matrix;
-    using row_type         = vector<T, CC, Axes>;
-    using col_type         = vector<T, RC, Axes>;
+    using row_type         = vector<T, CC, Components>;
+    using col_type         = vector<T, RC, Components>;
     using size_type        = matrix_size<RC, CC>;
-    using axes_names       = Axes;
+    using component_names  = Components;
     using element_type     = T;
     using value_traits     = scalar_value_traits<T>;
     using value_type       = typename value_traits::value_type;
@@ -258,10 +258,10 @@ using enable_if_scalar_values = std::enable_if_t<(is_scalar_v<T> && ...)>;
 /** @name is_vector trait */
 template <typename T>
 struct is_vector : std::false_type {};
-template <typename T, std::size_t S, typename Axes>
-struct is_vector<vector<T, S, Axes>> : std::true_type {};
-template <typename T, std::size_t S, typename Axes>
-struct is_vector<vector_view<T, S, Axes>> : std::true_type {};
+template <typename T, std::size_t S, typename Components>
+struct is_vector<vector<T, S, Components>> : std::true_type {};
+template <typename T, std::size_t S, typename Components>
+struct is_vector<vector_view<T, S, Components>> : std::true_type {};
 template <typename T>
 using is_vector_t = typename is_vector<std::decay_t<T>>::type;
 template <typename T>
@@ -281,12 +281,12 @@ using is_mutable_vector_t = typename is_mutable_vector<T>::type;
 template <typename T>
 constexpr bool is_mutable_vector_v = is_mutable_vector_t<T>::value;
 
-template <typename T, std::size_t S, typename Axes>
-struct is_mutable_vector<vector<T, S, Axes>> : std::true_type {};
-template <typename T, std::size_t S, typename Axes>
-struct is_mutable_vector<vector_view<T*, S, Axes>> : std::true_type {};
-template <typename T, std::size_t S, typename Axes>
-struct is_mutable_vector<vector_view<T const*, S, Axes>> : std::false_type {};
+template <typename T, std::size_t S, typename Components>
+struct is_mutable_vector<vector<T, S, Components>> : std::true_type {};
+template <typename T, std::size_t S, typename Components>
+struct is_mutable_vector<vector_view<T*, S, Components>> : std::true_type {};
+template <typename T, std::size_t S, typename Components>
+struct is_mutable_vector<vector_view<T const*, S, Components>> : std::false_type {};
 
 template <typename T>
 struct is_mutable_vector<T&> : is_mutable_vector<T> {};
@@ -299,8 +299,8 @@ using enable_if_mutable_vector = std::enable_if_t<is_mutable_vector_v<T>>;
 /** @name is_matrix trait */
 template <typename T>
 struct is_matrix : std::false_type {};
-template <typename T, std::size_t RC, std::size_t CC, typename Axes>
-struct is_matrix<matrix<T, RC, CC, Axes>> : std::true_type {};
+template <typename T, std::size_t RC, std::size_t CC, typename Components>
+struct is_matrix<matrix<T, RC, CC, Components>> : std::true_type {};
 template <typename T>
 using is_matrix_t = typename is_matrix<std::decay_t<T>>::type;
 template <typename T>
@@ -392,138 +392,141 @@ using enable_if_matrix_expressions = std::enable_if_t<(is_matrix_expression_v<T>
 //@}
 
 //@{
-/** @name Axes names trait */
+/** @name Components names trait */
 namespace detail {
 
 template <typename T>
 constexpr auto
-detect_axes_names()
+detect_component_names()
 {
     if constexpr (is_vector_expression_v<T> || is_matrix_expression_v<T>) {
-        return typename std::decay_t<T>::axes_names{};
+        return typename std::decay_t<T>::component_names{};
     } else {
-        return axes::none{};
+        return components::none{};
     }
 }
 
 }    // namespace detail
 template <typename T>
-struct axes_names {
-    using type = decltype(detail::detect_axes_names<T>());
+struct component_names {
+    using type = decltype(detail::detect_component_names<T>());
 };
 template <typename T>
-using axes_names_t = typename axes_names<T>::type;
+using component_names_t = typename component_names<T>::type;
 //@}
 
 //@{
-template <typename T, typename... Axes>
-struct has_axes : utils::bool_constant<(std::is_same<axes_names_t<T>, Axes>{} || ...)> {};
-template <typename T, typename... Axes>
-using has_axes_t = typename has_axes<T, Axes...>::type;
-template <typename T, typename... Axes>
-constexpr bool has_axes_v = has_axes_t<T, Axes...>::value;
+template <typename T, typename... Components>
+struct has_components
+    : utils::bool_constant<(std::is_same<component_names_t<T>, Components>{} || ...)> {};
+template <typename T, typename... Components>
+using has_components_t = typename has_components<T, Components...>::type;
+template <typename T, typename... Components>
+constexpr bool has_components_v = has_components_t<T, Components...>::value;
 
-template <typename T, typename... Axes>
-using enable_for_axes = std::enable_if_t<has_axes_v<T, Axes...>>;
-template <typename T, typename... Axes>
-using disable_for_axes = std::enable_if_t<!has_axes_v<T, Axes...>>;
+template <typename T, typename... Components>
+using enable_for_components = std::enable_if_t<has_components_v<T, Components...>>;
+template <typename T, typename... Components>
+using disable_for_components = std::enable_if_t<!has_components_v<T, Components...>>;
 //@}
 //@{
-/** @name undefined_axes */
+/** @name undefined_components */
 template <typename T>
-struct undefined_axes : has_axes<T, axes::none> {};
+struct undefined_components : has_components<T, components::none> {};
 template <typename T>
-using undefined_axes_t = typename undefined_axes<T>::type;
+using undefined_components_t = typename undefined_components<T>::type;
 template <typename T>
-constexpr bool undefined_axes_v = undefined_axes_t<T>::value;
+constexpr bool undefined_components_v = undefined_components_t<T>::value;
 //@}
 //@{
-/** @name same_axes */
+/** @name same_components */
 template <typename... T>
-struct same_axes : utils::is_same_t<axes_names_t<T>...> {};
+struct same_components : utils::is_same_t<component_names_t<T>...> {};
 template <typename... T>
-using same_axes_t = typename same_axes<T...>::type;
+using same_components_t = typename same_components<T...>::type;
 template <typename... T>
-constexpr bool same_axes_v = same_axes_t<T...>::value;
+constexpr bool same_components_v = same_components_t<T...>::value;
 template <typename T>
-struct same_axes<T> : std::true_type {};
+struct same_components<T> : std::true_type {};
 
 template <typename... T>
-using enable_for_same_axes = std::enable_if_t<same_axes_v<T...>>;
+using enable_for_same_components = std::enable_if_t<same_components_v<T...>>;
 //@}
 
 //@{
-/** @name axes_are_compatible */
+/** @name components_are_compatible */
 /**
- * Check that axes types are compatible. Compatible axes are the same axes or axes::none.
+ * Check that components types are compatible. Compatible components are the same components or
+ * components::none.
  */
 template <typename... T>
-struct axes_are_compatible
-    : utils::bool_constant<utils::is_same_v<T...> || ((utils::is_same_v<axes::none, T> || ...))> {};
+struct components_are_compatible
+    : utils::bool_constant<
+          utils::is_same_v<T...> || ((utils::is_same_v<components::none, T> || ...))> {};
 template <typename... T>
-using axes_are_compatible_t = typename axes_are_compatible<T...>::type;
+using components_are_compatible_t = typename components_are_compatible<T...>::type;
 template <typename... T>
-constexpr bool axes_are_compatible_v = axes_are_compatible_t<T...>::value;
+constexpr bool components_are_compatible_v = components_are_compatible_t<T...>::value;
 
 template <typename T>
-struct axes_are_compatible<T> : std::true_type {};
+struct components_are_compatible<T> : std::true_type {};
 
 /**
- * Enable if the types of axes are considered compatible
+ * Enable if the types of components are considered compatible
  */
 template <typename... T>
-using enable_if_compatible_axes = std::enable_if_t<axes_are_compatible_v<T...>>;
+using enable_if_compatible_components = std::enable_if_t<components_are_compatible_v<T...>>;
 //@}
 
 //@{
 template <typename... T>
-struct compatible_axes
-    : utils::bool_constant<utils::is_same_v<axes_names_t<T>...> || ((undefined_axes_v<T> || ...))> {
-};
+struct compatible_components
+    : utils::bool_constant<
+          utils::is_same_v<component_names_t<T>...> || ((undefined_components_v<T> || ...))> {};
 template <typename... T>
-using compatible_axes_t = typename compatible_axes<T...>::type;
+using compatible_components_t = typename compatible_components<T...>::type;
 template <typename... T>
-constexpr bool compatible_axes_v = compatible_axes_t<T...>::value;
+constexpr bool compatible_components_v = compatible_components_t<T...>::value;
 
 /**
- * Enable if the types of axes of expressions are considered compatible
+ * Enable if the types of components of expressions are considered compatible
  */
 template <typename... T>
-using enable_for_compatible_axes = std::enable_if_t<compatible_axes_v<T...>>;
+using enable_for_compatible_components = std::enable_if_t<compatible_components_v<T...>>;
 //@}
 
 //@{
-/** @name select_axes_names */
+/** @name select_component_names */
 template <typename... T>
-struct select_axes_names;
+struct select_component_names;
 template <typename... T>
-using select_axes_names_t = typename select_axes_names<T...>::type;
+using select_component_names_t = typename select_component_names<T...>::type;
 template <typename T>
-struct select_axes_names<T> {
+struct select_component_names<T> {
     using type = T;
 };
 template <>
-struct select_axes_names<> {
-    using type = axes::none;
+struct select_component_names<> {
+    using type = components::none;
 };
 template <typename T, typename U>
-struct select_axes_names<T, U> {
+struct select_component_names<T, U> {
     using type = std::conditional_t<
         utils::is_same_v<T, U>, T,
-        std::conditional_t<axes::undefined_v<T>, U,
-                           std::conditional_t<axes::undefined_v<U>, T, axes::none>>>;
+        std::conditional_t<components::undefined_v<T>, U,
+                           std::conditional_t<components::undefined_v<U>, T, components::none>>>;
 };
 template <typename T, typename U, typename... V>
-struct select_axes_names<T, U, V...>
-    : select_axes_names<select_axes_names_t<T, U>, select_axes_names_t<V...>> {};
+struct select_component_names<T, U, V...>
+    : select_component_names<select_component_names_t<T, U>, select_component_names_t<V...>> {};
 //@}
 
 //@{
-/** @name axes_names_for */
+/** @name component_names_for */
 template <typename... T>
-struct axes_names_for : select_axes_names<axes_names_t<T>...> {};
+struct component_names_for : select_component_names<component_names_t<T>...> {};
 template <typename... T>
-using axes_names_for_t = typename axes_names_for<T...>::type;
+using component_names_for_t = typename component_names_for<T...>::type;
 //@}
 
 //@{
@@ -655,11 +658,11 @@ detect_vector_exression_result()
     static_assert(
         (contains_vector_expression_v<T...>),
         "At least one of the arguments to a vector expression must be a vector expression");
-    static_assert((compatible_axes_v<T...>), "All vectors should have the same axes");
+    static_assert((compatible_components_v<T...>), "All vectors should have the same components");
     using result_value_type = scalar_expression_result_t<T...>;
-    using axes_names        = axes_names_for_t<T...>;
+    using component_names   = component_names_for_t<T...>;
     using size_type         = min_vector_size_t<T...>;
-    return vector<result_value_type, size_type::value, axes_names>{};
+    return vector<result_value_type, size_type::value, component_names>{};
 }
 
 }    // namespace detail

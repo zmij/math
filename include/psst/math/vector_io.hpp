@@ -516,11 +516,11 @@ read_binary(std::basic_istream<CharT>& is, Vector& v, std::index_sequence<Indexe
 
 }    // namespace detail
 
-template <typename T, std::size_t Size, typename Axes>
+template <typename T, std::size_t Size, typename Components>
 std::istream&
-operator>>(std::istream& is, vector<T, Size, Axes>& v)
+operator>>(std::istream& is, vector<T, Size, Components>& v)
 {
-    using vector_type = vector<T, Size, Axes>;
+    using vector_type = vector<T, Size, Components>;
     std::istream::sentry s(is);
     if (s) {
         auto const& fct = io::get_facet(is);
@@ -541,7 +541,7 @@ operator>>(std::istream& is, vector<T, Size, Axes>& v)
                 is.setstate(std::ios::failbit);
                 return is;
             }
-            detail::data_input<Size - 1, vector<T, Size, Axes>>::input(is, v);
+            detail::data_input<Size - 1, vector<T, Size, Components>>::input(is, v);
             if (!(is >> c)) {
                 return is;
             }

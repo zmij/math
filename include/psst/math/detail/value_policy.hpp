@@ -120,72 +120,77 @@ private:
 };
 
 //@{
-/** @name axes_have_value_policies */
-template <typename Axes, typename = utils::void_t<>>
-struct axes_have_value_policies : std::false_type {};
-template <typename Axes>
-struct axes_have_value_policies<Axes, utils::void_t<typename Axes::value_policies>>
+/** @name components_have_value_policies */
+template <typename Components, typename = utils::void_t<>>
+struct components_have_value_policies : std::false_type {};
+template <typename Components>
+struct components_have_value_policies<Components, utils::void_t<typename Components::value_policies>>
     : std::true_type {};
-template <typename Axes>
-using axes_have_value_policies_t = typename axes_have_value_policies<Axes>::type;
-template <typename Axes>
-constexpr bool axes_have_value_policies_v = axes_have_value_policies_t<Axes>::value;
+template <typename Components>
+using components_have_value_policies_t = typename components_have_value_policies<Components>::type;
+template <typename Components>
+constexpr bool components_have_value_policies_v = components_have_value_policies_t<Components>::value;
 //@}
 
 //@{
-/** @name axes_have_default_value_policy */
-template <typename Axes, typename T, typename = utils::void_t<>>
-struct axes_have_default_value_policy : std::false_type {};
-template <typename Axes, typename T>
-struct axes_have_default_value_policy<
-    Axes, T, utils::void_t<typename Axes::template default_value_policy<T>>> : std::true_type {};
-template <typename Axes, typename T>
-using axes_have_default_value_policy_t = typename axes_have_default_value_policy<Axes, T>::type;
-template <typename Axes, typename T>
-constexpr bool axes_have_default_value_policy_v = axes_have_default_value_policy_t<Axes, T>::value;
+/** @name components_have_default_value_policy */
+template <typename Components, typename T, typename = utils::void_t<>>
+struct components_have_default_value_policy : std::false_type {};
+template <typename Components, typename T>
+struct components_have_default_value_policy<
+    Components, T, utils::void_t<typename Components::template default_value_policy<T>>>
+    : std::true_type {};
+template <typename Components, typename T>
+using components_have_default_value_policy_t =
+    typename components_have_default_value_policy<Components, T>::type;
+template <typename Components, typename T>
+constexpr bool components_have_default_value_policy_v
+    = components_have_default_value_policy_t<Components, T>::value;
 //@}
 
 //@{
 /** @name Default value policy */
-template <typename Axes, typename T, typename = utils::void_t<>>
+template <typename Components, typename T, typename = utils::void_t<>>
 struct default_value_policy {
     using type = no_change<T>;
 };
 
-template <typename Axes, typename T>
-struct default_value_policy<Axes, T, std::enable_if_t<axes_have_default_value_policy_v<Axes, T>>> {
-    using type = typename Axes::template default_value_policy<T>;
+template <typename Components, typename T>
+struct default_value_policy<Components, T,
+                            std::enable_if_t<components_have_default_value_policy_v<Components, T>>> {
+    using type = typename Components::template default_value_policy<T>;
 };
 
-template <typename Axes, typename T>
-using default_value_policy_t = typename default_value_policy<Axes, T>::type;
+template <typename Components, typename T>
+using default_value_policy_t = typename default_value_policy<Components, T>::type;
 //@}
 
 //@{
-template <typename T, typename Axes, typename Policies, std::size_t N, typename = utils::void_t<>>
+template <typename T, typename Components, typename Policies, std::size_t N,
+          typename = utils::void_t<>>
 struct nth_policy {
-    using type = default_value_policy<Axes, T>;
+    using type = default_value_policy<Components, T>;
 };
-template <typename T, typename Axes, typename Policies, std::size_t N>
-struct nth_policy<T, Axes, Policies, N, std::enable_if_t<(N < Policies::size)>> {
+template <typename T, typename Components, typename Policies, std::size_t N>
+struct nth_policy<T, Components, Policies, N, std::enable_if_t<(N < Policies::size)>> {
     using type = typename Policies::template type<N, T>;
 };
-template <typename T, typename Axes, typename Policies, std::size_t N>
-using nth_policy_t = typename nth_policy<T, Axes, Policies, N>::type;
+template <typename T, typename Components, typename Policies, std::size_t N>
+using nth_policy_t = typename nth_policy<T, Components, Policies, N>::type;
 //@}
 
-template <typename T, typename Axes, typename = utils::void_t<>>
+template <typename T, typename Components, typename = utils::void_t<>>
 struct value_policies {
-    using axes_value_policy = void;
+    using components_value_policy = void;
     template <std::size_t>
-    using value_policy = default_value_policy_t<Axes, T>;
+    using value_policy = default_value_policy_t<Components, T>;
 };
 
-template <typename T, typename Axes>
-struct value_policies<T, Axes, std::enable_if_t<axes_have_value_policies_v<Axes>>> {
-    using axes_value_policy = typename Axes::value_policies;
+template <typename T, typename Components>
+struct value_policies<T, Components, std::enable_if_t<components_have_value_policies_v<Components>>> {
+    using components_value_policy = typename Components::value_policies;
     template <std::size_t N>
-    using value_policy = nth_policy_t<T, Axes, axes_value_policy, N>;
+    using value_policy = nth_policy_t<T, Components, components_value_policy, N>;
 };
 
 template <typename T>

@@ -14,7 +14,7 @@
 
 namespace psst {
 namespace math {
-namespace axes {
+namespace components {
 
 struct argb {
     static constexpr std::size_t min_components = 4;
@@ -139,26 +139,27 @@ struct grayscale_hex {
     static constexpr std::size_t alpha          = a;
 };
 
-}    // namespace axes
+}    // namespace components
 
-namespace axis_access {
+namespace component_access {
 //@{
-/** @name axes::argb axes names */
+/** @name components::argb components names */
 template <typename VectorType, typename T>
-struct axis_access<4, axes::argb, VectorType, T> : basic_axis_access<VectorType, T, axes::argb> {
+struct component_access<4, components::argb, VectorType, T>
+    : basic_component_access<VectorType, T, components::argb> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::argb>;
+    using base_type = basic_component_access<VectorType, T, components::argb>;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha);
-    PSST_MATH_COORD_ACCESS(r)
-    PSST_MATH_COORD_ACCESS(red)
-    PSST_MATH_COORD_ACCESS(g)
-    PSST_MATH_COORD_ACCESS(green)
-    PSST_MATH_COORD_ACCESS(b)
-    PSST_MATH_COORD_ACCESS(blue)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha);
+    PSST_MATH_COMPONENT_ACCESS(r)
+    PSST_MATH_COMPONENT_ACCESS(red)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(green)
+    PSST_MATH_COMPONENT_ACCESS(b)
+    PSST_MATH_COMPONENT_ACCESS(blue)
 
-    constexpr vector<T, 4, axes::rgba>
+    constexpr vector<T, 4, components::rgba>
     rgba() const
     {
         return {r(), g(), b(), a()};
@@ -167,24 +168,26 @@ struct axis_access<4, axes::argb, VectorType, T> : basic_axis_access<VectorType,
 //@}
 
 //@{
-/** @name axes::rgba axes names */
+/** @name components::rgba component names */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::rgba, VectorType, T> : basic_axis_access<VectorType, T, axes::rgba> {
+struct component_access<3, components::rgba, VectorType, T>
+    : basic_component_access<VectorType, T, components::rgba> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::rgba>;
+    using base_type = basic_component_access<VectorType, T, components::rgba>;
 
-    PSST_MATH_COORD_ACCESS(r)
-    PSST_MATH_COORD_ACCESS(red)
-    PSST_MATH_COORD_ACCESS(g)
-    PSST_MATH_COORD_ACCESS(green)
-    PSST_MATH_COORD_ACCESS(b)
-    PSST_MATH_COORD_ACCESS(blue)
+    PSST_MATH_COMPONENT_ACCESS(r)
+    PSST_MATH_COMPONENT_ACCESS(red)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(green)
+    PSST_MATH_COMPONENT_ACCESS(b)
+    PSST_MATH_COMPONENT_ACCESS(blue)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<4, axes::rgba, VectorType, T> : axis_access<3, axes::rgba, VectorType, T> {
+struct component_access<4, components::rgba, VectorType, T>
+    : component_access<3, components::rgba, VectorType, T> {
 
-    using base_type = axis_access<3, axes::rgba, VectorType, T>;
+    using base_type = component_access<3, components::rgba, VectorType, T>;
 
     using base_type::b;
     using base_type::blue;
@@ -193,10 +196,10 @@ struct axis_access<4, axes::rgba, VectorType, T> : axis_access<3, axes::rgba, Ve
     using base_type::r;
     using base_type::red;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 
-    constexpr vector<T, 4, math::axes::argb>
+    constexpr vector<T, 4, math::components::argb>
     argb() const
     {
         return {a(), r(), g(), b()};
@@ -205,26 +208,26 @@ struct axis_access<4, axes::rgba, VectorType, T> : axis_access<3, axes::rgba, Ve
 //@}
 
 //@{
-/** @name axes::rgba axes names */
+/** @name components::rgba component names */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::rgba_hex, VectorType, T>
-    : basic_axis_access<VectorType, T, axes::rgba_hex> {
+struct component_access<3, components::rgba_hex, VectorType, T>
+    : basic_component_access<VectorType, T, components::rgba_hex> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::rgba_hex>;
+    using base_type = basic_component_access<VectorType, T, components::rgba_hex>;
 
-    PSST_MATH_COORD_ACCESS(r)
-    PSST_MATH_COORD_ACCESS(red)
-    PSST_MATH_COORD_ACCESS(g)
-    PSST_MATH_COORD_ACCESS(green)
-    PSST_MATH_COORD_ACCESS(b)
-    PSST_MATH_COORD_ACCESS(blue)
+    PSST_MATH_COMPONENT_ACCESS(r)
+    PSST_MATH_COMPONENT_ACCESS(red)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(green)
+    PSST_MATH_COMPONENT_ACCESS(b)
+    PSST_MATH_COMPONENT_ACCESS(blue)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<4, axes::rgba_hex, VectorType, T>
-    : axis_access<3, axes::rgba_hex, VectorType, T> {
+struct component_access<4, components::rgba_hex, VectorType, T>
+    : component_access<3, components::rgba_hex, VectorType, T> {
 
-    using base_type = axis_access<3, axes::rgba_hex, VectorType, T>;
+    using base_type = component_access<3, components::rgba_hex, VectorType, T>;
 
     using base_type::b;
     using base_type::blue;
@@ -233,29 +236,31 @@ struct axis_access<4, axes::rgba_hex, VectorType, T>
     using base_type::r;
     using base_type::red;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 };
 //@}
 
 //@{
-/** @name axes::hsva axes names */
+/** @name components::hsva component names */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::hsva, VectorType, T> : basic_axis_access<VectorType, T, axes::hsva> {
+struct component_access<3, components::hsva, VectorType, T>
+    : basic_component_access<VectorType, T, components::hsva> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::hsva>;
-    PSST_MATH_COORD_ACCESS(h)
-    PSST_MATH_COORD_ACCESS(hue)
-    PSST_MATH_COORD_ACCESS(s)
-    PSST_MATH_COORD_ACCESS(saturation)
-    PSST_MATH_COORD_ACCESS(v)
-    PSST_MATH_COORD_ACCESS(value)
+    using base_type = basic_component_access<VectorType, T, components::hsva>;
+    PSST_MATH_COMPONENT_ACCESS(h)
+    PSST_MATH_COMPONENT_ACCESS(hue)
+    PSST_MATH_COMPONENT_ACCESS(s)
+    PSST_MATH_COMPONENT_ACCESS(saturation)
+    PSST_MATH_COMPONENT_ACCESS(v)
+    PSST_MATH_COMPONENT_ACCESS(value)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<4, axes::hsva, VectorType, T> : axis_access<3, axes::hsva, VectorType, T> {
+struct component_access<4, components::hsva, VectorType, T>
+    : component_access<3, components::hsva, VectorType, T> {
 
-    using base_type = axis_access<3, axes::hsva, VectorType, T>;
+    using base_type = component_access<3, components::hsva, VectorType, T>;
 
     using base_type::h;
     using base_type::hue;
@@ -264,30 +269,32 @@ struct axis_access<4, axes::hsva, VectorType, T> : axis_access<3, axes::hsva, Ve
     using base_type::v;
     using base_type::value;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 };
 //@}
 
 //@{
-/** @name axes::hsla axes names */
+/** @name components::hsla component names */
 template <typename VectorType, typename T>
-struct axis_access<3, axes::hsla, VectorType, T> : basic_axis_access<VectorType, T, axes::hsla> {
+struct component_access<3, components::hsla, VectorType, T>
+    : basic_component_access<VectorType, T, components::hsla> {
 
-    using base_type = basic_axis_access<VectorType, T, axes::hsla>;
+    using base_type = basic_component_access<VectorType, T, components::hsla>;
 
-    PSST_MATH_COORD_ACCESS(h)
-    PSST_MATH_COORD_ACCESS(hue)
-    PSST_MATH_COORD_ACCESS(s)
-    PSST_MATH_COORD_ACCESS(saturation)
-    PSST_MATH_COORD_ACCESS(l)
-    PSST_MATH_COORD_ACCESS(lightness)
+    PSST_MATH_COMPONENT_ACCESS(h)
+    PSST_MATH_COMPONENT_ACCESS(hue)
+    PSST_MATH_COMPONENT_ACCESS(s)
+    PSST_MATH_COMPONENT_ACCESS(saturation)
+    PSST_MATH_COMPONENT_ACCESS(l)
+    PSST_MATH_COMPONENT_ACCESS(lightness)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<4, axes::hsla, VectorType, T> : axis_access<3, axes::hsla, VectorType, T> {
+struct component_access<4, components::hsla, VectorType, T>
+    : component_access<3, components::hsla, VectorType, T> {
 
-    using base_type = axis_access<3, axes::hsla, VectorType, T>;
+    using base_type = component_access<3, components::hsla, VectorType, T>;
 
     using base_type::h;
     using base_type::hue;
@@ -296,65 +303,66 @@ struct axis_access<4, axes::hsla, VectorType, T> : axis_access<3, axes::hsla, Ve
     using base_type::s;
     using base_type::saturation;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 };
 //@}
 
 //@{
 template <typename VectorType, typename T>
-struct axis_access<1, axes::grayscale, VectorType, T>
-    : basic_axis_access<VectorType, T, axes::grayscale> {
-    using base_type = basic_axis_access<VectorType, T, axes::grayscale>;
+struct component_access<1, components::grayscale, VectorType, T>
+    : basic_component_access<VectorType, T, components::grayscale> {
+    using base_type = basic_component_access<VectorType, T, components::grayscale>;
 
-    PSST_MATH_COORD_ACCESS(g)
-    PSST_MATH_COORD_ACCESS(gray)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(gray)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<2, axes::grayscale, VectorType, T>
-    : axis_access<1, axes::grayscale, VectorType, T> {
-    using base_type = axis_access<1, axes::grayscale, VectorType, T>;
+struct component_access<2, components::grayscale, VectorType, T>
+    : component_access<1, components::grayscale, VectorType, T> {
+    using base_type = component_access<1, components::grayscale, VectorType, T>;
 
     using base_type::g;
     using base_type::grey;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 };
 //@}
 
 //@{
 template <typename VectorType, typename T>
-struct axis_access<1, axes::grayscale_hex, VectorType, T>
-    : basic_axis_access<VectorType, T, axes::grayscale_hex> {
-    using base_type = basic_axis_access<VectorType, T, axes::grayscale_hex>;
+struct component_access<1, components::grayscale_hex, VectorType, T>
+    : basic_component_access<VectorType, T, components::grayscale_hex> {
+    using base_type = basic_component_access<VectorType, T, components::grayscale_hex>;
 
-    PSST_MATH_COORD_ACCESS(g)
-    PSST_MATH_COORD_ACCESS(gray)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(gray)
 };
 
 template <typename VectorType, typename T>
-struct axis_access<2, axes::grayscale_hex, VectorType, T>
-    : axis_access<1, axes::grayscale_hex, VectorType, T> {
-    using base_type = axis_access<1, axes::grayscale_hex, VectorType, T>;
+struct component_access<2, components::grayscale_hex, VectorType, T>
+    : component_access<1, components::grayscale_hex, VectorType, T> {
+    using base_type = component_access<1, components::grayscale_hex, VectorType, T>;
 
     using base_type::g;
     using base_type::grey;
 
-    PSST_MATH_COORD_ACCESS(a)
-    PSST_MATH_COORD_ACCESS(alpha)
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha)
 };
 //@}
 
-}    // namespace axis_access
+}    // namespace component_access
 namespace color {
 
 //@{
 /** @name is_color */
 template <typename T>
-struct is_color : traits::has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla,
-                                     axes::hsva, axes::grayscale, axes::grayscale_hex> {};
+struct is_color : traits::has_components_t<T, components::rgba, components::rgba_hex, components::argb,
+                                     components::hsla, components::hsva, components::grayscale,
+                                     components::grayscale_hex> {};
 template <typename T>
 using is_color_t = typename is_color<T>::type;
 template <typename T>
@@ -362,30 +370,30 @@ constexpr bool is_color_v = is_color_t<T>::value;
 //@}
 
 template <typename T>
-using rgb = vector<T, 3, axes::rgba>;
+using rgb = vector<T, 3, components::rgba>;
 template <typename T>
-using rgba = vector<T, 4, axes::rgba>;
+using rgba = vector<T, 4, components::rgba>;
 
 template <typename T>
-using argb = vector<T, 4, axes::argb>;
+using argb = vector<T, 4, components::argb>;
 
 template <typename T>
-using hsl = vector<T, 3, axes::hsla>;
+using hsl = vector<T, 3, components::hsla>;
 template <typename T>
-using hsla = vector<T, 4, axes::hsla>;
+using hsla = vector<T, 4, components::hsla>;
 
 template <typename T>
-using hsv = vector<T, 3, axes::hsva>;
+using hsv = vector<T, 3, components::hsva>;
 template <typename T>
-using hsva = vector<T, 4, axes::hsva>;
+using hsva = vector<T, 4, components::hsva>;
 
 template <typename T>
-using grayscale = vector<T, 1, axes::grayscale>;
+using grayscale = vector<T, 1, components::grayscale>;
 template <typename T>
-using grayscale_alpha = vector<T, 2, axes::grayscale>;
+using grayscale_alpha = vector<T, 2, components::grayscale>;
 
-using rgb_hex  = vector<std::uint8_t, 3, axes::rgba_hex>;
-using rgba_hex = vector<std::uint8_t, 4, axes::rgba_hex>;
+using rgb_hex  = vector<std::uint8_t, 3, components::rgba_hex>;
+using rgba_hex = vector<std::uint8_t, 4, components::rgba_hex>;
 
 inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
 {
@@ -425,12 +433,12 @@ namespace expr {
 
 inline namespace v {
 
-template <typename Axes, typename Expr>
+template <typename Components, typename Expr>
 struct color_chroma;
 
 template <typename Expr>
-struct color_chroma<axes::hsla, Expr>
-    : unary_scalar_expression_axes<color_chroma, axes::hsla, Expr>, unary_expression<Expr> {
+struct color_chroma<components::hsla, Expr>
+    : unary_scalar_expression_components<color_chroma, components::hsla, Expr>, unary_expression<Expr> {
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -443,8 +451,8 @@ struct color_chroma<axes::hsla, Expr>
 };
 
 template <typename Expr>
-struct color_chroma<axes::hsva, Expr>
-    : unary_scalar_expression_axes<color_chroma, axes::hsva, Expr>, unary_expression<Expr> {
+struct color_chroma<components::hsva, Expr>
+    : unary_scalar_expression_components<color_chroma, components::hsva, Expr>, unary_expression<Expr> {
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -456,12 +464,13 @@ struct color_chroma<axes::hsva, Expr>
     }
 };
 
-template <typename Expr, typename = traits::enable_for_axes<Expr, axes::hsla, axes::hsva>>
+template <typename Expr,
+          typename = traits::enable_for_components<Expr, components::hsla, components::hsva>>
 constexpr auto
 chroma(Expr&& expr)
 {
-    using axes_names = traits::axes_names_t<Expr>;
-    return make_unary_expression<select_unary_impl<axes_names, color_chroma>::template type>(
+    using component_names = traits::component_names_t<Expr>;
+    return make_unary_expression<select_unary_impl<component_names, color_chroma>::template type>(
         std::forward<Expr>(expr));
 }
 
@@ -496,7 +505,7 @@ struct conversion<color::rgba<T>, color::rgba_hex, Expression> : unary_expressio
 //@{
 /** @name HSL -> RGB conversion */
 template <typename T, typename U, std::size_t Size, typename Expression>
-struct conversion<vector<T, Size, axes::hsla>, vector<U, Size, axes::rgba>, Expression>
+struct conversion<vector<T, Size, components::hsla>, vector<U, Size, components::rgba>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -505,7 +514,7 @@ struct conversion<vector<T, Size, axes::hsla>, vector<U, Size, axes::rgba>, Expr
     result() const
     {
         using value_type  = U;
-        using result_type = vector<U, Size, axes::rgba>;
+        using result_type = vector<U, Size, components::rgba>;
         using std::abs;
         using std::fmod;
 
@@ -534,7 +543,7 @@ struct conversion<vector<T, Size, axes::hsla>, vector<U, Size, axes::rgba>, Expr
 //@{
 /** @name RGB -> HSL conversion */
 template <typename T, typename U, std::size_t Size, typename Expression>
-struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsla>, Expression>
+struct conversion<vector<T, Size, components::rgba>, vector<U, Size, components::hsla>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -543,7 +552,7 @@ struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsla>, Expr
     result() const
     {
         using value_type  = U;
-        using result_type = vector<U, Size, axes::hsla>;
+        using result_type = vector<U, Size, components::hsla>;
         using std::abs;
         using std::fmod;
         using std::max;
@@ -581,7 +590,7 @@ struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsla>, Expr
 //@{
 /** @name HSV -> RGB conversion */
 template <typename T, typename U, std::size_t Size, typename Expression>
-struct conversion<vector<T, Size, axes::hsva>, vector<U, Size, axes::rgba>, Expression>
+struct conversion<vector<T, Size, components::hsva>, vector<U, Size, components::rgba>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -590,7 +599,7 @@ struct conversion<vector<T, Size, axes::hsva>, vector<U, Size, axes::rgba>, Expr
     result() const
     {
         using value_type  = U;
-        using result_type = vector<U, Size, axes::rgba>;
+        using result_type = vector<U, Size, components::rgba>;
         using std::abs;
         using std::fmod;
 
@@ -620,7 +629,7 @@ struct conversion<vector<T, Size, axes::hsva>, vector<U, Size, axes::rgba>, Expr
 //@{
 /** @name RGB -> HSL conversion */
 template <typename T, typename U, std::size_t Size, typename Expression>
-struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsva>, Expression>
+struct conversion<vector<T, Size, components::rgba>, vector<U, Size, components::hsva>, Expression>
     : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -629,7 +638,7 @@ struct conversion<vector<T, Size, axes::rgba>, vector<U, Size, axes::hsva>, Expr
     result() const
     {
         using value_type  = U;
-        using result_type = vector<U, Size, axes::hsva>;
+        using result_type = vector<U, Size, components::hsva>;
         using std::abs;
         using std::fmod;
         using std::max;

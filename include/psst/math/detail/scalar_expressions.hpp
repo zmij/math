@@ -47,9 +47,9 @@ private:
 template <template <typename> class Expression, typename Arg,
           typename Result = traits::scalar_expression_result_t<Arg>>
 using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
-template <template <typename, typename> class Expression, typename Axes, typename Arg,
+template <template <typename, typename> class Expression, typename Components, typename Arg,
           typename Result = traits::scalar_expression_result_t<Arg>>
-using unary_scalar_expression_axes = scalar_expression<Expression<Axes, Arg>, Result>;
+using unary_scalar_expression_components = scalar_expression<Expression<Components, Arg>, Result>;
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
           typename Result = traits::scalar_expression_result_t<LHS, RHS>>
 using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
