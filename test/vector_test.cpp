@@ -291,7 +291,7 @@ TEST(Vector, Iteration)
 TEST(Vector, Apply)
 {
     vector3d v1{1, -2, 3};
-    EXPECT_EQ((vector3d{1, 4, 9}), apply(v1, &expr::s::square<float>));
+    EXPECT_EQ((vector3d{1, 4, 9}), apply(v1, expr::s::square<float>));
 }
 
 TEST(Vector, Lerp)
