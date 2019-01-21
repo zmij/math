@@ -5,10 +5,10 @@
  *      Author: sergey.fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_CONVERSION_HPP_
-#define PUSHKIN_MATH_DETAIL_CONVERSION_HPP_
+#ifndef PSST_MATH_DETAIL_CONVERSION_HPP_
+#define PSST_MATH_DETAIL_CONVERSION_HPP_
 
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 namespace psst {
 namespace math {
@@ -108,4 +108,4 @@ convert(Expression&& expr)
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_DETAIL_CONVERSION_HPP_ */
+#endif /* PSST_MATH_DETAIL_CONVERSION_HPP_ */

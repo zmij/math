@@ -5,10 +5,10 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_VECTOR_IO_HPP_
-#define PUSHKIN_MATH_VECTOR_IO_HPP_
+#ifndef PSST_MATH_VECTOR_IO_HPP_
+#define PSST_MATH_VECTOR_IO_HPP_
 
-#include <pushkin/math/vector.hpp>
+#include <psst/math/vector.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -557,4 +557,4 @@ operator>>(std::istream& is, vector<T, Size, Axes>& v)
 }    // namespace math
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_VECTOR_IO_HPP_ */
+#endif /* PSST_MATH_VECTOR_IO_HPP_ */

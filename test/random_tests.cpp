@@ -7,8 +7,8 @@
  */
 
 #include "test_printing.hpp"
-#include <pushkin/math/random.hpp>
-#include <pushkin/math/vector.hpp>
+#include <psst/math/random.hpp>
+#include <psst/math/vector.hpp>
 
 #include <gtest/gtest.h>
 

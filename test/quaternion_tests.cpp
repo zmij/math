@@ -7,7 +7,7 @@
  */
 
 #include "test_printing.hpp"
-#include <pushkin/math/quaternion.hpp>
+#include <psst/math/quaternion.hpp>
 
 #include <gtest/gtest.h>
 

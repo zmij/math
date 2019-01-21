@@ -6,11 +6,11 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_RANDOM_HPP_
-#define PUSHKIN_MATH_RANDOM_HPP_
+#ifndef PSST_MATH_RANDOM_HPP_
+#define PSST_MATH_RANDOM_HPP_
 
-#include <pushkin/math/detail/matrix_expressions.hpp>
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/matrix_expressions.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 #include <chrono>
 #include <random>
@@ -123,4 +123,4 @@ random_matrix_data(Distribution const& d)
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_RANDOM_HPP_ */
+#endif /* PSST_MATH_RANDOM_HPP_ */

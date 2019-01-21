@@ -5,11 +5,11 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_MATRIX_IO_HPP_
-#define PUSHKIN_MATH_MATRIX_IO_HPP_
+#ifndef PSST_MATH_MATRIX_IO_HPP_
+#define PSST_MATH_MATRIX_IO_HPP_
 
-#include <pushkin/math/matrix.hpp>
-#include <pushkin/math/vector_io.hpp>
+#include <psst/math/matrix.hpp>
+#include <psst/math/vector_io.hpp>
 
 #include <iostream>
 
@@ -129,4 +129,4 @@ operator>>(std::istream& is, matrix<T, RC, CC, Axes>& mtx)
 }    // namespace math
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_MATRIX_IO_HPP_ */
+#endif /* PSST_MATH_MATRIX_IO_HPP_ */

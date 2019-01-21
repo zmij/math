@@ -5,12 +5,12 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
-#define PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
+#ifndef PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
+#define PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
 
-#include <pushkin/math/detail/axis_access.hpp>
-#include <pushkin/math/detail/expressions.hpp>
-#include <pushkin/math/detail/scalar_expressions.hpp>
+#include <psst/math/detail/axis_access.hpp>
+#include <psst/math/detail/expressions.hpp>
+#include <psst/math/detail/scalar_expressions.hpp>
 
 #include <stdexcept>
 
@@ -721,4 +721,4 @@ slerp(Start&& start, End&& end, U&& percent)
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_ */
+#endif /* PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_ */

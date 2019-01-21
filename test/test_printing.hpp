@@ -8,8 +8,8 @@
 #ifndef TEST_PRINTING_HPP_
 #define TEST_PRINTING_HPP_
 
-#include <pushkin/math/matrix_io.hpp>
-#include <pushkin/math/vector_io.hpp>
+#include <psst/math/matrix_io.hpp>
+#include <psst/math/vector_io.hpp>
 
 namespace psst {
 namespace math {

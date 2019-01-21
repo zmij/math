@@ -6,10 +6,10 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_QUATERNION_HPP_
-#define PUSHKIN_MATH_QUATERNION_HPP_
+#ifndef PSST_MATH_QUATERNION_HPP_
+#define PSST_MATH_QUATERNION_HPP_
 
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 namespace psst {
 namespace math {
@@ -239,4 +239,4 @@ using quaternion = vector<T, 4, axes::wxyz>;
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_QUATERNION_HPP_ */
+#endif /* PSST_MATH_QUATERNION_HPP_ */

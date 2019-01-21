@@ -6,10 +6,10 @@
  */
 
 #include "make_test_data.hpp"
-#include <pushkin/math/matrix.hpp>
-#include <pushkin/math/matrix_io.hpp>
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/vector_io.hpp>
+#include <psst/math/matrix.hpp>
+#include <psst/math/matrix_io.hpp>
+#include <psst/math/vector.hpp>
+#include <psst/math/vector_io.hpp>
 
 #include <benchmark/benchmark.h>
 

@@ -6,12 +6,12 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_CYLINDRICAL_COORD_HPP_
-#define PUSHKIN_MATH_CYLINDRICAL_COORD_HPP_
+#ifndef PSST_MATH_CYLINDRICAL_COORD_HPP_
+#define PSST_MATH_CYLINDRICAL_COORD_HPP_
 
-#include <pushkin/math/angles.hpp>
-#include <pushkin/math/detail/conversion.hpp>
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/angles.hpp>
+#include <psst/math/detail/conversion.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 namespace psst {
 namespace math {
@@ -164,4 +164,4 @@ using cylindrical_coord = vector<T, 3, axes::cylindrical>;
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_CYLINDRICAL_COORD_HPP_ */
+#endif /* PSST_MATH_CYLINDRICAL_COORD_HPP_ */

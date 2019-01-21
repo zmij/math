@@ -5,10 +5,10 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_
-#define PUSHKIN_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_
+#ifndef PSST_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_
+#define PSST_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_
 
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 // Undefine minor macro that comes with some libc libraries
 #ifdef minor
@@ -1072,4 +1072,4 @@ det(Expr&& expr)
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_ */
+#endif /* PSST_MATH_DETAIL_MATRIX_EXPRESSIONS_HPP_ */

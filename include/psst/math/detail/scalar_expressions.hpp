@@ -5,10 +5,10 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_
-#define PUSHKIN_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_
+#ifndef PSST_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_
+#define PSST_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_
 
-#include <pushkin/math/detail/expressions.hpp>
+#include <psst/math/detail/expressions.hpp>
 
 #include <cmath>
 
@@ -494,4 +494,4 @@ sum_of_squares(T&&... v)
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_ */
+#endif /* PSST_MATH_DETAIL_SCALAR_EXPRESSIONS_HPP_ */

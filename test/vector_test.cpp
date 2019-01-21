@@ -6,11 +6,11 @@
  */
 
 #include "test_printing.hpp"
-#include <pushkin/math/coordinate_conversion.hpp>
-#include <pushkin/math/cylindrical_coord.hpp>
-#include <pushkin/math/polar_coord.hpp>
-#include <pushkin/math/spherical_coord.hpp>
-#include <pushkin/math/vector.hpp>
+#include <psst/math/coordinate_conversion.hpp>
+#include <psst/math/cylindrical_coord.hpp>
+#include <psst/math/polar_coord.hpp>
+#include <psst/math/spherical_coord.hpp>
+#include <psst/math/vector.hpp>
 
 #include <gtest/gtest.h>
 

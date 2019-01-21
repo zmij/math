@@ -6,7 +6,7 @@
  *      Author: ser-fedorov
  */
 
-#include "../include/pushkin/math/detail/value_policy.hpp"
+#include <psst/math/detail/value_policy.hpp>
 
 #include <gtest/gtest.h>
 

@@ -5,12 +5,12 @@
  *      Author: sergey.fedorov
  */
 
-#ifndef INCLUDE_PUSHKIN_MATH_DETAIL_VALUE_TRAITS_HPP_
-#define INCLUDE_PUSHKIN_MATH_DETAIL_VALUE_TRAITS_HPP_
+#ifndef PSST_MATH_DETAIL_VALUE_TRAITS_HPP_
+#define PSST_MATH_DETAIL_VALUE_TRAITS_HPP_
 
-#include <pushkin/math/detail/utils.hpp>
-#include <pushkin/math/matrix_fwd.hpp>
-#include <pushkin/math/vector_fwd.hpp>
+#include <psst/math/detail/utils.hpp>
+#include <psst/math/matrix_fwd.hpp>
+#include <psst/math/vector_fwd.hpp>
 
 #include <type_traits>
 
@@ -760,4 +760,4 @@ using enable_if_dot_product_defined = std::enable_if_t<dot_product_defined_v<T, 
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* INCLUDE_PUSHKIN_MATH_DETAIL_VALUE_TRAITS_HPP_ */
+#endif /* PSST_MATH_DETAIL_VALUE_TRAITS_HPP_ */

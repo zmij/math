@@ -6,14 +6,14 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_COORDINATE_CONVERSION_HPP_
-#define PUSHKIN_MATH_COORDINATE_CONVERSION_HPP_
+#ifndef PSST_MATH_COORDINATE_CONVERSION_HPP_
+#define PSST_MATH_COORDINATE_CONVERSION_HPP_
 
-#include <pushkin/math/cylindrical_coord.hpp>
-#include <pushkin/math/detail/conversion.hpp>
-#include <pushkin/math/polar_coord.hpp>
-#include <pushkin/math/spherical_coord.hpp>
-#include <pushkin/math/vector.hpp>
+#include <psst/math/cylindrical_coord.hpp>
+#include <psst/math/detail/conversion.hpp>
+#include <psst/math/polar_coord.hpp>
+#include <psst/math/spherical_coord.hpp>
+#include <psst/math/vector.hpp>
 
 namespace psst::math {
 namespace expr {
@@ -259,4 +259,4 @@ struct conversion<vector<T, 3, axes::spherical>, vector<U, 3, axes::cylindrical>
 }    // namespace expr
 }    // namespace psst::math
 
-#endif /* PUSHKIN_MATH_COORDINATE_CONVERSION_HPP_ */
+#endif /* PSST_MATH_COORDINATE_CONVERSION_HPP_ */

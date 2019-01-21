@@ -5,12 +5,12 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_MATRIX_HPP_
-#define PUSHKIN_MATH_MATRIX_HPP_
+#ifndef PSST_MATH_MATRIX_HPP_
+#define PSST_MATH_MATRIX_HPP_
 
-#include <pushkin/math/detail/axis_access.hpp>
-#include <pushkin/math/detail/matrix_expressions.hpp>
-#include <pushkin/math/vector.hpp>
+#include <psst/math/detail/axis_access.hpp>
+#include <psst/math/detail/matrix_expressions.hpp>
+#include <psst/math/vector.hpp>
 
 #include <cassert>
 

@@ -8,8 +8,8 @@
 #ifndef BENCHMARK_MAKE_TEST_DATA_HPP_
 #define BENCHMARK_MAKE_TEST_DATA_HPP_
 
-#include <pushkin/math/matrix.hpp>
-#include <pushkin/math/vector.hpp>
+#include <psst/math/matrix.hpp>
+#include <psst/math/vector.hpp>
 
 namespace psst {
 namespace math {

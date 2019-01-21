@@ -5,8 +5,8 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_UTILS_HPP_
-#define PUSHKIN_MATH_DETAIL_UTILS_HPP_
+#ifndef PSST_MATH_DETAIL_UTILS_HPP_
+#define PSST_MATH_DETAIL_UTILS_HPP_
 
 #include <limits>
 #include <type_traits>
@@ -152,4 +152,4 @@ struct template_tuple<> {
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_DETAIL_UTILS_HPP_ */
+#endif /* PSST_MATH_DETAIL_UTILS_HPP_ */

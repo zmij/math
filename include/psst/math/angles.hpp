@@ -5,10 +5,10 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_ANGLES_HPP_
-#define PUSHKIN_MATH_ANGLES_HPP_
+#ifndef PSST_MATH_ANGLES_HPP_
+#define PSST_MATH_ANGLES_HPP_
 
-#include <pushkin/math/detail/value_policy.hpp>
+#include <psst/math/detail/value_policy.hpp>
 
 #include <cmath>
 
@@ -91,4 +91,4 @@ using clamp_minus_plus_half_pi = value_clamp<T, minus_plus_half_pi<T>>;
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_ANGLES_HPP_ */
+#endif /* PSST_MATH_ANGLES_HPP_ */

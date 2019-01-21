@@ -36,7 +36,7 @@ target_link_libraries(
 if (GTEST_XML_OUTPUT)
     set (
         TEST_ARGS
-        --gtest_output=xml:test-pushkin-math-detail.xml
+        --gtest_output=xml:test-psst-math-detail.xml
     )
 endif()
 

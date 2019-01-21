@@ -6,10 +6,10 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_VECTOR_VIEW_HPP_
-#define PUSHKIN_MATH_VECTOR_VIEW_HPP_
+#ifndef PSST_MATH_VECTOR_VIEW_HPP_
+#define PSST_MATH_VECTOR_VIEW_HPP_
 
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 #include <iterator>
 
@@ -478,7 +478,7 @@ make_memory_vector_view(char const* buffer, std::size_t buffer_size)
 
 #ifdef __METASHELL
 
-#    include <pushkin/math/colors.hpp>
+#    include <psst/math/colors.hpp>
 
 using namespace psst::math;
 
@@ -505,4 +505,4 @@ rgba_const_view_f rgba_cv{fp};
 
 #endif
 
-#endif /* PUSHKIN_MATH_VECTOR_VIEW_HPP_ */
+#endif /* PSST_MATH_VECTOR_VIEW_HPP_ */

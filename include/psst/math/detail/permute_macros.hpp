@@ -5,8 +5,8 @@
  *      Author: sergey.fedorov
  */
 
-#ifndef INCLUDE_PUSHKIN_MATH_DETAIL_PERMUTE_MACROS_HPP_
-#define INCLUDE_PUSHKIN_MATH_DETAIL_PERMUTE_MACROS_HPP_
+#ifndef PSST_MATH_DETAIL_PERMUTE_MACROS_HPP_
+#define PSST_MATH_DETAIL_PERMUTE_MACROS_HPP_
 
 #define PSST_MATH_COORD_ACCESS(name)                                            \
     template <typename _T = typename base_type::expression_type,                \
@@ -98,4 +98,4 @@
     PSST_MATH_COORD_PERM4(names, c, d, a, b)             \
     PSST_MATH_COORD_PERM4(names, d, a, b, c)
 
-#endif /* INCLUDE_PUSHKIN_MATH_DETAIL_PERMUTE_MACROS_HPP_ */
+#endif /* PSST_MATH_DETAIL_PERMUTE_MACROS_HPP_ */

@@ -6,11 +6,11 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_COLORS_HPP_
-#define PUSHKIN_MATH_COLORS_HPP_
+#ifndef PSST_MATH_COLORS_HPP_
+#define PSST_MATH_COLORS_HPP_
 
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/vector_io.hpp>
+#include <psst/math/vector.hpp>
+#include <psst/math/vector_io.hpp>
 
 namespace psst {
 namespace math {
@@ -683,4 +683,4 @@ operator<<(std::ostream& os, color::rgba_hex const& val)
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_COLORS_HPP_ */
+#endif /* PSST_MATH_COLORS_HPP_ */

@@ -6,10 +6,10 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_VALUE_POLICY_HPP_
-#define PUSHKIN_MATH_DETAIL_VALUE_POLICY_HPP_
+#ifndef PSST_MATH_DETAIL_VALUE_POLICY_HPP_
+#define PSST_MATH_DETAIL_VALUE_POLICY_HPP_
 
-#include <pushkin/math/detail/utils.hpp>
+#include <psst/math/detail/utils.hpp>
 
 namespace psst {
 namespace math {
@@ -219,4 +219,4 @@ using clamp_minus_one_to_one = value_clamp<T, minus_one_to_one<T>>;
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_DETAIL_VALUE_POLICY_HPP_ */
+#endif /* PSST_MATH_DETAIL_VALUE_POLICY_HPP_ */

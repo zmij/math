@@ -5,12 +5,12 @@
  *      Author: sergey.fedorov
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_AXIS_ACCESS_HPP_
-#define PUSHKIN_MATH_DETAIL_AXIS_ACCESS_HPP_
+#ifndef PSST_MATH_DETAIL_AXIS_ACCESS_HPP_
+#define PSST_MATH_DETAIL_AXIS_ACCESS_HPP_
 
-#include <pushkin/math/detail/permute_macros.hpp>
-#include <pushkin/math/detail/value_policy.hpp>
-#include <pushkin/math/detail/value_traits.hpp>
+#include <psst/math/detail/permute_macros.hpp>
+#include <psst/math/detail/value_policy.hpp>
+#include <psst/math/detail/value_traits.hpp>
 
 #include <cstddef>
 #include <type_traits>
@@ -152,4 +152,4 @@ using axes_names_t = typename axes_names<Axes>::template type<Size, VectorType, 
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* PUSHKIN_MATH_DETAIL_AXIS_ACCESS_HPP_ */
+#endif /* PSST_MATH_DETAIL_AXIS_ACCESS_HPP_ */

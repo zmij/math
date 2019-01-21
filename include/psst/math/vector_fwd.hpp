@@ -5,10 +5,10 @@
  *      Author: sergey.fedorov
  */
 
-#ifndef INCLUDE_PUSHKIN_MATH_VECTOR_FWD_HPP_
-#define INCLUDE_PUSHKIN_MATH_VECTOR_FWD_HPP_
+#ifndef PSST_MATH_VECTOR_FWD_HPP_
+#define PSST_MATH_VECTOR_FWD_HPP_
 
-#include <pushkin/math/axes.hpp>
+#include <psst/math/axes.hpp>
 
 namespace psst {
 namespace math {
@@ -30,4 +30,4 @@ struct vector_view;
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* INCLUDE_PUSHKIN_MATH_VECTOR_FWD_HPP_ */
+#endif /* PSST_MATH_VECTOR_FWD_HPP_ */

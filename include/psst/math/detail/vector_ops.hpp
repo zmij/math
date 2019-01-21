@@ -5,11 +5,11 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_DETAIL_VECTOR_OPS_HPP_
-#define PUSHKIN_MATH_DETAIL_VECTOR_OPS_HPP_
+#ifndef PSST_MATH_DETAIL_VECTOR_OPS_HPP_
+#define PSST_MATH_DETAIL_VECTOR_OPS_HPP_
 
-#include <pushkin/math/angles.hpp>
-#include <pushkin/math/detail/vector_expressions.hpp>
+#include <psst/math/angles.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
 
 namespace psst {
 namespace math {
@@ -142,4 +142,4 @@ private:
 } /* namespace math */
 } /* namespace psst */
 
-#endif /* INCLUDE_PUSHKIN_MATH_DETAIL_CALCULUS_HPP_ */
+#endif /* PSST_MATH_DETAIL_CALCULUS_HPP_ */

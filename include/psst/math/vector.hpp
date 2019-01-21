@@ -5,12 +5,12 @@
  *      Author: zmij
  */
 
-#ifndef PUSHKIN_MATH_VECTOR_HPP_
-#define PUSHKIN_MATH_VECTOR_HPP_
+#ifndef PSST_MATH_VECTOR_HPP_
+#define PSST_MATH_VECTOR_HPP_
 
-#include <pushkin/math/detail/conversion.hpp>
-#include <pushkin/math/detail/vector_expressions.hpp>
-#include <pushkin/math/detail/vector_ops.hpp>
+#include <psst/math/detail/conversion.hpp>
+#include <psst/math/detail/vector_expressions.hpp>
+#include <psst/math/detail/vector_ops.hpp>
 
 #include <assert.h>
 
@@ -237,11 +237,11 @@ project(vector<T, Size, Axes> const& n, vector<T, Size, Axes> const& v)
 #ifdef __METASHELL
 // Some definitions for debugging templates, not to input them
 // every time the metashell starts
-#    include <pushkin/math/colors.hpp>
-#    include <pushkin/math/cylindrical_coord.hpp>
-#    include <pushkin/math/polar_coord.hpp>
-#    include <pushkin/math/quaternion.hpp>
-#    include <pushkin/math/spherical_coord.hpp>
+#    include <psst/math/colors.hpp>
+#    include <psst/math/cylindrical_coord.hpp>
+#    include <psst/math/polar_coord.hpp>
+#    include <psst/math/quaternion.hpp>
+#    include <psst/math/spherical_coord.hpp>
 using namespace psst::math;
 
 using vec3f  = vector<float, 3>;
@@ -270,4 +270,4 @@ cylindrical_f c_1;
 
 #endif
 
-#endif /* PUSHKIN_MATH_VECTOR_HPP_ */
+#endif /* PSST_MATH_VECTOR_HPP_ */

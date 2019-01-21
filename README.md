@@ -1,4 +1,4 @@
-pushkin-math
+Psst! Math
 ====
 
 [![Build Status](https://travis-ci.org/zmij/math.svg?branch=develop)](https://travis-ci.org/zmij/math)
@@ -15,14 +15,14 @@ Library provides easy syntax for declaring, assigning vectors and matrices and m
 
 ```C++
 // Vector
-#include <pushkin/math/vector.hpp>
+#include <psst/math/vector.hpp>
 
 using vector3d = psst::math::vector<float, 3>;
 
 vector3d p1{1, 2, 1.5}, p2{2, 3, 5.4};
 
 // Matrix
-#include <pushkin/math/matrix.hpp>
+#include <psst/math/matrix.hpp>
 
 using matrix3x3 = psst::math::matrix<float, 3, 3>;
 
@@ -87,8 +87,8 @@ auto a = m1[2].z();
 m1[1].y() = 8;
 ```
 
-
 ##### Operations
+
 ```C++
 // Vector
 vector3d v3 = v1 + v2;  // vector sum
@@ -160,8 +160,8 @@ vector3d v5 = as_row_matrix(v1) * m1; // vector by matrix multiplication
 
 ```C++
 #include <iostream>
-#include <pushkin/math/vector_io.hpp>
-#include <pushkin/math/matrix_io.hpp>
+#include <psst/math/vector_io.hpp>
+#include <psst/math/matrix_io.hpp>
 
 namespace io = psst::math::io;
 
@@ -183,7 +183,7 @@ std::cout << io::pretty << m1 << io::ugly << "\n";
 A memory buffer can be accessed as a container of vectors with certain properties (size, axes). A constant buffer can be used to read data in a structured manner, a non-costant buffer can be used to modify data in the buffer via `vector_view` and `memory_vector_view` utility classes. A `vector_view` is for reading a single element, `memory_vector_view` is for using a buffer as a 'container' of vectors.
 
 ```C++
-#include <pushkin/math/vector_view.hpp>
+#include <psst/math/vector_view.hpp>
 
 using namespace psst::math;
 
@@ -217,7 +217,7 @@ for (auto mv : mem_view) {
 The libbrary provides quaternions and operations with them, such as sum, substraction, multiplication and division by scalar, quaternion multiplication, magnitude, normalize, conjugate and inverse functions. Components of a quaternion are accessible via `w()`, `x()`, `y()` and `z()` accessors, where `w()` is the real part and `x()`, `y()` and `z()` are coefficients for i, j and k respectively. Also, the scalar part is accessible via `scalar_part()` member function, and the vector part is accessible via `vector_part()`.
 
 ```C++
-#include <pushkin/math/quaternion.hpp>
+#include <psst/math/quaternion.hpp>
 
 using quat = psst::math::quaternion<double>;
 
@@ -240,7 +240,7 @@ auto i = inverse(q2);
 #### Example of Using Quaternions for Rotation
 
 ```C++
-#include <pushkin/math/quaternion.hpp>
+#include <psst/math/quaternion.hpp>
 
 using quat = psst::math::quaternion<double>;
 using vec3 = psst::math::std::vector<double, 3>;
@@ -284,9 +284,9 @@ Conversion is defined for:
 * spherical <-> cylindrical
 
 ```C++
-#include <pushkin/math/polar_coord.hpp>
-#include <pushkin/math/spherical_coord.hpp>
-#include <pushkin/math/cylindrical_coord.hpp>
+#include <psst/math/polar_coord.hpp>
+#include <psst/math/spherical_coord.hpp>
+#include <psst/math/cylindrical_coord.hpp>
 
 using polar_c       = psst::math::polar_coord<double>;
 using spherical_c   = psst::math::spherical_coord<double>
@@ -332,7 +332,7 @@ Conversions are defined for:
 * RGB <-> HSV
 
 ```C++
-#include <pushkin/math/colors.hpp>
+#include <psst/math/colors.hpp>
 
 using rgba = psst::math::colors::rgba<float>;
 using hsla = psst::math::colors::hsla<float>;

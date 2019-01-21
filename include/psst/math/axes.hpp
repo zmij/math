@@ -6,8 +6,8 @@
  *      Author: ser-fedorov
  */
 
-#ifndef PUSHKIN_MATH_AXES_HPP_
-#define PUSHKIN_MATH_AXES_HPP_
+#ifndef PSST_MATH_AXES_HPP_
+#define PSST_MATH_AXES_HPP_
 
 #include <cstddef>
 #include <limits>
@@ -75,4 +75,4 @@ struct undefined<none> : std::true_type {};
 }    // namespace math
 }    // namespace psst
 
-#endif /* PUSHKIN_MATH_AXES_HPP_ */
+#endif /* PSST_MATH_AXES_HPP_ */

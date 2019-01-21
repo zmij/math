@@ -7,7 +7,7 @@
  */
 
 #include "test_printing.hpp"
-#include <pushkin/math/colors.hpp>
+#include <psst/math/colors.hpp>
 
 #include <gtest/gtest.h>
 

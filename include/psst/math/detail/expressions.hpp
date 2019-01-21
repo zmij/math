@@ -1,9 +1,9 @@
-#ifndef PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
-#define PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_
+#ifndef PSST_MATH_DETAIL_EXPRESSIONS_HPP_
+#define PSST_MATH_DETAIL_EXPRESSIONS_HPP_
 
-#include <pushkin/math/detail/utils.hpp>
-#include <pushkin/math/detail/value_traits.hpp>
-#include <pushkin/math/vector_fwd.hpp>
+#include <psst/math/detail/utils.hpp>
+#include <psst/math/detail/value_traits.hpp>
+#include <psst/math/vector_fwd.hpp>
 
 #include <cmath>
 #include <tuple>
@@ -243,4 +243,4 @@ struct select_n_ary_impl {
 }    // namespace math
 }    // namespace psst
 
-#endif /* PSST_MATH_DETAIL_VECTOR_EXPRESSIONS_HPP_ */
+#endif /* PSST_MATH_DETAIL_EXPRESSIONS_HPP_ */

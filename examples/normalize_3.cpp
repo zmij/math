@@ -1,5 +1,5 @@
-#include <pushkin/math/vector.hpp>
-#include <pushkin/math/vector_io.hpp>
+#include <psst/math/vector.hpp>
+#include <psst/math/vector_io.hpp>
 
 #include <cstring>
 #include <iostream>
