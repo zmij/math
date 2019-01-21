@@ -24,23 +24,25 @@ inline namespace v {
 template <typename Expression, typename Result = Expression>
 struct vector_expression
     : math::detail::component_names_t<traits::value_traits_t<Result>::size,
-                                 typename traits::value_traits_t<Result>::component_names, Expression,
-                                 typename traits::value_traits_t<Result>::value_type> {
+                                      typename traits::value_traits_t<Result>::component_names,
+                                      Expression,
+                                      typename traits::value_traits_t<Result>::value_type> {
     static_assert(traits::is_vector_v<Result>, "Result of vector expression must be a vector");
     using expression_type     = Expression;
     using result_type         = Result;
     using traits              = traits::value_traits_t<result_type>;
     using value_type          = typename traits::value_type;
     using value_tag           = typename traits::value_tag;
-    using component_names          = typename traits::component_names;
+    using component_names     = typename traits::component_names;
     using index_sequence_type = typename traits::index_sequence_type;
-    using component_access = math::detail::component_names_t<traits::size, typename traits::component_names,
-                                                   Expression, typename traits::value_type>;
+    using component_access
+        = math::detail::component_names_t<traits::size, typename traits::component_names,
+                                          Expression, typename traits::value_type>;
 
     static constexpr auto size = traits::size;
-    static_assert(
-        size <= component_names::max_components,
-        "The number of components in vector expression is greater than allowed by components names");
+    static_assert(size <= component_names::max_components,
+                  "The number of components in vector expression is greater than allowed by "
+                  "components names");
     static_assert(
         size >= component_names::min_components,
         "The number of components in vector expression is less than allowed by components names");
@@ -56,9 +58,11 @@ using unary_vector_expression_components = vector_expression<Expression<Componen
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
           typename Result = traits::vector_expression_result_t<LHS, RHS>>
 using binary_vector_expression = vector_expression<Expression<LHS, RHS>, Result>;
-template <template <typename, typename, typename> class Expression, typename Components, typename LHS,
-          typename RHS, typename Result = traits::vector_expression_result_t<LHS, RHS>>
-using binary_vector_expression_components = vector_expression<Expression<Components, LHS, RHS>, Result>;
+template <template <typename, typename, typename> class Expression, typename Components,
+          typename LHS, typename RHS,
+          typename Result = traits::vector_expression_result_t<LHS, RHS>>
+using binary_vector_expression_components
+    = vector_expression<Expression<Components, LHS, RHS>, Result>;
 
 template <std::size_t N, typename Expression,
           typename = traits::enable_if_vector_expression<Expression>>
@@ -284,8 +288,10 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
           typename = traits::enable_for_compatible_components<LHS, RHS>,
-          typename = traits::disable_for_components<LHS, components::polar, components::spherical, components::cylindrical>,
-          typename = traits::disable_for_components<RHS, components::polar, components::spherical, components::cylindrical>>
+          typename = traits::disable_for_components<LHS, components::polar, components::spherical,
+                                                    components::cylindrical>,
+          typename = traits::disable_for_components<RHS, components::polar, components::spherical,
+                                                    components::cylindrical>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -315,8 +321,10 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
           typename = traits::enable_for_compatible_components<LHS, RHS>,
-          typename = traits::disable_for_components<LHS, components::polar, components::spherical, components::cylindrical>,
-          typename = traits::disable_for_components<RHS, components::polar, components::spherical, components::cylindrical>>
+          typename = traits::disable_for_components<LHS, components::polar, components::spherical,
+                                                    components::cylindrical>,
+          typename = traits::disable_for_components<RHS, components::polar, components::spherical,
+                                                    components::cylindrical>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -331,7 +339,8 @@ template <typename Components, typename LHS, typename RHS>
 struct vector_scalar_multiply
     : binary_vector_expression_components<vector_scalar_multiply, Components, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_components<vector_scalar_multiply, Components, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_components<vector_scalar_multiply, Components, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -356,7 +365,8 @@ template <typename LHS, typename RHS>
 struct vector_vector_multiply<components::xyzw, LHS, RHS>
     : binary_vector_expression_components<vector_vector_multiply, components::xyzw, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type = binary_vector_expression_components<vector_vector_multiply, components::xyzw, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_components<vector_vector_multiply, components::xyzw, LHS, RHS>;
     static_assert(
         base_type::size == 3,
         "Vector cross product is defined only for 3 and 7 dimensions, implemented only for 3");
@@ -408,8 +418,9 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
         traits::is_vector_expression_v<
             LHS> && traits::is_vector_expression_v<RHS> && traits::same_components_v<LHS, RHS>) {
         using component_names = traits::component_names_t<RHS>;
-        static_assert((utils::is_decl_complete_v<vector_vector_multiply<component_names, LHS, RHS>>),
-                      "Vector multiplication is not defined for this components");
+        static_assert(
+            (utils::is_decl_complete_v<vector_vector_multiply<component_names, LHS, RHS>>),
+            "Vector multiplication is not defined for this components");
         return make_binary_expression<
             select_binary_impl<component_names, vector_vector_multiply>::template type>(
             std::forward<LHS>(lhs), std::forward<RHS>(rhs));
@@ -421,9 +432,11 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 //@{
 /** @name Division of a vector by a scalar expression */
 template <typename Components, typename LHS, typename RHS>
-struct vector_scalar_divide : binary_vector_expression_components<vector_scalar_divide, Components, LHS, RHS>,
-                              binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_components<vector_scalar_divide, Components, LHS, RHS>;
+struct vector_scalar_divide
+    : binary_vector_expression_components<vector_scalar_divide, Components, LHS, RHS>,
+      binary_expression<LHS, RHS> {
+    using base_type
+        = binary_vector_expression_components<vector_scalar_divide, Components, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -653,8 +666,10 @@ private:
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
           typename = traits::enable_for_compatible_components<LHS, RHS>,
-          typename = traits::disable_for_components<LHS, components::polar, components::spherical, components::cylindrical>,
-          typename = traits::disable_for_components<RHS, components::polar, components::spherical, components::cylindrical>>
+          typename = traits::disable_for_components<LHS, components::polar, components::spherical,
+                                                    components::cylindrical>,
+          typename = traits::disable_for_components<RHS, components::polar, components::spherical,
+                                                    components::cylindrical>>
 constexpr auto
 dot_product(LHS&& lhs, RHS&& rhs)
 {

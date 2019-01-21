@@ -62,8 +62,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_multiply<components::spherical, LHS, RHS>
     : binary_vector_expression_components<vector_scalar_multiply, components::spherical, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type
-        = binary_vector_expression_components<vector_scalar_multiply, components::spherical, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_multiply,
+                                                          components::spherical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -90,8 +90,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_divide<components::spherical, LHS, RHS>
     : binary_vector_expression_components<vector_scalar_divide, components::spherical, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type
-        = binary_vector_expression_components<vector_scalar_divide, components::spherical, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_divide,
+                                                          components::spherical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -158,7 +158,8 @@ template <typename Expr>
 struct vector_normalize<components::spherical, Expr>
     : unary_vector_expression_components<vector_normalize, components::spherical, Expr>,
       unary_expression<Expr> {
-    using base_type       = unary_vector_expression_components<vector_normalize, components::spherical, Expr>;
+    using base_type
+        = unary_vector_expression_components<vector_normalize, components::spherical, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;

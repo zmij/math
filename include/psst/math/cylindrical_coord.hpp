@@ -58,10 +58,11 @@ inline namespace v {
 /** @name Vector scalar muliply for spherical coordinates */
 template <typename LHS, typename RHS>
 struct vector_scalar_multiply<components::cylindrical, LHS, RHS>
-    : binary_vector_expression_components<vector_scalar_multiply, components::cylindrical, LHS, RHS>,
+    : binary_vector_expression_components<vector_scalar_multiply, components::cylindrical, LHS,
+                                          RHS>,
       binary_expression<LHS, RHS> {
-    using base_type
-        = binary_vector_expression_components<vector_scalar_multiply, components::cylindrical, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_multiply,
+                                                          components::cylindrical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -72,7 +73,8 @@ struct vector_scalar_multiply<components::cylindrical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector multiply element index is out of range");
-        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho
+                      || N == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is multiplied
             return this->lhs_.template at<N>() * this->rhs_;
         } else {
@@ -88,8 +90,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_divide<components::cylindrical, LHS, RHS>
     : binary_vector_expression_components<vector_scalar_divide, components::cylindrical, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type
-        = binary_vector_expression_components<vector_scalar_divide, components::cylindrical, LHS, RHS>;
+    using base_type  = binary_vector_expression_components<vector_scalar_divide,
+                                                          components::cylindrical, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -100,7 +102,8 @@ struct vector_scalar_divide<components::cylindrical, LHS, RHS>
     at() const
     {
         static_assert(N < base_type::size, "Vector divide element index is out of range");
-        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho
+                      || N == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is divided
             return this->lhs_.template at<N>() / this->rhs_;
         } else {
@@ -136,7 +139,8 @@ template <typename Expr>
 struct vector_normalize<components::cylindrical, Expr>
     : unary_vector_expression_components<vector_normalize, components::cylindrical, Expr>,
       unary_expression<Expr> {
-    using base_type       = unary_vector_expression_components<vector_normalize, components::cylindrical, Expr>;
+    using base_type
+        = unary_vector_expression_components<vector_normalize, components::cylindrical, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -146,7 +150,8 @@ struct vector_normalize<components::cylindrical, Expr>
     at() const
     {
         static_assert(N < base_type::size, "Vector normalize component index is out of range");
-        if constexpr (N == components::cylindrical::rho || N == components::cylindrical::elevation) {
+        if constexpr (N == components::cylindrical::rho
+                      || N == components::cylindrical::elevation) {
             return this->arg_.template at<N>() / magnitude(this->arg_);
         } else {
             return this->arg_.template at<N>();

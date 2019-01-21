@@ -48,7 +48,8 @@ namespace component_access {
 //@{
 /** @name wxyz components names */
 template <typename VectorType, typename T>
-struct component_access<4, components::wxyz, VectorType, T> : basic_component_access<VectorType, T, components::wxyz> {
+struct component_access<4, components::wxyz, VectorType, T>
+    : basic_component_access<VectorType, T, components::wxyz> {
 
     using base_type = basic_component_access<VectorType, T, components::wxyz>;
 
@@ -86,12 +87,13 @@ struct quaternion_scalar_part : unary_scalar_expression<quaternion_scalar_part, 
 
 template <typename Expr>
 struct quaternion_vector_part
-    : unary_vector_expression<quaternion_vector_part, Expr,
-                              vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>,
+    : unary_vector_expression<
+          quaternion_vector_part, Expr,
+          vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>,
       unary_expression<Expr> {
-    using base_type
-        = unary_vector_expression<quaternion_vector_part, Expr,
-                                  vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>;
+    using base_type = unary_vector_expression<
+        quaternion_vector_part, Expr,
+        vector<traits::scalar_expression_result_t<Expr>, 3, components::xyzw>>;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -108,7 +110,8 @@ template <typename LHS, typename RHS>
 struct vector_vector_multiply<components::wxyz, LHS, RHS>
     : binary_vector_expression_components<vector_vector_multiply, components::wxyz, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type = binary_vector_expression_components<vector_vector_multiply, components::wxyz, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_components<vector_vector_multiply, components::wxyz, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
@@ -142,9 +145,10 @@ struct vector_vector_multiply<components::wxyz, LHS, RHS>
 //@{
 template <typename Expr>
 struct vector_normalize<components::wxyz, Expr>
-    : unary_vector_expression_components<vector_normalize, components::wxyz, Expr>, unary_expression<Expr> {
-    using base_type       = unary_vector_expression_components<vector_normalize, components::wxyz, Expr>;
-    using value_type      = typename base_type::value_type;
+    : unary_vector_expression_components<vector_normalize, components::wxyz, Expr>,
+      unary_expression<Expr> {
+    using base_type  = unary_vector_expression_components<vector_normalize, components::wxyz, Expr>;
+    using value_type = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 

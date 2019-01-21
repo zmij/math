@@ -35,7 +35,8 @@ namespace component_access {
 //@{
 /** @name Polar coordinates */
 template <typename VectorType, typename T>
-struct component_access<2, components::polar, VectorType, T> : basic_component_access<VectorType, T, components::polar> {
+struct component_access<2, components::polar, VectorType, T>
+    : basic_component_access<VectorType, T, components::polar> {
     using base_type = basic_component_access<VectorType, T, components::polar>;
 
     PSST_MATH_COMPONENT_ACCESS(r);
@@ -57,7 +58,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_multiply<components::polar, LHS, RHS>
     : binary_vector_expression_components<vector_scalar_multiply, components::polar, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_components<vector_scalar_multiply, components::polar, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_components<vector_scalar_multiply, components::polar, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -84,7 +86,8 @@ template <typename LHS, typename RHS>
 struct vector_scalar_divide<components::polar, LHS, RHS>
     : binary_vector_expression_components<vector_scalar_divide, components::polar, LHS, RHS>,
       binary_expression<LHS, RHS> {
-    using base_type  = binary_vector_expression_components<vector_scalar_divide, components::polar, LHS, RHS>;
+    using base_type
+        = binary_vector_expression_components<vector_scalar_divide, components::polar, LHS, RHS>;
     using value_type = typename base_type::value_type;
 
     using expression_base = binary_expression<LHS, RHS>;
@@ -149,8 +152,9 @@ struct vector_magnitude<components::polar, Expr>
 //@{
 template <typename Expr>
 struct vector_normalize<components::polar, Expr>
-    : unary_vector_expression_components<vector_normalize, components::polar, Expr>, unary_expression<Expr> {
-    using base_type       = unary_vector_expression_components<vector_normalize, components::polar, Expr>;
+    : unary_vector_expression_components<vector_normalize, components::polar, Expr>,
+      unary_expression<Expr> {
+    using base_type = unary_vector_expression_components<vector_normalize, components::polar, Expr>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;

@@ -355,22 +355,31 @@ struct component_access<2, components::grayscale_hex, VectorType, T>
 //@}
 
 }    // namespace component_access
+/**
+ * Namespace for colour classes and type aliases.
+ */
 namespace color {
 
 //@{
 /** @name is_color */
 template <typename T>
-struct is_color : traits::has_components_t<T, components::rgba, components::rgba_hex, components::argb,
-                                     components::hsla, components::hsva, components::grayscale,
-                                     components::grayscale_hex> {};
+struct is_color : traits::has_components_t<T, components::rgba, components::rgba_hex,
+                                           components::argb, components::hsla, components::hsva,
+                                           components::grayscale, components::grayscale_hex> {};
 template <typename T>
 using is_color_t = typename is_color<T>::type;
 template <typename T>
 constexpr bool is_color_v = is_color_t<T>::value;
 //@}
 
+/**
+ * Type alias for RGB colour (no alpha component).
+ */
 template <typename T>
 using rgb = vector<T, 3, components::rgba>;
+/**
+ * Type alias for RGBA colour (with alpha component).
+ */
 template <typename T>
 using rgba = vector<T, 4, components::rgba>;
 
@@ -438,7 +447,8 @@ struct color_chroma;
 
 template <typename Expr>
 struct color_chroma<components::hsla, Expr>
-    : unary_scalar_expression_components<color_chroma, components::hsla, Expr>, unary_expression<Expr> {
+    : unary_scalar_expression_components<color_chroma, components::hsla, Expr>,
+      unary_expression<Expr> {
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -452,7 +462,8 @@ struct color_chroma<components::hsla, Expr>
 
 template <typename Expr>
 struct color_chroma<components::hsva, Expr>
-    : unary_scalar_expression_components<color_chroma, components::hsva, Expr>, unary_expression<Expr> {
+    : unary_scalar_expression_components<color_chroma, components::hsva, Expr>,
+      unary_expression<Expr> {
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 

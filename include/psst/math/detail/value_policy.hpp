@@ -124,12 +124,14 @@ private:
 template <typename Components, typename = utils::void_t<>>
 struct components_have_value_policies : std::false_type {};
 template <typename Components>
-struct components_have_value_policies<Components, utils::void_t<typename Components::value_policies>>
+struct components_have_value_policies<Components,
+                                      utils::void_t<typename Components::value_policies>>
     : std::true_type {};
 template <typename Components>
 using components_have_value_policies_t = typename components_have_value_policies<Components>::type;
 template <typename Components>
-constexpr bool components_have_value_policies_v = components_have_value_policies_t<Components>::value;
+constexpr bool components_have_value_policies_v
+    = components_have_value_policies_t<Components>::value;
 //@}
 
 //@{
@@ -156,8 +158,8 @@ struct default_value_policy {
 };
 
 template <typename Components, typename T>
-struct default_value_policy<Components, T,
-                            std::enable_if_t<components_have_default_value_policy_v<Components, T>>> {
+struct default_value_policy<
+    Components, T, std::enable_if_t<components_have_default_value_policy_v<Components, T>>> {
     using type = typename Components::template default_value_policy<T>;
 };
 
@@ -187,7 +189,8 @@ struct value_policies {
 };
 
 template <typename T, typename Components>
-struct value_policies<T, Components, std::enable_if_t<components_have_value_policies_v<Components>>> {
+struct value_policies<T, Components,
+                      std::enable_if_t<components_have_value_policies_v<Components>>> {
     using components_value_policy = typename Components::value_policies;
     template <std::size_t N>
     using value_policy = nth_policy_t<T, Components, components_value_policy, N>;

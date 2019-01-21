@@ -23,8 +23,8 @@ inline namespace v {
 //@{
 /** @name Polar to XYZW conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<T, 2, components::polar>, vector<U, Cartesian, components::xyzw>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 2, components::polar>, vector<U, Cartesian, components::xyzw>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -34,7 +34,7 @@ struct conversion<vector<T, 2, components::polar>, vector<U, Cartesian, componen
         using std::cos;
         using std::sin;
         return vector<U, Cartesian, components::xyzw>{this->arg_.rho() * cos(this->arg_.phi()),
-                                                this->arg_.rho() * sin(this->arg_.phi())};
+                                                      this->arg_.rho() * sin(this->arg_.phi())};
     }
 };
 //@}
@@ -42,8 +42,8 @@ struct conversion<vector<T, 2, components::polar>, vector<U, Cartesian, componen
 //@{
 /** @name XYZW to polar conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 2, components::polar>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 2, components::polar>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -61,8 +61,8 @@ struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 2, component
 //@{
 /** @name Spherical to XYZW conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<T, 3, components::spherical>, vector<U, Cartesian, components::xyzw>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 3, components::spherical>, vector<U, Cartesian, components::xyzw>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -73,8 +73,8 @@ struct conversion<vector<T, 3, components::spherical>, vector<U, Cartesian, comp
         using std::sin;
         auto projection_len = this->arg_.rho() * cos(this->arg_.phi());
         return vector<U, Cartesian, components::xyzw>{projection_len * cos(this->arg_.theta()),
-                                                projection_len * sin(this->arg_.theta()),
-                                                this->arg_.rho() * sin(this->arg_.phi())};
+                                                      projection_len * sin(this->arg_.theta()),
+                                                      this->arg_.rho() * sin(this->arg_.phi())};
     }
 };
 //@}
@@ -82,8 +82,8 @@ struct conversion<vector<T, 3, components::spherical>, vector<U, Cartesian, comp
 //@{
 /** @name XYZW to spherical conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, components::spherical>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, components::spherical>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -99,7 +99,7 @@ struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, component
             inclination = asin(this->arg_.z() / mgt);
         }
         return vector<T, 3, components::spherical>{mgt, inclination,
-                                             atan2(this->arg_.y(), this->arg_.x())};
+                                                   atan2(this->arg_.y(), this->arg_.x())};
     }
 };
 //@}
@@ -117,7 +117,7 @@ struct conversion<vector<T, 3, components::spherical>, vector<U, 2, components::
     {
         using std::cos;
         return vector<U, 2, components::polar>{this->arg_.rho() * cos(this->arg_.phi()),
-                                         this->arg_.azimuth()};
+                                               this->arg_.azimuth()};
     }
 };
 //@}
@@ -142,8 +142,8 @@ struct conversion<vector<T, 2, components::polar>, vector<U, 3, components::sphe
 // TODO Make all coord conversions function overloads instead of expressions
 /** @name Cylindrical to XYZW conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<T, 3, components::cylindrical>, vector<U, Cartesian, components::xyzw>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 3, components::cylindrical>, vector<U, Cartesian, components::xyzw>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -154,8 +154,8 @@ struct conversion<vector<T, 3, components::cylindrical>, vector<U, Cartesian, co
         using std::sin;
 
         return vector<U, Cartesian, components::xyzw>{this->arg_.rho() * cos(this->arg_.phi()),
-                                                this->arg_.rho() * sin(this->arg_.phi()),
-                                                this->arg_.z()};
+                                                      this->arg_.rho() * sin(this->arg_.phi()),
+                                                      this->arg_.z()};
     }
 };
 //@}
@@ -163,8 +163,8 @@ struct conversion<vector<T, 3, components::cylindrical>, vector<U, Cartesian, co
 //@{
 /** @name XYZW to cylindrical conversion */
 template <typename T, typename U, std::size_t Cartesian, typename Expression>
-struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, components::cylindrical>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, components::cylindrical>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -173,9 +173,9 @@ struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, component
     {
         using std::atan2;
         using std::sqrt;
-        return vector<T, 3, components::cylindrical>{sqrt(sum_of_squares(this->arg_.x(), this->arg_.y())),
-                                               atan2(this->arg_.y(), this->arg_.x()),
-                                               this->arg_.z()};
+        return vector<T, 3, components::cylindrical>{
+            sqrt(sum_of_squares(this->arg_.x(), this->arg_.y())),
+            atan2(this->arg_.y(), this->arg_.x()), this->arg_.z()};
     }
 };
 //@}
@@ -183,8 +183,8 @@ struct conversion<vector<U, Cartesian, components::xyzw>, vector<T, 3, component
 //@{
 /** @name Cylindrical to polar conversion */
 template <typename T, typename U, typename Expression>
-struct conversion<vector<T, 3, components::cylindrical>, vector<U, 2, components::polar>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 3, components::cylindrical>, vector<U, 2, components::polar>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -199,8 +199,8 @@ struct conversion<vector<T, 3, components::cylindrical>, vector<U, 2, components
 //@{
 /** @name Polar to cylindrical conversion */
 template <typename T, typename U, typename Expression>
-struct conversion<vector<T, 2, components::polar>, vector<U, 3, components::cylindrical>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 2, components::polar>, vector<U, 3, components::cylindrical>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -215,8 +215,8 @@ struct conversion<vector<T, 2, components::polar>, vector<U, 3, components::cyli
 //@{
 /** @name Cylindrical to spherical conversion */
 template <typename T, typename U, typename Expression>
-struct conversion<vector<U, 3, components::cylindrical>, vector<T, 3, components::spherical>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<U, 3, components::cylindrical>, vector<T, 3, components::spherical>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -238,8 +238,8 @@ struct conversion<vector<U, 3, components::cylindrical>, vector<T, 3, components
 //@{
 /** @name Spherical to cylindrical conversion */
 template <typename T, typename U, typename Expression>
-struct conversion<vector<T, 3, components::spherical>, vector<U, 3, components::cylindrical>, Expression>
-    : unary_expression<Expression> {
+struct conversion<vector<T, 3, components::spherical>, vector<U, 3, components::cylindrical>,
+                  Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
 
@@ -249,8 +249,8 @@ struct conversion<vector<T, 3, components::spherical>, vector<U, 3, components::
         using std::cos;
         using std::sin;
         return vector<U, 3, components::cylindrical>{this->arg_.rho() * cos(this->arg_.phi()),
-                                               this->arg_.azimuth(),
-                                               this->arg_.rho() * sin(this->arg_.phi())};
+                                                     this->arg_.azimuth(),
+                                                     this->arg_.rho() * sin(this->arg_.phi())};
     }
 };
 //@}
