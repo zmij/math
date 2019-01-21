@@ -27,7 +27,7 @@ struct vector_view<T*, Size, Axes>
     using base_expression_type
         = expr::vector_expression<vector_view<T*, Size, Axes>, vector<T, Size, Axes>>;
 
-    using traits              = vector_traits<typename base_expression_type::result_type>;
+    using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
     using lvalue_reference    = typename traits::lvalue_reference;
     using const_reference     = typename traits::const_reference;
@@ -45,13 +45,13 @@ struct vector_view<T*, Size, Axes>
 
     constexpr explicit vector_view(pointer p) : data_{p} {}
 
-    template <typename Expression, typename = enable_if_vector_expression<Expression>,
-              typename = enable_for_compatible_axes<this_type, Expression>>
+    template <typename Expression, typename = math::traits::enable_if_vector_expression<Expression>,
+              typename = math::traits::enable_for_compatible_axes<this_type, Expression>>
     vector_view&
     operator=(Expression const& rhs)
     {
-        return assign(rhs,
-                      utils::make_min_index_sequence<Size, vector_expression_size_v<Expression>>{});
+        return assign(rhs, utils::make_min_index_sequence<
+                               Size, math::traits::vector_expression_size_v<Expression>>{});
     }
 
     pointer
@@ -165,7 +165,7 @@ struct vector_view<T const*, Size, Axes>
     using base_expression_type
         = expr::vector_expression<vector_view<T const*, Size, Axes>, vector<T, Size, Axes>>;
 
-    using traits              = vector_traits<typename base_expression_type::result_type>;
+    using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
     using lvalue_reference    = typename traits::lvalue_reference;
     using const_reference     = typename traits::const_reference;
@@ -417,58 +417,58 @@ private:
 };
 
 //----------------------------------------------------------------------------
-template <typename T, typename U, typename = enable_if_vector<T>>
+template <typename T, typename U, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(U* buffer)
 {
-    using value_type    = scalar_expression_result_t<T>;
-    using axes_type     = axes_names_t<T>;
-    constexpr auto size = vector_expression_size_v<T>;
+    using value_type    = traits::scalar_expression_result_t<T>;
+    using axes_type     = traits::axes_names_t<T>;
+    constexpr auto size = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
     return vector_view<U*, size, axes_type>(buffer);
 }
 
-template <typename T, typename = enable_if_vector<T>>
+template <typename T, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(char* buffer)
 {
-    using value_type = scalar_expression_result_t<T>;
+    using value_type = traits::scalar_expression_result_t<T>;
     return make_vector_view<T>(reinterpret_cast<value_type*>(buffer));
 }
 
-template <typename T, typename = enable_if_vector<T>>
+template <typename T, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(char const* buffer)
 {
-    using value_type = scalar_expression_result_t<T>;
+    using value_type = traits::scalar_expression_result_t<T>;
     return make_vector_view<T>(reinterpret_cast<value_type const*>(buffer));
 }
 
-template <typename T, typename U, typename = enable_if_vector<T>>
+template <typename T, typename U, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(U* val, std::size_t buffer_size)
 {
-    using value_type    = scalar_expression_result_t<T>;
-    using axes_type     = axes_names_t<T>;
-    constexpr auto size = vector_expression_size_v<T>;
+    using value_type    = traits::scalar_expression_result_t<T>;
+    using axes_type     = traits::axes_names_t<T>;
+    constexpr auto size = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
     return memory_vector_view<U*, size, axes_type>(val, buffer_size);
 }
 
-template <typename T, typename = enable_if_vector<T>>
+template <typename T, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(char* buffer, std::size_t buffer_size)
 {
-    using value_type = scalar_expression_result_t<T>;
+    using value_type = traits::scalar_expression_result_t<T>;
     return make_memory_vector_view<T>(reinterpret_cast<value_type*>(buffer),
                                       buffer_size / sizeof(value_type));
 }
 
-template <typename T, typename = enable_if_vector<T>>
+template <typename T, typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(char const* buffer, std::size_t buffer_size)
 {
-    using value_type = scalar_expression_result_t<T>;
+    using value_type = traits::scalar_expression_result_t<T>;
     return make_memory_vector_view<T>(reinterpret_cast<value_type const*>(buffer),
                                       buffer_size / sizeof(value_type));
 }

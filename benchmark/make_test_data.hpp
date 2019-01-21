@@ -49,7 +49,7 @@ constexpr vector<T, 10, axes::none> make_test_vector(dimension_count<10> const&)
 //  Matrix 3x3
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 3, 3> make_test_matrix(matrix_size<3, 3> const&)
+constexpr matrix<T, 3, 3> make_test_matrix(traits::matrix_size<3, 3> const&)
 {
     // clang-format off
     return
@@ -65,7 +65,7 @@ constexpr matrix<T, 3, 3> make_test_matrix(matrix_size<3, 3> const&)
 //  Matrix 4x4
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 4, 4> make_test_matrix(matrix_size<4, 4> const&)
+constexpr matrix<T, 4, 4> make_test_matrix(traits::matrix_size<4, 4> const&)
 {
     // clang-format off
     return
@@ -82,7 +82,7 @@ constexpr matrix<T, 4, 4> make_test_matrix(matrix_size<4, 4> const&)
 //  Matrix 3x4
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 3, 4> make_test_matrix(matrix_size<3, 4> const&)
+constexpr matrix<T, 3, 4> make_test_matrix(traits::matrix_size<3, 4> const&)
 {
     // clang-format off
     return
@@ -98,7 +98,7 @@ constexpr matrix<T, 3, 4> make_test_matrix(matrix_size<3, 4> const&)
 //  Matrix 4x3
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 4, 3> make_test_matrix(matrix_size<4, 3> const&)
+constexpr matrix<T, 4, 3> make_test_matrix(traits::matrix_size<4, 3> const&)
 {
     // clang-format off
     return
@@ -115,7 +115,7 @@ constexpr matrix<T, 4, 3> make_test_matrix(matrix_size<4, 3> const&)
 //  Matrix 10x10
 //----------------------------------------------------------------------------
 template <typename T>
-constexpr matrix<T, 10, 10, axes::none> make_test_matrix(matrix_size<10, 10> const&)
+constexpr matrix<T, 10, 10, axes::none> make_test_matrix(traits::matrix_size<10, 10> const&)
 {
     // clang-format off
     return

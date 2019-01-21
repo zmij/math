@@ -449,7 +449,7 @@ write_binary(std::basic_ostream<CharT>& os, Vector const& val, std::index_sequen
 
 }    // namespace detail
 
-template <typename Expression, typename = enable_if_vector_expression<Expression>>
+template <typename Expression, typename = traits::enable_if_vector_expression<Expression>>
 std::ostream&
 operator<<(std::ostream& os, Expression const& v)
 {

@@ -24,7 +24,7 @@ struct conversion;
 template <typename Source, typename Target>
 struct conversion_exists
     : utils::is_decl_complete_t<
-          conversion<vector_expression_result_t<std::decay_t<Source>>, Target>> {};
+          conversion<traits::vector_expression_result_t<std::decay_t<Source>>, Target>> {};
 template <typename Source, typename Target>
 using conversion_exists_t = typename conversion_exists<Source, Target>::type;
 template <typename Source, typename Target>
@@ -89,15 +89,15 @@ template <typename Target, typename Expression>
 constexpr auto
 convert(Expression&& expr)
 {
-    static_assert(is_vector_expression_v<Expression>,
+    static_assert(traits::is_vector_expression_v<Expression>,
                   "Source expression must be a vector expression");
-    static_assert(is_vector_v<Target>, "Conversion target must be a vector type");
+    static_assert(traits::is_vector_v<Target>, "Conversion target must be a vector type");
     static_assert((expr::conversion_exists_v<Expression, Target>),
                   "Conversion between theses axes is not defined");
-    if constexpr (same_axes_v<Expression, Target>) {
+    if constexpr (traits::same_axes_v<Expression, Target>) {
         return std::forward<Expression>(expr);
     } else {
-        using source_vector_type = vector_expression_result_t<Expression>;
+        using source_vector_type = traits::vector_expression_result_t<Expression>;
         return expr::make_unary_expression<
                    expr::bind_conversion_args<source_vector_type, Target>::template type>(
                    std::forward<Expression>(expr))

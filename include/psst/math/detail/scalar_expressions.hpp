@@ -25,7 +25,7 @@ struct scalar_expression {
                   "Result type for a scalar expression cannot be a reference");
     using expression_type = Expression;
     using result_type     = Result;
-    using traits          = value_traits_t<result_type>;
+    using traits          = traits::value_traits_t<result_type>;
     using value_type      = typename traits::type;
     using value_tag       = typename traits::value_tag;
 
@@ -45,20 +45,20 @@ private:
 };
 
 template <template <typename> class Expression, typename Arg,
-          typename Result = scalar_expression_result_t<Arg>>
+          typename Result = traits::scalar_expression_result_t<Arg>>
 using unary_scalar_expression = scalar_expression<Expression<Arg>, Result>;
 template <template <typename, typename> class Expression, typename Axes, typename Arg,
-          typename Result = scalar_expression_result_t<Arg>>
+          typename Result = traits::scalar_expression_result_t<Arg>>
 using unary_scalar_expression_axes = scalar_expression<Expression<Axes, Arg>, Result>;
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
-          typename Result = scalar_expression_result_t<LHS, RHS>>
+          typename Result = traits::scalar_expression_result_t<LHS, RHS>>
 using binary_scalar_expression = scalar_expression<Expression<LHS, RHS>, Result>;
 
 //----------------------------------------------------------------------------
 template <typename T>
 struct scalar_constant : scalar_expression<scalar_constant<T>, std::decay_t<T>> {
-    static_assert(is_scalar_v<T>, "Can use scalar const only with scalar values");
-    static_assert(!is_expression_v<T>, "Can use scalar const only with scalar values");
+    static_assert(traits::is_scalar_v<T>, "Can use scalar const only with scalar values");
+    static_assert(!traits::is_expression_v<T>, "Can use scalar const only with scalar values");
     using base_type  = scalar_expression<scalar_constant<T>, std::decay_t<T>>;
     using value_type = typename base_type::value_type;
 
@@ -88,7 +88,7 @@ struct wrap_arg {
 };
 
 template <typename Arg>
-struct wrap_arg<Arg, std::enable_if_t<is_expression_v<Arg>>> {
+struct wrap_arg<Arg, traits::enable_if_expression<Arg>> {
     using type = expression_argument_t<Arg>;
 };
 
@@ -133,7 +133,7 @@ wrap_non_expression_args(Args&&... args)
 /** @name Inverse expression result */
 template <typename Expression>
 struct not_ : unary_scalar_expression<not_, Expression, bool>, unary_expression<Expression> {
-    static_assert(is_scalar_v<Expression>, "Can apply not_ only to scalar expressions");
+    static_assert(traits::is_scalar_v<Expression>, "Can apply not_ only to scalar expressions");
     using expression_base = unary_expression<Expression>;
 
     using expression_base::expression_base;
@@ -145,7 +145,7 @@ struct not_ : unary_scalar_expression<not_, Expression, bool>, unary_expression<
     }
 };
 
-template <typename Expression, typename = enable_if_scalar_expression<Expression>>
+template <typename Expression, typename = traits::enable_if_scalar_expression<Expression>>
 constexpr auto operator!(Expression&& exp)
 {
     return make_unary_expression<not_>(std::forward<Expression>(exp));
@@ -155,11 +155,11 @@ constexpr auto operator!(Expression&& exp)
 //----------------------------------------------------------------------------
 /** @name Sum one or more scalar expressions */
 template <typename T, typename... Y>
-struct scalar_sum : scalar_expression<scalar_sum<T, Y...>, scalar_expression_result_t<T>>,
+struct scalar_sum : scalar_expression<scalar_sum<T, Y...>, traits::scalar_expression_result_t<T>>,
                     n_ary_expression<T, Y...> {
-    using base_type       = scalar_expression<scalar_sum<T, Y...>, scalar_expression_result_t<T>>;
-    using value_type      = typename base_type::value_type;
-    using expression_base = n_ary_expression<T, Y...>;
+    using base_type = scalar_expression<scalar_sum<T, Y...>, traits::scalar_expression_result_t<T>>;
+    using value_type          = typename base_type::value_type;
+    using expression_base     = n_ary_expression<T, Y...>;
     using index_sequence_type = typename expression_base::arg_indexes_type;
 
     using expression_base::expression_base;
@@ -179,7 +179,7 @@ private:
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -187,14 +187,14 @@ operator+(LHS&& lhs, RHS&& rhs)
                                                         std::forward<RHS>(rhs));
 }
 
-template <typename T, typename = enable_if_scalar_value<T>>
+template <typename T, typename = traits::enable_if_scalar_value<T>>
 constexpr auto
 sum(T&& arg)
 {
     return detail::wrap_arg_t<T&&>(std::forward<T>(arg));
 }
 
-template <typename... T, typename = enable_if_scalar_values<T...>>
+template <typename... T, typename = traits::enable_if_scalar_values<T...>>
 constexpr auto
 sum(T&&... args)
 {
@@ -287,7 +287,7 @@ struct scalar_sub : binary_scalar_expression<scalar_sub, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -314,7 +314,7 @@ struct scalar_mul : binary_scalar_expression<scalar_mul, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_scalar_args<LHS, RHS>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
     return detail::wrap_non_expression_args<scalar_mul>(std::forward<LHS>(lhs),
@@ -324,10 +324,12 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 
 //----------------------------------------------------------------------------
 template <typename... T>
-struct scalar_product : scalar_expression<scalar_product<T...>, scalar_expression_result_t<T...>>,
-                        n_ary_expression<T...> {
-    using base_type  = scalar_expression<scalar_product<T...>, scalar_expression_result_t<T...>>;
-    using value_type = typename base_type::value_type;
+struct scalar_product
+    : scalar_expression<scalar_product<T...>, traits::scalar_expression_result_t<T...>>,
+      n_ary_expression<T...> {
+    using base_type
+        = scalar_expression<scalar_product<T...>, traits::scalar_expression_result_t<T...>>;
+    using value_type          = typename base_type::value_type;
     using expression_base     = n_ary_expression<T...>;
     using index_sequence_type = std::index_sequence_for<T...>;
 
@@ -348,14 +350,14 @@ private:
     }
 };
 
-template <typename T, typename = enable_if_scalar_value<T>>
+template <typename T, typename = traits::enable_if_scalar_value<T>>
 constexpr auto
 product(T&& arg)
 {
     return detail::wrap_arg_t<T&&>(std::forward<T>(arg));
 }
 
-template <typename... T, typename = enable_if_scalar_values<T...>>
+template <typename... T, typename = traits::enable_if_scalar_values<T...>>
 constexpr auto
 product(T&&... args)
 {
@@ -380,7 +382,7 @@ struct scalar_div : binary_scalar_expression<scalar_div, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_scalar_args<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_scalar_args<LHS, RHS>>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
@@ -395,7 +397,8 @@ operator/(LHS&& lhs, RHS&& rhs)
 template <typename Expression>
 struct scalar_square : unary_scalar_expression<scalar_square, Expression>,
                        unary_expression<Expression> {
-    static_assert(is_scalar_v<Expression>, "Can apply square_root only to scalar expressions");
+    static_assert(traits::is_scalar_v<Expression>,
+                  "Can apply square_root only to scalar expressions");
     using base_type       = unary_scalar_expression<scalar_square, Expression>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expression>;
@@ -409,7 +412,7 @@ struct scalar_square : unary_scalar_expression<scalar_square, Expression>,
     }
 };
 
-template <typename Expression, typename = enable_if_scalar_value<Expression>>
+template <typename Expression, typename = traits::enable_if_scalar_value<Expression>>
 constexpr auto
 square(Expression&& ex)
 {
@@ -423,7 +426,8 @@ square(Expression&& ex)
 template <typename Expression>
 struct square_root : unary_scalar_expression<square_root, Expression>,
                      unary_expression<Expression> {
-    static_assert(is_scalar_v<Expression>, "Can apply square_root only to scalar expressions");
+    static_assert(traits::is_scalar_v<Expression>,
+                  "Can apply square_root only to scalar expressions");
     using base_type       = unary_scalar_expression<square_root, Expression>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expression>;
@@ -446,7 +450,7 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Expression, typename = enable_if_scalar_value<Expression>>
+template <typename Expression, typename = traits::enable_if_scalar_value<Expression>>
 constexpr auto
 sqrt(Expression&& ex)
 {
@@ -458,7 +462,7 @@ sqrt(Expression&& ex)
 //@{
 template <typename Expression>
 struct scalar_abs : unary_scalar_expression<scalar_abs, Expression>, unary_expression<Expression> {
-    static_assert(is_scalar_v<Expression>, "Can apply abs only to scalar expressions");
+    static_assert(traits::is_scalar_v<Expression>, "Can apply abs only to scalar expressions");
     using base_type       = unary_scalar_expression<scalar_abs, Expression>;
     using value_type      = typename base_type::value_type;
     using expression_base = unary_expression<Expression>;
@@ -472,7 +476,7 @@ struct scalar_abs : unary_scalar_expression<scalar_abs, Expression>, unary_expre
         return abs(this->arg_.value());
     }
 };
-template <typename Expression, typename = enable_if_scalar_value<Expression>>
+template <typename Expression, typename = traits::enable_if_scalar_value<Expression>>
 constexpr auto
 abs(Expression&& ex)
 {

@@ -17,6 +17,7 @@
 namespace psst {
 namespace math {
 
+namespace traits {
 namespace tag {
 
 struct scalar {};
@@ -324,6 +325,9 @@ template <typename T>
 using is_expression_t = typename is_expression<std::decay_t<T>>::type;
 template <typename T>
 constexpr bool is_expression_v = is_expression_t<T>::value;
+
+template <typename T>
+using enable_if_expression = std::enable_if_t<is_expression_v<T>>;
 //@}
 
 //@{
@@ -757,7 +761,8 @@ template <typename T, typename U>
 using enable_if_dot_product_defined = std::enable_if_t<dot_product_defined_v<T, U>>;
 //@}
 
-} /* namespace math */
-} /* namespace psst */
+}    // namespace traits
+}    // namespace math
+}    // namespace psst
 
 #endif /* PSST_MATH_DETAIL_VALUE_TRAITS_HPP_ */

@@ -29,7 +29,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>> {    //,
 
     using this_type       = matrix<T, RC, CC, Axes>;
     using transposed_type = matrix<T, CC, RC, Axes>;
-    using traits          = matrix_traits<this_type>;
+    using traits          = traits::matrix_traits<this_type>;
 
     using row_type         = typename traits::row_type;
     using row_indexes_type = typename traits::row_indexes_type;
@@ -68,7 +68,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Axes>> {    //,
 
     constexpr matrix(init_list const& args) : matrix(args, row_indexes_type{}) {}
 
-    template <typename Expression, typename = enable_if_matrix_expression<Expression>>
+    template <typename Expression, typename = math::traits::enable_if_matrix_expression<Expression>>
     constexpr matrix(Expression&& rhs)
         : matrix(std::forward<Expression>(rhs),
                  utils::make_min_index_sequence<rows, expr::matrix_row_count_v<Expression>>{})

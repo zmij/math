@@ -117,9 +117,9 @@ struct vector_scalar_divide<axes::spherical, LHS, RHS>
 template <typename Expr>
 struct vector_magnitude_squared<axes::spherical, Expr>
     : scalar_expression<vector_magnitude_squared<axes::spherical, Expr>,
-                        scalar_expression_result_t<Expr>>,
+                        traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
-    static_assert(is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
+    static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
 
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
@@ -136,9 +136,10 @@ struct vector_magnitude_squared<axes::spherical, Expr>
 /** @name Magnitude for spherical coordinates */
 template <typename Expr>
 struct vector_magnitude<axes::spherical, Expr>
-    : scalar_expression<vector_magnitude<axes::spherical, Expr>, scalar_expression_result_t<Expr>>,
+    : scalar_expression<vector_magnitude<axes::spherical, Expr>,
+                        traits::scalar_expression_result_t<Expr>>,
       unary_expression<Expr> {
-    static_assert(is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
+    static_assert(traits::is_vector_expression_v<Expr>, "Argument to magnitude must be a vector");
 
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;

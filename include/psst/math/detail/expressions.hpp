@@ -20,7 +20,7 @@ struct extract_expression_type {
 };
 
 template <typename T>
-struct extract_expression_type<T, std::enable_if_t<is_expression_v<std::decay_t<T>>>> {
+struct extract_expression_type<T, traits::enable_if_expression<T>> {
     using type = typename std::decay_t<T>::expression_type;
 };
 template <typename T>

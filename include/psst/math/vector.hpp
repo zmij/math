@@ -26,7 +26,7 @@ template <typename T, std::size_t Size, typename Axes>
 struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_ops<T, Size, Axes> {
 
     using this_type            = vector<T, Size, Axes>;
-    using traits               = vector_traits<this_type>;
+    using traits               = traits::vector_traits<this_type>;
     using base_expression_type = expr::vector_expression<vector<T, Size, Axes>>;
     using value_type           = typename traits::value_type;
     using lvalue_reference     = typename traits::lvalue_reference;
@@ -59,15 +59,17 @@ struct vector : expr::vector_expression<vector<T, Size, Axes>>, detail::vector_o
     constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
 
     template <typename U, std::size_t SizeR, typename AxesR,
-              typename = enable_if_compatible_axes<Axes, AxesR>>
+              typename = math::traits::enable_if_compatible_axes<Axes, AxesR>>
     constexpr /* implicit */ vector(vector<U, SizeR, AxesR> const& rhs)
         : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{})
     {}
-    template <typename Expression, typename = enable_if_vector_expression<Expression>,
-              typename = enable_for_compatible_axes<this_type, Expression>>
+    template <typename Expression, typename = math::traits::enable_if_vector_expression<Expression>,
+              typename = math::traits::enable_for_compatible_axes<this_type, Expression>>
     constexpr /* implicit */ vector(Expression&& rhs)
-        : vector(std::forward<Expression>(rhs),
-                 utils::make_min_index_sequence<Size, vector_expression_size_v<Expression>>{})
+        : vector(
+            std::forward<Expression>(rhs),
+            utils::make_min_index_sequence<Size,
+                                           math::traits::vector_expression_size_v<Expression>>{})
     {}
 
     pointer

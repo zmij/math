@@ -10,7 +10,7 @@
 
 #define PSST_MATH_COORD_ACCESS(name)                                            \
     template <typename _T = typename base_type::expression_type,                \
-              typename    = enable_if_mutable_vector<_T>>                       \
+              typename    = traits::enable_if_mutable_vector<_T>>               \
     constexpr decltype(auto) name()                                             \
     {                                                                           \
         return base_type::rebind().template at<base_type::coord_names::name>(); \

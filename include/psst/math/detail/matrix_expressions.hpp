@@ -24,10 +24,10 @@ inline namespace m {
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
 struct matrix_expression {
-    static_assert(is_matrix_v<Result>, "Result of matrix expression must be a matrix");
+    static_assert(traits::is_matrix_v<Result>, "Result of matrix expression must be a matrix");
     using expression_type  = Expression;
     using result_type      = Result;
-    using traits           = value_traits_t<Result>;
+    using traits           = traits::value_traits_t<Result>;
     using value_type       = typename traits::value_type;
     using value_tag        = typename traits::value_tag;
     using axes_names       = typename traits::axes_names;
@@ -49,7 +49,7 @@ template <typename T>
 constexpr std::size_t
 matrix_row_count()
 {
-    static_assert(is_matrix_expression_v<T>, "The expression is not matrix type");
+    static_assert(traits::is_matrix_expression_v<T>, "The expression is not matrix type");
     return std::decay_t<T>::rows;
 }
 
@@ -85,14 +85,14 @@ struct identity_matrix : matrix_expression<identity_matrix<Matrix>, Matrix> {
     }
 };
 
-template <typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 identity()
 {
     return identity_matrix<std::decay_t<Matrix>>{};
 }
 
-template <typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 identity(Matrix&& m)
 {
@@ -104,7 +104,8 @@ identity(Matrix&& m)
 /** @name Vector as row matrix */
 template <typename Vector>
 struct vector_to_row_matrix {
-    static_assert(is_vector_expression_v<Vector>, "Argument to the expression must be a vector");
+    static_assert(traits::is_vector_expression_v<Vector>,
+                  "Argument to the expression must be a vector");
     using traits = typename std::decay_t<Vector>::traits;
     using type = matrix<typename traits::value_type, 1, traits::size, typename traits::axes_names>;
 };
@@ -133,7 +134,7 @@ struct vector_as_row_matrix
     }
 };
 
-template <typename Vector, typename = enable_if_vector_expression<Vector>>
+template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
 constexpr auto
 as_row_matrix(Vector&& vec)
 {
@@ -146,7 +147,8 @@ as_row_matrix(Vector&& vec)
 /** @name Vector as column matrix */
 template <typename Vector>
 struct vector_to_col_matrix {
-    static_assert(is_vector_expression_v<Vector>, "Argument to the expression must be a vector");
+    static_assert(traits::is_vector_expression_v<Vector>,
+                  "Argument to the expression must be a vector");
     using traits = typename std::decay_t<Vector>::traits;
     using type = matrix<typename traits::value_type, traits::size, 1, typename traits::axes_names>;
 };
@@ -174,7 +176,7 @@ struct vector_as_col_matrix
     }
 };
 
-template <typename Vector, typename = enable_if_vector_expression<Vector>>
+template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
 constexpr auto
 as_col_matrix(Vector&& vec)
 {
@@ -206,7 +208,7 @@ struct nth_row : vector_expression<nth_row<Matrix, RN>, typename std::decay_t<Ma
     }
 };
 
-template <std::size_t R, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 row(Matrix&& mtx)
 {
@@ -237,7 +239,7 @@ struct nth_col : vector_expression<nth_col<Matrix, CN>, typename std::decay_t<Ma
     }
 };
 
-template <std::size_t C, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 col(Matrix&& mtx)
 {
@@ -275,7 +277,7 @@ struct matrix_as_row : vector_expression<matrix_as_row<Expr>, matrix_as_row_resu
     }
 };
 
-template <typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 as_vector(Matrix&& mtx)
 {
@@ -329,7 +331,7 @@ struct remove_nth_row : matrix_expression<remove_nth_row<Matrix, RN>, remove_row
     }
 };
 
-template <std::size_t R, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 remove_row(Matrix&& mtx)
 {
@@ -376,7 +378,7 @@ struct remove_nth_col : matrix_expression<remove_nth_col<Matrix, CN>, remove_col
     }
 };
 
-template <std::size_t C, typename Matrix, typename = enable_if_matrix_expression<Matrix>>
+template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 remove_col(Matrix&& mtx)
 {
@@ -409,7 +411,7 @@ struct matrix_minor : matrix_expression<matrix_minor<Matrix, RN, CN>,
 };
 
 template <std::size_t R, std::size_t C, typename Matrix,
-          typename = enable_if_matrix_expression<Matrix>>
+          typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
 minor(Matrix&& mtx)
 {
@@ -427,7 +429,7 @@ struct matrix_expression_cmp;
 
 template <typename LHS, typename RHS>
 struct matrix_expression_cmp<0, LHS, RHS> {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the comparison must be matrix expressions");
     using lhs_type = std::decay_t<LHS>;
     using rhs_type = std::decay_t<RHS>;
@@ -440,7 +442,7 @@ struct matrix_expression_cmp<0, LHS, RHS> {
 
 template <std::size_t R, typename LHS, typename RHS>
 struct matrix_expression_cmp {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the comparison must be matrix expressions");
     using prev_element = matrix_expression_cmp<R - 1, LHS, RHS>;
     using lhs_type     = std::decay_t<LHS>;
@@ -461,7 +463,7 @@ struct matrix_expression_cmp {
 template <typename LHS, typename RHS>
 struct matrix_cmp : binary_scalar_expression<matrix_cmp, LHS, RHS, int>,
                     binary_expression<LHS, RHS> {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the comparison must be matrix expressions");
     using lhs_type                        = std::decay_t<LHS>;
     using rhs_type                        = std::decay_t<RHS>;
@@ -479,7 +481,8 @@ struct matrix_cmp : binary_scalar_expression<matrix_cmp, LHS, RHS, int>,
 };
 
 template <typename LHS, typename RHS,
-          typename = std::enable_if_t<is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>>>
+          typename = std::enable_if_t<
+              traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>>>
 constexpr auto
 cmp(LHS&& lhs, RHS&& rhs)
 {
@@ -493,7 +496,7 @@ cmp(LHS&& lhs, RHS&& rhs)
 template <typename LHS, typename RHS>
 struct matrix_eq : binary_scalar_expression<matrix_eq, LHS, RHS, bool>,
                    binary_expression<LHS, RHS> {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the comparison must be matrix expressions");
     static constexpr std::size_t cmp_size = utils::min_v<LHS::rows, RHS::rows>;
     using cmp_type                        = detail::matrix_expression_cmp<cmp_size - 1, LHS, RHS>;
@@ -508,14 +511,14 @@ struct matrix_eq : binary_scalar_expression<matrix_eq, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator==(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator!=(LHS&& lhs, RHS&& rhs)
 {
@@ -529,7 +532,7 @@ operator!=(LHS&& lhs, RHS&& rhs)
 template <typename LHS, typename RHS>
 struct matrix_less : binary_scalar_expression<matrix_less, LHS, RHS, bool>,
                      binary_expression<LHS, RHS> {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the comparison must be matrix expressions");
     static constexpr std::size_t cmp_size = utils::min_v<LHS::rows, RHS::rows>;
     using cmp_type                        = detail::matrix_expression_cmp<cmp_size - 1, LHS, RHS>;
@@ -544,28 +547,28 @@ struct matrix_less : binary_scalar_expression<matrix_less, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator<(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator<=(LHS&& lhs, RHS&& rhs)
 {
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator>(LHS&& lhs, RHS&& rhs)
 {
     return make_binary_expression<matrix_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator>=(LHS&& lhs, RHS&& rhs)
 {
@@ -600,7 +603,7 @@ struct matrix_transpose
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 transpose(Expr&& expr)
 {
@@ -630,7 +633,7 @@ struct matrix_secondary_flip
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 flip_secondary(Expr&& expr)
 {
@@ -660,7 +663,7 @@ struct matrix_horizontal_flip
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 flip_horizontally(Expr&& expr)
 {
@@ -690,7 +693,7 @@ struct matrix_vertical_flip
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 flip_vertically(Expr&& expr)
 {
@@ -720,7 +723,7 @@ struct matrix_cw_rotation
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 rotate_cw(Expr&& expr)
 {
@@ -750,7 +753,7 @@ struct matrix_ccw_rotation
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 rotate_ccw(Expr&& expr)
 {
@@ -780,7 +783,7 @@ struct matrix_180_rotate
     }
 };
 
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 rotate_180(Expr&& expr)
 {
@@ -793,7 +796,7 @@ rotate_180(Expr&& expr)
 /** @name Matrices sum */
 template <typename LHS, typename RHS>
 struct matrix_sum_result {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the expession must be matrix expressions");
     using lhs_type = std::decay_t<LHS>;
     using rhs_type = std::decay_t<RHS>;
@@ -802,7 +805,7 @@ struct matrix_sum_result {
     static_assert(
         (std::is_same<typename lhs_type::axes_names, typename rhs_type::axes_names>::value),
         "Matrices must have the same axes");
-    using value_type = scalar_expression_result_t<lhs_type, rhs_type>;
+    using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
     using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::axes_names>;
 };
 template <typename LHS, typename RHS>
@@ -826,7 +829,7 @@ struct matrix_sum : matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -856,7 +859,7 @@ struct matrix_diff : matrix_expression<matrix_diff<LHS, RHS>, matrix_sum_result_
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_matrix_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -869,12 +872,13 @@ operator-(LHS&& lhs, RHS&& rhs)
 /** @name Matrix by scalar multiplication */
 template <typename LHS, typename RHS>
 struct matrix_scalar_mul_result {
-    static_assert((is_matrix_expression_v<LHS>),
+    static_assert((traits::is_matrix_expression_v<LHS>),
                   "Left side to the expession must be matrix expressions");
-    static_assert(is_scalar_v<RHS>, "Right side to the expression must be a scalar expression");
+    static_assert(traits::is_scalar_v<RHS>,
+                  "Right side to the expression must be a scalar expression");
     using lhs_type   = std::decay_t<LHS>;
     using rhs_type   = std::decay_t<RHS>;
-    using value_type = scalar_expression_result_t<lhs_type, rhs_type>;
+    using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
     using type = matrix<value_type, lhs_type::rows, lhs_type::cols, typename lhs_type::axes_names>;
 };
 template <typename LHS, typename RHS>
@@ -927,7 +931,8 @@ struct matrix_scalar_divide
 };
 
 template <typename LHS, typename RHS,
-          typename = std::enable_if_t<is_matrix_expression_v<LHS> && is_scalar_v<RHS>>>
+          typename
+          = std::enable_if_t<traits::is_matrix_expression_v<LHS> && traits::is_scalar_v<RHS>>>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
@@ -941,15 +946,15 @@ operator/(LHS&& lhs, RHS&& rhs)
 /** @name Matrix-matrix multiplication */
 template <typename LHS, typename RHS>
 struct matrix_matrix_mul_result {
-    static_assert((is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>),
+    static_assert((traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>),
                   "Both sides to the expession must be matrix expressions");
     using lhs_type = std::decay_t<LHS>;
     using rhs_type = std::decay_t<RHS>;
     static_assert(lhs_type::cols == rhs_type::rows,
                   "Left hand columns must be equal to right hand rows");
-    static_assert((compatible_axes_v<LHS, RHS>), "Matrices must have the same axes");
-    using value_type = scalar_expression_result_t<lhs_type, rhs_type>;
-    using axes_names = axes_names_for_t<LHS, RHS>;
+    static_assert((traits::compatible_axes_v<LHS, RHS>), "Matrices must have the same axes");
+    using value_type = traits::scalar_expression_result_t<lhs_type, rhs_type>;
+    using axes_names = traits::axes_names_for_t<LHS, RHS>;
     using type       = matrix<value_type, lhs_type::rows, rhs_type::cols, axes_names>;
 };
 
@@ -979,26 +984,29 @@ struct matrix_matrix_multiply
 
 //----------------------------------------------------------------------------
 template <typename LHS, typename RHS,
-          typename
-          = std::enable_if_t<(is_matrix_expression_v<LHS> && is_scalar_v<RHS>)
-                             || (is_scalar_v<LHS> && is_matrix_expression_v<RHS>)
-                             || (is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>)
-                             || (is_matrix_expression_v<LHS> && is_vector_expression_v<RHS>)
-                             || (is_vector_expression_v<LHS> && is_matrix_expression_v<RHS>)>>
+          typename = std::enable_if_t<
+              (traits::is_matrix_expression_v<LHS> && traits::is_scalar_v<RHS>)
+              || (traits::is_scalar_v<LHS> && traits::is_matrix_expression_v<RHS>)
+              || (traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>)
+              || (traits::is_matrix_expression_v<LHS> && traits::is_vector_expression_v<RHS>)
+              || (traits::is_vector_expression_v<LHS> && traits::is_matrix_expression_v<RHS>)>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
-    if constexpr (is_matrix_expression_v<LHS> && is_scalar_v<RHS>) {
+    if constexpr (traits::is_matrix_expression_v<LHS> && traits::is_scalar_v<RHS>) {
         return s::detail::wrap_non_expression_args<matrix_scalar_multiply>(std::forward<LHS>(lhs),
                                                                            std::forward<RHS>(rhs));
-    } else if constexpr (is_scalar_v<LHS> && is_matrix_expression_v<RHS>) {
+    } else if constexpr (traits::is_scalar_v<LHS> && traits::is_matrix_expression_v<RHS>) {
         return s::detail::wrap_non_expression_args<matrix_scalar_multiply>(std::forward<RHS>(rhs),
                                                                            std::forward<LHS>(lhs));
-    } else if constexpr (is_matrix_expression_v<LHS> && is_matrix_expression_v<RHS>) {
+    } else if constexpr (traits::is_matrix_expression_v<
+                             LHS> && traits::is_matrix_expression_v<RHS>) {
         return make_binary_expression<matrix_matrix_multiply>(std::forward<LHS>(lhs),
                                                               std::forward<RHS>(rhs));
-    } else if constexpr (is_matrix_expression_v<LHS> && is_vector_expression_v<RHS>) {
+    } else if constexpr (traits::is_matrix_expression_v<
+                             LHS> && traits::is_vector_expression_v<RHS>) {
         return std::forward<LHS>(lhs) * as_col_matrix(std::forward<RHS>(rhs));
-    } else if constexpr (is_vector_expression_v<LHS> && is_matrix_expression_v<RHS>) {
+    } else if constexpr (traits::is_vector_expression_v<
+                             LHS> && traits::is_matrix_expression_v<RHS>) {
         return as_row_matrix(std::forward<LHS>(lhs)) * std::forward<RHS>(rhs);
     }
 }
@@ -1006,7 +1014,7 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 
 //@{
 /** @name Matrix determinant */
-template <typename Expr, typename = enable_if_matrix_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
 det(Expr&& mtx);
 

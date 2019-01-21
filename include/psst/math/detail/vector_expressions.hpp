@@ -23,21 +23,19 @@ inline namespace v {
 //----------------------------------------------------------------------------
 template <typename Expression, typename Result = Expression>
 struct vector_expression
-    : math::detail::axes_names_t<value_traits_t<Result>::size,
-                                 typename value_traits_t<Result>::axes_names, Expression,
-                                 typename value_traits_t<Result>::value_type> {
-    static_assert(is_vector_v<Result>, "Result of vector expression must be a vector");
+    : math::detail::axes_names_t<traits::value_traits_t<Result>::size,
+                                 typename traits::value_traits_t<Result>::axes_names, Expression,
+                                 typename traits::value_traits_t<Result>::value_type> {
+    static_assert(traits::is_vector_v<Result>, "Result of vector expression must be a vector");
     using expression_type     = Expression;
     using result_type         = Result;
-    using traits              = value_traits_t<result_type>;
+    using traits              = traits::value_traits_t<result_type>;
     using value_type          = typename traits::value_type;
     using value_tag           = typename traits::value_tag;
     using axes_names          = typename traits::axes_names;
     using index_sequence_type = typename traits::index_sequence_type;
-    using axis_access
-        = math::detail::axes_names_t<value_traits_t<Result>::size,
-                                     typename value_traits_t<Result>::axes_names, Expression,
-                                     typename value_traits_t<Result>::value_type>;
+    using axis_access = math::detail::axes_names_t<traits::size, typename traits::axes_names,
+                                                   Expression, typename traits::value_type>;
 
     static constexpr auto size = traits::size;
     static_assert(
@@ -49,20 +47,21 @@ struct vector_expression
 };
 
 template <template <typename> class Expression, typename Arg,
-          typename Result = vector_expression_result_t<Arg>>
+          typename Result = traits::vector_expression_result_t<Arg>>
 using unary_vector_expression = vector_expression<Expression<Arg>, Result>;
 template <template <typename, typename> class Expression, typename Axes, typename Arg,
-          typename Result = vector_expression_result_t<Arg>>
+          typename Result = traits::vector_expression_result_t<Arg>>
 using unary_vector_expression_axes = vector_expression<Expression<Axes, Arg>, Result>;
 
 template <template <typename, typename> class Expression, typename LHS, typename RHS,
-          typename Result = vector_expression_result_t<LHS, RHS>>
+          typename Result = traits::vector_expression_result_t<LHS, RHS>>
 using binary_vector_expression = vector_expression<Expression<LHS, RHS>, Result>;
 template <template <typename, typename, typename> class Expression, typename Axes, typename LHS,
-          typename RHS, typename Result = vector_expression_result_t<LHS, RHS>>
+          typename RHS, typename Result = traits::vector_expression_result_t<LHS, RHS>>
 using binary_vector_expression_axes = vector_expression<Expression<Axes, LHS, RHS>, Result>;
 
-template <std::size_t N, typename Expression, typename = enable_if_vector_expression<Expression>>
+template <std::size_t N, typename Expression,
+          typename = traits::enable_if_vector_expression<Expression>>
 constexpr auto
 get(Expression const& exp)
 {
@@ -73,7 +72,8 @@ get(Expression const& exp)
 template <typename Vector>
 struct vector_fill
     : vector_expression<vector_fill<Vector>, typename std::decay_t<Vector>::result_type> {
-    static_assert(is_vector_expression_v<Vector>, "Template argument must be a vector expression");
+    static_assert(traits::is_vector_expression_v<Vector>,
+                  "Template argument must be a vector expression");
     using base_type
         = vector_expression<vector_fill<Vector>, typename std::decay_t<Vector>::result_type>;
     using value_type = typename base_type::value_type;
@@ -101,11 +101,11 @@ struct vector_expression_cmp;
 
 template <typename LHS, typename RHS>
 struct vector_expression_cmp<0, LHS, RHS> {
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the comparison must be vector expressions");
     using lhs_type    = std::decay_t<LHS>;
     using rhs_type    = std::decay_t<RHS>;
-    using traits_type = value_traits_t<typename lhs_type::value_type>;
+    using traits_type = traits::value_traits_t<typename lhs_type::value_type>;
 
     constexpr static int
     cmp(lhs_type const& lhs, rhs_type const& rhs)
@@ -116,7 +116,7 @@ struct vector_expression_cmp<0, LHS, RHS> {
 
 template <std::size_t N, typename LHS, typename RHS>
 struct vector_expression_cmp {
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the comparison must be vector expressions");
     using prev_element = vector_expression_cmp<N - 1, LHS, RHS>;
     using lhs_type     = typename prev_element::lhs_type;
@@ -139,11 +139,11 @@ template <typename LHS, typename RHS>
 struct vector_cmp : binary_scalar_expression<vector_cmp, LHS, RHS, int>,
                     binary_expression<LHS, RHS> {
 
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the comparison must be vector expressions");
-    static constexpr std::size_t cmp_size
-        = utils::min_v<vector_expression_size_v<LHS>, vector_expression_size_v<RHS>>;
-    using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
+    static constexpr std::size_t cmp_size = utils::min_v<traits::vector_expression_size_v<LHS>,
+                                                         traits::vector_expression_size_v<RHS>>;
+    using cmp_type                        = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
@@ -154,7 +154,7 @@ struct vector_cmp : binary_scalar_expression<vector_cmp, LHS, RHS, int>,
         return cmp_type::cmp(this->lhs_, this->rhs_);
     }
 };
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr int
 cmp(LHS&& lhs, RHS&& rhs)
 {
@@ -168,11 +168,11 @@ cmp(LHS&& lhs, RHS&& rhs)
 template <typename LHS, typename RHS>
 struct vector_eq : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
                    binary_expression<LHS, RHS> {
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the comparison must be vector expressions");
-    static constexpr std::size_t cmp_size
-        = utils::min_v<vector_expression_size_v<LHS>, vector_expression_size_v<RHS>>;
-    using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
+    static constexpr std::size_t cmp_size = utils::min_v<traits::vector_expression_size_v<LHS>,
+                                                         traits::vector_expression_size_v<RHS>>;
+    using cmp_type                        = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
@@ -184,20 +184,20 @@ struct vector_eq : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator==(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator!=(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
 }
@@ -209,11 +209,11 @@ operator!=(LHS&& lhs, RHS&& rhs)
 template <typename LHS, typename RHS>
 struct vector_less : binary_scalar_expression<vector_less, LHS, RHS, bool>,
                      binary_expression<LHS, RHS> {
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the comparison must be vector expressions");
-    static constexpr std::size_t cmp_size
-        = utils::min_v<vector_expression_size_v<LHS>, vector_expression_size_v<RHS>>;
-    using cmp_type = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
+    static constexpr std::size_t cmp_size = utils::min_v<traits::vector_expression_size_v<LHS>,
+                                                         traits::vector_expression_size_v<RHS>>;
+    using cmp_type                        = detail::vector_expression_cmp<cmp_size - 1, LHS, RHS>;
 
     using expression_base = binary_expression<LHS, RHS>;
     using expression_base::expression_base;
@@ -225,38 +225,38 @@ struct vector_less : binary_scalar_expression<vector_less, LHS, RHS, bool>,
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator<(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator<=(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator>(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return make_binary_expression<vector_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 operator>=(LHS&& lhs, RHS&& rhs)
 {
-    static_assert((compatible_axes_v<LHS, RHS>),
+    static_assert((traits::compatible_axes_v<LHS, RHS>),
                   "Axes on the sides of the expression must match or be none");
     return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
 }
@@ -282,10 +282,10 @@ struct vector_sum : binary_vector_expression<vector_sum, LHS, RHS>, binary_expre
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
-          typename = enable_for_compatible_axes<LHS, RHS>,
-          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
-          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
+          typename = traits::enable_for_compatible_axes<LHS, RHS>,
+          typename = traits::disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = traits::disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 operator+(LHS&& lhs, RHS&& rhs)
 {
@@ -313,10 +313,10 @@ struct vector_diff : binary_vector_expression<vector_diff, LHS, RHS>, binary_exp
     }
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
-          typename = enable_for_compatible_axes<LHS, RHS>,
-          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
-          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
+          typename = traits::enable_for_compatible_axes<LHS, RHS>,
+          typename = traits::disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = traits::disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 operator-(LHS&& lhs, RHS&& rhs)
 {
@@ -388,24 +388,26 @@ struct vector_vector_multiply<axes::xyzw, LHS, RHS>
 template <
     typename LHS, typename RHS,
     typename = std::enable_if_t<
-        (is_vector_expression_v<LHS> && is_scalar_v<RHS>)
-        || (is_scalar_v<LHS> && is_vector_expression_v<RHS>)
-        || (is_vector_expression_v<LHS> && is_vector_expression_v<RHS> && same_axes_v<LHS, RHS>)>>
+        (traits::is_vector_expression_v<LHS> && traits::is_scalar_v<RHS>)
+        || (traits::is_scalar_v<LHS> && traits::is_vector_expression_v<RHS>)
+        || (traits::is_vector_expression_v<
+                LHS> && traits::is_vector_expression_v<RHS> && traits::same_axes_v<LHS, RHS>)>>
 constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 {
-    if constexpr (is_vector_expression_v<LHS> && is_scalar_v<RHS>) {
-        using axes_names = axes_names_t<LHS>;
+    if constexpr (traits::is_vector_expression_v<LHS> && traits::is_scalar_v<RHS>) {
+        using axes_names = traits::axes_names_t<LHS>;
         return s::detail::wrap_non_expression_args<
             select_binary_impl<axes_names, vector_scalar_multiply>::template type>(
             std::forward<LHS>(lhs), std::forward<RHS>(rhs));
-    } else if constexpr (is_scalar_v<LHS> && is_vector_expression_v<RHS>) {
-        using axes_names = axes_names_t<RHS>;
+    } else if constexpr (traits::is_scalar_v<LHS> && traits::is_vector_expression_v<RHS>) {
+        using axes_names = traits::axes_names_t<RHS>;
         return s::detail::wrap_non_expression_args<
             select_binary_impl<axes_names, vector_scalar_multiply>::template type>(
             std::forward<RHS>(rhs), std::forward<LHS>(lhs));
-    } else if constexpr (is_vector_expression_v<
-                             LHS> && is_vector_expression_v<RHS> && same_axes_v<LHS, RHS>) {
-        using axes_names = axes_names_t<RHS>;
+    } else if constexpr (
+        traits::is_vector_expression_v<
+            LHS> && traits::is_vector_expression_v<RHS> && traits::same_axes_v<LHS, RHS>) {
+        using axes_names = traits::axes_names_t<RHS>;
         static_assert((utils::is_decl_complete_v<vector_vector_multiply<axes_names, LHS, RHS>>),
                       "Vector multiplication is not defined for this axes");
         return make_binary_expression<
@@ -437,11 +439,12 @@ struct vector_scalar_divide : binary_vector_expression_axes<vector_scalar_divide
 };
 
 template <typename LHS, typename RHS,
-          typename = std::enable_if_t<is_vector_expression_v<LHS> && is_scalar_v<RHS>>>
+          typename
+          = std::enable_if_t<traits::is_vector_expression_v<LHS> && traits::is_scalar_v<RHS>>>
 constexpr auto
 operator/(LHS&& lhs, RHS&& rhs)
 {
-    using axes_names = axes_names_t<LHS>;
+    using axes_names = traits::axes_names_t<LHS>;
     return s::detail::wrap_non_expression_args<
         select_binary_impl<axes_names, vector_scalar_divide>::template type>(
         std::forward<LHS>(lhs), std::forward<RHS>(rhs));
@@ -481,12 +484,12 @@ private:
 //@{
 /** @name Magnitude (squared and not) */
 template <typename Axes, typename Vector>
-struct vector_magnitude_squared
-    : scalar_expression<vector_magnitude_squared<Axes, Vector>, scalar_expression_result_t<Vector>>,
-      unary_expression<Vector> {
-    static_assert(is_vector_expression_v<Vector>, "Argument to magnitude must be a vector");
+struct vector_magnitude_squared : scalar_expression<vector_magnitude_squared<Axes, Vector>,
+                                                    traits::scalar_expression_result_t<Vector>>,
+                                  unary_expression<Vector> {
+    static_assert(traits::is_vector_expression_v<Vector>, "Argument to magnitude must be a vector");
     using base_type  = scalar_expression<vector_magnitude_squared<Axes, Vector>,
-                                        scalar_expression_result_t<Vector>>;
+                                        traits::scalar_expression_result_t<Vector>>;
     using value_type = typename base_type::value_type;
 
     using expression_base   = unary_expression<Vector>;
@@ -516,12 +519,12 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename Expr, typename = enable_if_vector_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude_square(Expr&& expr)
 {
     // TODO Special handling for non-cartesian coordinate systems
-    using axes_names = axes_names_t<Expr>;
+    using axes_names = traits::axes_names_t<Expr>;
     return make_unary_expression<
         select_unary_impl<axes_names, vector_magnitude_squared>::template type>(
         std::forward<Expr>(expr));
@@ -530,11 +533,11 @@ magnitude_square(Expr&& expr)
 template <typename Axes, typename Expr>
 struct vector_magnitude;
 
-template <typename Expr, typename = enable_if_vector_expression<Expr>>
+template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
 magnitude(Expr&& expr)
 {
-    using axes_names = axes_names_t<Expr>;
+    using axes_names = traits::axes_names_t<Expr>;
     if constexpr (utils::is_decl_complete_v<vector_magnitude<axes_names, Expr>>) {
         return make_unary_expression<
             select_unary_impl<axes_names, vector_magnitude>::template type>(
@@ -544,14 +547,14 @@ magnitude(Expr&& expr)
     }
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 distance_square(LHS&& lhs, RHS&& rhs)
 {
     return magnitude_square(lhs - rhs);
 }
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
 distance(LHS&& lhs, RHS&& rhs)
 {
@@ -563,12 +566,12 @@ distance(LHS&& lhs, RHS&& rhs)
 template <typename Axes, typename Expr>
 struct vector_normalize;
 
-template <typename Expr, typename = std::enable_if_t<is_vector_expression_v<Expr>>>
+template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
 normalize(Expr&& expr)
 {
     // TODO Special handling for non-cartesian coordinate systems
-    using axes_names = axes_names_t<Expr>;
+    using axes_names = traits::axes_names_t<Expr>;
     if constexpr (utils::is_decl_complete_v<vector_normalize<axes_names, Expr>>) {
         return make_unary_expression<
             select_unary_impl<axes_names, vector_normalize>::template type>(
@@ -583,10 +586,10 @@ normalize(Expr&& expr)
 /** @name Apply a predicate to each vector component */
 template <typename Expr, typename Predicate>
 struct vector_apply
-    : vector_expression<vector_apply<Expr, Predicate>, vector_expression_result_t<Expr>>,
+    : vector_expression<vector_apply<Expr, Predicate>, traits::vector_expression_result_t<Expr>>,
       binary_expression<Expr, Predicate> {
-    using base_type
-        = vector_expression<vector_apply<Expr, Predicate>, vector_expression_result_t<Expr>>;
+    using base_type       = vector_expression<vector_apply<Expr, Predicate>,
+                                        traits::vector_expression_result_t<Expr>>;
     using value_type      = typename base_type::value_type;
     using expression_base = binary_expression<Expr, Predicate>;
     using expression_base::expression_base;
@@ -599,7 +602,7 @@ struct vector_apply
     }
 };
 
-template <typename Expr, typename Predicate, typename = enable_if_vector_expression<Expr>>
+template <typename Expr, typename Predicate, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
 apply(Expr&& expr, Predicate&& pred)
 {
@@ -612,8 +615,9 @@ apply(Expr&& expr, Predicate&& pred)
 template <typename LHS, typename RHS>
 struct vector_dot_product : binary_scalar_expression<vector_dot_product, LHS, RHS>,
                             binary_expression<LHS, RHS> {
-    static_assert((is_vector_expression_v<LHS> && is_vector_expression_v<RHS>),
+    static_assert((traits::is_vector_expression_v<LHS> && traits::is_vector_expression_v<RHS>),
                   "Both sides to the dot product must be vector expressions");
+    // TODO Replace with trait
     static_assert(std::decay_t<LHS>::size == std::decay_t<RHS>::size,
                   "Vector expressions must be of the same size");
 
@@ -647,10 +651,10 @@ private:
     mutable value_type          value_cache_ = nval;
 };
 
-template <typename LHS, typename RHS, typename = enable_if_vector_expressions<LHS, RHS>,
-          typename = enable_for_compatible_axes<LHS, RHS>,
-          typename = disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
-          typename = disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
+          typename = traits::enable_for_compatible_axes<LHS, RHS>,
+          typename = traits::disable_for_axes<LHS, axes::polar, axes::spherical, axes::cylindrical>,
+          typename = traits::disable_for_axes<RHS, axes::polar, axes::spherical, axes::cylindrical>>
 constexpr auto
 dot_product(LHS&& lhs, RHS&& rhs)
 {
@@ -663,7 +667,8 @@ dot_product(LHS&& lhs, RHS&& rhs)
 // TODO Move to a separate header
 template <typename Start, typename End, typename U,
           typename = std::enable_if_t<
-              is_vector_expression_v<Start> && is_vector_expression_v<End> && is_scalar_v<U>>>
+              traits::is_vector_expression_v<
+                  Start> && traits::is_vector_expression_v<End> && traits::is_scalar_v<U>>>
 constexpr auto
 lerp(Start&& start, End&& end, U&& percent)
 {
@@ -674,8 +679,9 @@ lerp(Start&& start, End&& end, U&& percent)
 // TODO Move to a separate header
 template <typename Start, typename End, typename U,
           typename = std::enable_if_t<
-              is_vector_expression_v<Start> && is_vector_expression_v<End> && is_scalar_v<U>>>
-vector_expression_result_t<Start, End>
+              traits::is_vector_expression_v<
+                  Start> && traits::is_vector_expression_v<End> && traits::is_scalar_v<U>>>
+traits::vector_expression_result_t<Start, End>
 slerp(Start&& start, End&& end, U&& percent)
 {
     using value_traits = typename std::decay_t<Start>::traits::value_traits;

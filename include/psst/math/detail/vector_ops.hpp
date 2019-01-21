@@ -18,7 +18,7 @@ namespace detail {
 template <typename T, std::size_t Size, typename Axes>
 struct vector_ops {
     using vector_type      = vector<T, Size, Axes>;
-    using value_traits     = scalar_value_traits<T>;
+    using value_traits     = traits::scalar_value_traits<T>;
     using value_type       = typename value_traits::value_type;
     using lvalue_reference = typename value_traits::lvalue_reference;
     using const_reference  = typename value_traits::const_reference;
@@ -33,7 +33,7 @@ struct vector_ops {
         return res;
     }
 
-    template <typename U, typename = enable_if_addition_defined<vector_type, U>>
+    template <typename U, typename = traits::enable_if_addition_defined<vector_type, U>>
     vector_type&
     operator+=(U&& rhs)
     {
@@ -41,7 +41,7 @@ struct vector_ops {
         return rebind();
     }
 
-    template <typename U, typename = enable_if_difference_defined<vector_type, U>>
+    template <typename U, typename = traits::enable_if_difference_defined<vector_type, U>>
     vector_type&
     operator-=(U&& rhs)
     {
@@ -50,7 +50,7 @@ struct vector_ops {
     }
 
     // TODO Check for compatibility of result
-    template <typename U, typename = enable_if_multiplication_defined<vector_type, U>>
+    template <typename U, typename = traits::enable_if_multiplication_defined<vector_type, U>>
     vector_type&
     operator*=(U&& rhs)
     {
@@ -58,7 +58,7 @@ struct vector_ops {
         return rebind();
     }
 
-    template <typename U, typename = enable_if_division_defined<vector_type, U>>
+    template <typename U, typename = traits::enable_if_division_defined<vector_type, U>>
     vector_type&
     operator/=(U&& rhs)
     {
@@ -78,7 +78,7 @@ struct vector_ops {
         return expr::magnitude(rebind());
     }
 
-    template <typename U, typename = enable_if_dot_product_defined<vector_type, U>>
+    template <typename U, typename = traits::enable_if_dot_product_defined<vector_type, U>>
     constexpr auto
     dot(U&& rhs) const
     {

@@ -87,11 +87,11 @@ struct quaternion_scalar_part : unary_scalar_expression<quaternion_scalar_part, 
 template <typename Expr>
 struct quaternion_vector_part
     : unary_vector_expression<quaternion_vector_part, Expr,
-                              vector<scalar_expression_result_t<Expr>, 3, axes::xyzw>>,
+                              vector<traits::scalar_expression_result_t<Expr>, 3, axes::xyzw>>,
       unary_expression<Expr> {
     using base_type
         = unary_vector_expression<quaternion_vector_part, Expr,
-                                  vector<scalar_expression_result_t<Expr>, 3, axes::xyzw>>;
+                                  vector<traits::scalar_expression_result_t<Expr>, 3, axes::xyzw>>;
     using expression_base = unary_expression<Expr>;
     using expression_base::expression_base;
 
@@ -192,7 +192,7 @@ struct quaternion_conjugate : unary_vector_expression<quaternion_conjugate, Expr
     }
 };
 
-template <typename Expr, typename = enable_for_axes<Expr, axes::wxyz>>
+template <typename Expr, typename = traits::enable_for_axes<Expr, axes::wxyz>>
 constexpr auto
 conjugate(Expr&& expr)
 {
@@ -201,7 +201,7 @@ conjugate(Expr&& expr)
 //@}
 
 //@{
-template <typename Expr, typename = enable_for_axes<Expr, axes::wxyz>>
+template <typename Expr, typename = traits::enable_for_axes<Expr, axes::wxyz>>
 constexpr auto
 inverse(Expr&& expr)
 {

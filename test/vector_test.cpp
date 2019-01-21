@@ -25,7 +25,7 @@ using vector3df = vector<float, 3>;
 
 TEST(Scalar, Compare)
 {
-    using traits = scalar_value_traits<float>;
+    using traits = traits::scalar_value_traits<float>;
     auto i_val   = 42;
     auto d_val   = 42.0;
     auto ds_val  = expr::make_scalar_constant(42.0);

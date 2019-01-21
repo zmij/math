@@ -353,8 +353,8 @@ namespace color {
 //@{
 /** @name is_color */
 template <typename T>
-struct is_color : has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla, axes::hsva,
-                             axes::grayscale, axes::grayscale_hex> {};
+struct is_color : traits::has_axes_t<T, axes::rgba, axes::rgba_hex, axes::argb, axes::hsla,
+                                     axes::hsva, axes::grayscale, axes::grayscale_hex> {};
 template <typename T>
 using is_color_t = typename is_color<T>::type;
 template <typename T>
@@ -456,11 +456,11 @@ struct color_chroma<axes::hsva, Expr>
     }
 };
 
-template <typename Expr, typename = enable_for_axes<Expr, axes::hsla, axes::hsva>>
+template <typename Expr, typename = traits::enable_for_axes<Expr, axes::hsla, axes::hsva>>
 constexpr auto
 chroma(Expr&& expr)
 {
-    using axes_names = axes_names_t<Expr>;
+    using axes_names = traits::axes_names_t<Expr>;
     return make_unary_expression<select_unary_impl<axes_names, color_chroma>::template type>(
         std::forward<Expr>(expr));
 }

@@ -24,7 +24,7 @@ template <typename Matrix>
 void
 MatrixEq(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -38,7 +38,7 @@ template <typename Matrix>
 void
 MatrixCmp(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -52,7 +52,7 @@ template <typename Matrix>
 void
 MatrixAdd(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -64,7 +64,7 @@ template <typename Matrix>
 void
 MatrixSub(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -76,7 +76,7 @@ template <typename Matrix>
 void
 MatrixNeg(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -88,7 +88,7 @@ template <typename Matrix>
 void
 MatrixScalarMul(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -100,7 +100,7 @@ template <typename Matrix>
 void
 MatrixScalarDiv(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -113,7 +113,7 @@ template <typename Matrix>
 void
 MatrixTranspose(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m1
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -126,7 +126,7 @@ template <typename Matrix>
 void
 MatrixColMultiply(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -140,7 +140,7 @@ template <typename Matrix>
 void
 MatrixRowMultiply(benchmark::State& state)
 {
-    using traits_type = matrix_traits<Matrix>;
+    using traits_type = traits::matrix_traits<Matrix>;
     while (state.KeepRunning()) {
         Matrix m
             = make_test_matrix<typename traits_type::value_type>(typename traits_type::size_type{});
@@ -155,8 +155,8 @@ template <typename LMatrix, typename RMatrix = LMatrix>
 void
 MatrixMultiply(benchmark::State& state)
 {
-    using left_traits  = matrix_traits<LMatrix>;
-    using right_traits = matrix_traits<RMatrix>;
+    using left_traits  = traits::matrix_traits<LMatrix>;
+    using right_traits = traits::matrix_traits<RMatrix>;
     while (state.KeepRunning()) {
         LMatrix lhs
             = make_test_matrix<typename left_traits::value_type>(typename left_traits::size_type{});
