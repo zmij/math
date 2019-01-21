@@ -291,6 +291,9 @@ TEST(Vector, Iteration)
 TEST(Vector, Apply)
 {
     vector3d v1{1, -2, 3};
+#ifdef __GLIBCXX__    // Bug in gcc https://goo.gl/4PuzUm
+    [[maybe_unused]] auto f = expr::s::square<float>;
+#endif
     EXPECT_EQ((vector3d{1, 4, 9}), apply(v1, expr::s::square<float>));
 }
 
