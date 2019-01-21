@@ -402,13 +402,13 @@ struct vector_vector_multiply<components::xyzw, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::xyzw::x) {
+        if (i == components::xyzw::x) {
             return this->lhs_.template at<1>() * this->rhs_.template at<2>()
                    - this->lhs_.template at<2>() * this->rhs_.template at<1>();
-        } else if (i == axes::xyzw::y) {
+        } else if (i == components::xyzw::y) {
             return this->lhs_.template at<2>() * this->rhs_.template at<0>()
                    - this->lhs_.template at<0>() * this->rhs_.template at<2>();
-        } else if (i == axes::xyzw::z) {
+        } else if (i == components::xyzw::z) {
             return this->lhs_.template at<0>() * this->rhs_.template at<1>()
                    - this->lhs_.template at<1>() * this->rhs_.template at<0>();
         }

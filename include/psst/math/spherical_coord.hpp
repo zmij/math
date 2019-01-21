@@ -84,7 +84,7 @@ struct vector_scalar_multiply<components::spherical, LHS, RHS>
 
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::spherical::rho) {
+        if (i == components::spherical::rho) {
             return this->lhs_[i] * this->rhs_.value();
         }
         return this->lhs_[i];
@@ -119,7 +119,7 @@ struct vector_scalar_divide<components::spherical, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::spherical::rho) {
+        if (i == components::spherical::rho) {
             return this->lhs_[i] / this->rhs_.value();
         }
         return this->lhs_[i];
@@ -203,9 +203,9 @@ struct vector_normalize<components::spherical, Expr>
 
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::spherical::rho) {
+        if (i == components::spherical::rho) {
             return value_type{1};
-        } else if (i == axes::spherical::inclination) {
+        } else if (i == components::spherical::inclination) {
             if (this->arg_.rho() < 0) {
                 return -this->arg_.inclination();
             } else {

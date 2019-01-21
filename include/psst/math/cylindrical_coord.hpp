@@ -83,7 +83,7 @@ struct vector_scalar_multiply<components::cylindrical, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::cylindrical::rho || i == axes::cylindrical::elevation) {
+        if (i == components::cylindrical::rho || i == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is multiplied
             return this->lhs_[i] * this->rhs_.value();
         } else {
@@ -121,7 +121,7 @@ struct vector_scalar_divide<components::cylindrical, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::cylindrical::rho || i == axes::cylindrical::elevation) {
+        if (i == components::cylindrical::rho || i == components::cylindrical::elevation) {
             // In cylindrical coordinates only rho and elevation is multiplied
             return this->lhs_[i] / this->rhs_.value();
         } else {
@@ -178,7 +178,7 @@ struct vector_normalize<components::cylindrical, Expr>
     constexpr value_type operator[](std::size_t i) const
     {
         // TODO Make magnitude a data field of this expression
-        if (i == axes::cylindrical::rho || i == axes::cylindrical::elevation) {
+        if (i == components::cylindrical::rho || i == components::cylindrical::elevation) {
             return this->arg_[i] / magnitude(this->arg_);
         } else {
             return this->arg_[i];

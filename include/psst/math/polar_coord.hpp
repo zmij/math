@@ -79,7 +79,7 @@ struct vector_scalar_multiply<components::polar, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::polar::rho) {
+        if (i == components::polar::rho) {
             return this->lhs_[i] * this->rhs_.value();
         }
         return this->lhs_[i];
@@ -114,7 +114,7 @@ struct vector_scalar_divide<components::polar, LHS, RHS>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::polar::rho) {
+        if (i == components::polar::rho) {
             return this->lhs_[i] / this->rhs_.value();
         }
         return this->lhs_[i];
@@ -190,7 +190,7 @@ struct vector_normalize<components::polar, Expr>
     }
     constexpr value_type operator[](std::size_t i) const
     {
-        if (i == axes::polar::rho) {
+        if (i == components::polar::rho) {
             return value_type{1};
         }
         if (this->arg_.rho() < 0) {
