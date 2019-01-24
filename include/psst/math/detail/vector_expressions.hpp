@@ -160,7 +160,7 @@ struct vector_cmp : binary_scalar_expression<vector_cmp, LHS, RHS, int>,
 };
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr int
-cmp(LHS&& lhs, RHS&& rhs)
+cmp(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<vector_cmp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -190,7 +190,7 @@ struct vector_eq : binary_scalar_expression<vector_eq, LHS, RHS, bool>,
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator==(LHS&& lhs, RHS&& rhs)
+operator==(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -199,7 +199,7 @@ operator==(LHS&& lhs, RHS&& rhs)
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator!=(LHS&& lhs, RHS&& rhs)
+operator!=(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -231,7 +231,7 @@ struct vector_less : binary_scalar_expression<vector_less, LHS, RHS, bool>,
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator<(LHS&& lhs, RHS&& rhs)
+operator<(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -240,7 +240,7 @@ operator<(LHS&& lhs, RHS&& rhs)
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator<=(LHS&& lhs, RHS&& rhs)
+operator<=(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -249,7 +249,7 @@ operator<=(LHS&& lhs, RHS&& rhs)
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator>(LHS&& lhs, RHS&& rhs)
+operator>(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -258,7 +258,7 @@ operator>(LHS&& lhs, RHS&& rhs)
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-operator>=(LHS&& lhs, RHS&& rhs)
+operator>=(LHS&& lhs, RHS&& rhs) noexcept
 {
     static_assert((traits::compatible_components_v<LHS, RHS>),
                   "Components on the sides of the expression must match or be none");
@@ -293,7 +293,7 @@ template <typename LHS, typename RHS, typename = traits::enable_if_vector_expres
           typename = traits::disable_for_components<RHS, components::polar, components::spherical,
                                                     components::cylindrical>>
 constexpr auto
-operator+(LHS&& lhs, RHS&& rhs)
+operator+(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<vector_sum>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -326,7 +326,7 @@ template <typename LHS, typename RHS, typename = traits::enable_if_vector_expres
           typename = traits::disable_for_components<RHS, components::polar, components::spherical,
                                                     components::cylindrical>>
 constexpr auto
-operator-(LHS&& lhs, RHS&& rhs)
+operator-(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<vector_diff>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -402,7 +402,7 @@ template <
         || (traits::is_scalar_v<LHS> && traits::is_vector_expression_v<RHS>)
         || (traits::is_vector_expression_v<
                 LHS> && traits::is_vector_expression_v<RHS> && traits::same_components_v<LHS, RHS>)>>
-constexpr auto operator*(LHS&& lhs, RHS&& rhs)
+constexpr auto operator*(LHS&& lhs, RHS&& rhs) noexcept
 {
     if constexpr (traits::is_vector_expression_v<LHS> && traits::is_scalar_v<RHS>) {
         using component_names = traits::component_names_t<LHS>;
@@ -534,7 +534,7 @@ private:
 
 template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
-magnitude_square(Expr&& expr)
+magnitude_square(Expr&& expr) noexcept
 {
     // TODO Special handling for non-cartesian coordinate systems
     using component_names = traits::component_names_t<Expr>;
@@ -548,7 +548,7 @@ struct vector_magnitude;
 
 template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
-magnitude(Expr&& expr)
+magnitude(Expr&& expr) noexcept
 {
     using component_names = traits::component_names_t<Expr>;
     if constexpr (utils::is_decl_complete_v<vector_magnitude<component_names, Expr>>) {
@@ -562,14 +562,14 @@ magnitude(Expr&& expr)
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-distance_square(LHS&& lhs, RHS&& rhs)
+distance_square(LHS&& lhs, RHS&& rhs) noexcept
 {
     return magnitude_square(lhs - rhs);
 }
 
 template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>>
 constexpr auto
-distance(LHS&& lhs, RHS&& rhs)
+distance(LHS&& lhs, RHS&& rhs) noexcept
 {
     return magnitude(lhs - rhs);
 }
@@ -581,7 +581,7 @@ struct vector_normalize;
 
 template <typename Expr, typename = traits::enable_if_vector_expression<Expr>>
 constexpr auto
-normalize(Expr&& expr)
+normalize(Expr&& expr) noexcept
 {
     // TODO Special handling for non-cartesian coordinate systems
     using component_names = traits::component_names_t<Expr>;
@@ -671,7 +671,7 @@ template <typename LHS, typename RHS, typename = traits::enable_if_vector_expres
           typename = traits::disable_for_components<RHS, components::polar, components::spherical,
                                                     components::cylindrical>>
 constexpr auto
-dot_product(LHS&& lhs, RHS&& rhs)
+dot_product(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<vector_dot_product>(std::forward<LHS>(lhs),
                                                       std::forward<RHS>(rhs));
@@ -685,7 +685,7 @@ template <typename Start, typename End, typename U,
               traits::is_vector_expression_v<
                   Start> && traits::is_vector_expression_v<End> && traits::is_scalar_v<U>>>
 constexpr auto
-lerp(Start&& start, End&& end, U&& percent)
+lerp(Start&& start, End&& end, U&& percent) noexcept
 {
     return start + (end - start) * percent;
 }

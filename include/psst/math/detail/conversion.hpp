@@ -87,7 +87,7 @@ struct bind_conversion_args {
 
 template <typename Target, typename Expression>
 constexpr auto
-convert(Expression&& expr)
+convert(Expression&& expr) noexcept
 {
     static_assert(traits::is_vector_expression_v<Expression>,
                   "Source expression must be a vector expression");

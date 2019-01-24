@@ -30,7 +30,7 @@ const T pi<T>::value = std::atan((T)1) * 4;
  */
 template <typename T>
 constexpr T
-zero_to_two_pi(T const& val)
+zero_to_two_pi(T const& val) noexcept
 {
     const auto double_pi = math::pi<std::decay_t<T>>::value * 2;
     T          angle     = val;
@@ -45,7 +45,7 @@ zero_to_two_pi(T const& val)
 
 template <typename T>
 constexpr T
-minus_plus_half_pi(T const& angle)
+minus_plus_half_pi(T const& angle) noexcept
 {
     const auto half_pi = math::pi<std::decay_t<T>>::value / 2;
     if (angle < -half_pi)
@@ -57,24 +57,24 @@ minus_plus_half_pi(T const& angle)
 
 template <typename T>
 constexpr T
-degrees_to_radians(T degrees)
+degrees_to_radians(T degrees) noexcept
 {
     return degrees / 180 * pi<std::decay_t<T>>::value;
 }
 
 template <typename T>
 constexpr T
-radians_to_degrees(T radians)
+radians_to_degrees(T radians) noexcept
 {
     return radians / pi<std::decay_t<T>>::value * 180;
 }
 
-inline constexpr double operator"" _deg(long double deg)
+inline constexpr double operator"" _deg(long double deg) noexcept
 {
     return degrees_to_radians(deg);
 }
 
-inline constexpr double operator"" _deg(unsigned long long int deg)
+inline constexpr double operator"" _deg(unsigned long long int deg) noexcept
 {
     return degrees_to_radians<double>(deg);
 }

@@ -127,12 +127,12 @@ struct vector_ops {
 
 private:
     vector_type&
-    rebind()
+    rebind() noexcept
     {
         return static_cast<vector_type&>(*this);
     }
     vector_type const&
-    rebind() const
+    rebind() const noexcept
     {
         return static_cast<vector_type const&>(*this);
     }

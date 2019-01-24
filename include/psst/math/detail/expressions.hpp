@@ -68,7 +68,8 @@ struct unary_expression {
     using arg_storage_type = expression_argument_storage_t<Expression>;
     using arg_ref = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<Expression>>>;
 
-    explicit constexpr unary_expression(arg_type arg) : arg_{std::forward<arg_type>(arg)} {}
+    explicit constexpr unary_expression(arg_type arg) noexcept : arg_{std::forward<arg_type>(arg)}
+    {}
 
     constexpr arg_type
     arg() &&
@@ -130,7 +131,7 @@ struct binary_expression {
     using lhs_ref          = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<LHS>>>;
     using rhs_ref          = std::add_lvalue_reference_t<std::add_const_t<std::decay_t<RHS>>>;
 
-    constexpr binary_expression(lhs_type lhs, rhs_type rhs)
+    constexpr binary_expression(lhs_type lhs, rhs_type rhs) noexcept
         : lhs_{std::forward<lhs_type>(lhs)}, rhs_{std::forward<rhs_type>(rhs)}
     {}
 
@@ -187,7 +188,7 @@ struct n_ary_expression {
     using by_value          = std::integer_sequence<bool, arg_by_value_v<T>...>;
     using arg_indexes_type  = std::index_sequence_for<T...>;
 
-    constexpr n_ary_expression(expression_argument_t<T>... args)
+    constexpr n_ary_expression(expression_argument_t<T>... args) noexcept
         : args_{std::forward<expression_argument_t<T>>(args)...}
     {}
 

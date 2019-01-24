@@ -62,16 +62,16 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Components>> {    //,
 
     constexpr matrix() = default;
 
-    constexpr explicit matrix(value_type val) : matrix(val, col_indexes_type{}) {}
+    constexpr explicit matrix(value_type val) noexcept : matrix(val, col_indexes_type{}) {}
 
-    constexpr explicit matrix(const_pointer p) : matrix(p, row_indexes_type{}) {}
+    constexpr explicit matrix(const_pointer p) noexcept : matrix(p, row_indexes_type{}) {}
 
-    constexpr explicit matrix(const_multi_dim_ptr p) : matrix(p, row_indexes_type{}) {}
+    constexpr explicit matrix(const_multi_dim_ptr p) noexcept : matrix(p, row_indexes_type{}) {}
 
-    constexpr matrix(init_list const& args) : matrix(args, row_indexes_type{}) {}
+    constexpr matrix(init_list const& args) noexcept : matrix(args, row_indexes_type{}) {}
 
     template <typename Expression, typename = math::traits::enable_if_matrix_expression<Expression>>
-    constexpr matrix(Expression&& rhs)
+    constexpr matrix(Expression&& rhs) noexcept
         : matrix(std::forward<Expression>(rhs),
                  utils::make_min_index_sequence<rows, expr::matrix_row_count_v<Expression>>{})
     {}
@@ -221,7 +221,7 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Components>> {    //,
     }
 
     transposed_type
-    transpose() const
+    transpose() const noexcept
     {
         return expr::transpose(*this);
     }
@@ -229,38 +229,39 @@ struct matrix : expr::matrix_expression<matrix<T, RC, CC, Components>> {    //,
     /**
      * Implicit conversion to pointer to element
      */
-    operator pointer() { return data(); }
+    operator pointer() noexcept { return data(); }
     /**
      * Implicit conversion to const pointer to element
      */
-    operator const_pointer() const { return data(); }
+    operator const_pointer() const noexcept { return data(); }
 
     template <typename U = T>
     constexpr static typename std::enable_if<RC == CC, matrix<U, RC, CC, Components>>::type
-    identity()
+    identity() noexcept
     {
         return expr::identity<this_type>();
     }
 
 private:
     template <std::size_t... RI>
-    constexpr matrix(value_type val, std::index_sequence<RI...>)
+    constexpr matrix(value_type val, std::index_sequence<RI...>) noexcept
         : data_({utils::value_fill<RI, row_type>{row_type(val)}.value...})
     {}
     template <std::size_t... RI>
-    constexpr matrix(init_list const& args, std::index_sequence<RI...>)
+    constexpr matrix(init_list const& args, std::index_sequence<RI...>) noexcept
         : data_({row_type(*(args.begin() + RI))...})
     {}
     template <std::size_t... RI>
-    constexpr matrix(const_pointer p, std::index_sequence<RI...>)
+    constexpr matrix(const_pointer p, std::index_sequence<RI...>) noexcept
         : data_({row_type(p + RI * cols)...})
     {}
     template <std::size_t... RI>
-    constexpr matrix(const_multi_dim_ptr p, std::index_sequence<RI...>)
+    constexpr matrix(const_multi_dim_ptr p, std::index_sequence<RI...>) noexcept
         : data_({row_type(p[RI])...})
     {}
     template <typename Expr, std::size_t... RI>
-    constexpr matrix(Expr&& rhs, std::index_sequence<RI...>) : data_({expr::row<RI>(rhs)...})
+    constexpr matrix(Expr&& rhs, std::index_sequence<RI...>) noexcept
+        : data_({expr::row<RI>(rhs)...})
     {}
 
 private:

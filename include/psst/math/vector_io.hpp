@@ -374,7 +374,7 @@ read_binary(std::basic_istream<CharT>& is, T& val)
     return is;
 }
 
-template <typename CharT, typename T, T (*F)(T const&)>
+template <typename CharT, typename T, T (*F)(T const&) noexcept>
 std::basic_istream<CharT>&
 read_binary(std::basic_istream<CharT>& is, value_policy::value_clamp<T, F>&& val)
 {
@@ -388,7 +388,7 @@ read_binary(std::basic_istream<CharT>& is, value_policy::value_clamp<T, F>&& val
 
 namespace value_policy {
 
-template <typename T, T (*F)(T const&)>
+template <typename T, T (*F)(T const&) noexcept>
 std::istream&
 operator>>(std::istream& is, value_clamp<T, F>&& val)
 {

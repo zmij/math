@@ -21,82 +21,82 @@ struct no_change {
     using accessor_type = T&;
 
     static constexpr value_type const&
-    apply(value_type const& val)
+    apply(value_type const& val) noexcept
     {
         return val;
     }
 
     static constexpr value_type&
-    accessor(value_type& val)
+    accessor(value_type& val) noexcept
     {
         return val;
     }
 };
 
-template <typename T, T (*ClampFunction)(T const&)>
+template <typename T, T (*ClampFunction)(T const&) noexcept>
 struct value_clamp {
     using value_type    = T;
     using accessor_type = value_clamp;
 
-    value_clamp(value_type& val) : value{val} {}
+    value_clamp(value_type& val) noexcept : value{val} {}
 
     // Implicit conversion to a const reference to the value
-    operator T const&() const { return value; }
+    operator T const&() const noexcept { return value; }
 
     //@{
     value_clamp&
-    operator=(value_type const& rhs)
+    operator=(value_type const& rhs) noexcept
     {
         value = apply(rhs);
         return *this;
     }
 
     value_clamp&
-    operator+=(value_type const& rhs)
+    operator+=(value_type const& rhs) noexcept
     {
         value = apply(value + rhs);
         return *this;
     }
     value_clamp&
-    operator-=(value_type const& rhs)
+    operator-=(value_type const& rhs) noexcept
     {
         value = apply(value - rhs);
         return *this;
     }
 
     value_clamp&
-    operator*=(value_type const& rhs)
+    operator*=(value_type const& rhs) noexcept
     {
         value = apply(value * rhs);
         return *this;
     }
     value_clamp&
-    operator/=(value_type const& rhs)
+    operator/=(value_type const& rhs) noexcept
     {
         value = apply(value / rhs);
         return *this;
     }
     value_clamp&
-    operator%=(value_type const& rhs)
+    operator%=(value_type const& rhs) noexcept
     {
         value = apply(value % rhs);
         return *this;
     }
 
     value_clamp&
-    operator&=(value_type const& rhs)
+    operator&=(value_type const& rhs) noexcept
     {
         value = apply(value & rhs);
         return *this;
     }
     value_clamp&
-    operator|=(value_type const& rhs)
+    operator|=(value_type const& rhs) noexcept
     {
         value = apply(value | rhs);
         return *this;
     }
     value_clamp&
-    operator^=(value_type const& rhs)
+    operator^=(value_type const& rhs) noexcept
     {
         value = apply(value ^ rhs);
         return *this;
@@ -104,13 +104,13 @@ struct value_clamp {
     //@}
 
     static constexpr value_type
-    apply(value_type const& val)
+    apply(value_type const& val) noexcept
     {
         return (*ClampFunction)(val);
     }
 
     static constexpr value_clamp
-    accessor(value_type& val)
+    accessor(value_type& val) noexcept
     {
         return value_clamp{val};
     }
@@ -198,7 +198,7 @@ struct value_policies<T, Components,
 
 template <typename T>
 constexpr T
-zero_to_one(T const& val)
+zero_to_one(T const& val) noexcept
 {
     if (val < T{0})
         return T{0};
@@ -209,7 +209,7 @@ zero_to_one(T const& val)
 
 template <typename T>
 constexpr T
-minus_one_to_one(T const& val)
+minus_one_to_one(T const& val) noexcept
 {
     if (val < T{-1})
         return T{-1};

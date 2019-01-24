@@ -53,20 +53,21 @@ struct vector : expr::vector_expression<vector<T, Size, Components>>,
      * be called with round parenthesis.
      * @param val
      */
-    constexpr explicit vector(value_type val) : vector(val, index_sequence_type{}) {}
+    constexpr explicit vector(value_type val) noexcept : vector(val, index_sequence_type{}) {}
 
-    constexpr vector(init_list const& args) : vector(args.begin(), index_sequence_type{}) {}
+    constexpr vector(init_list const& args) noexcept : vector(args.begin(), index_sequence_type{})
+    {}
 
-    constexpr vector(const_pointer p) : vector(p, index_sequence_type{}) {}
+    constexpr vector(const_pointer p) noexcept : vector(p, index_sequence_type{}) {}
 
     template <typename U, std::size_t SizeR, typename ComponentsR,
               typename = math::traits::enable_if_compatible_components<Components, ComponentsR>>
-    constexpr /* implicit */ vector(vector<U, SizeR, ComponentsR> const& rhs)
+    constexpr /* implicit */ vector(vector<U, SizeR, ComponentsR> const& rhs) noexcept
         : vector(rhs, utils::make_min_index_sequence<Size, SizeR>{})
     {}
     template <typename Expression, typename = math::traits::enable_if_vector_expression<Expression>,
               typename = math::traits::enable_for_compatible_components<this_type, Expression>>
-    constexpr /* implicit */ vector(Expression&& rhs)
+    constexpr /* implicit */ vector(Expression&& rhs) noexcept
         : vector(
             std::forward<Expression>(rhs),
             utils::make_min_index_sequence<Size,
@@ -165,19 +166,20 @@ struct vector : expr::vector_expression<vector<T, Size, Components>>,
 
 private:
     template <std::size_t... Indexes>
-    constexpr vector(value_type val, std::index_sequence<Indexes...>)
+    constexpr vector(value_type val, std::index_sequence<Indexes...>) noexcept
         : data_({value_policy<Indexes>::apply(utils::value_fill<Indexes, T>{val}.value)...})
     {}
     template <std::size_t... Indexes>
-    constexpr vector(const_pointer p, std::index_sequence<Indexes...>)
+    constexpr vector(const_pointer p, std::index_sequence<Indexes...>) noexcept
         : data_({value_policy<Indexes>::apply(*(p + Indexes))...})
     {}
     template <typename U, std::size_t SizeR, typename ComponentsR, std::size_t... Indexes>
-    constexpr vector(vector<U, SizeR, ComponentsR> const& rhs, std::index_sequence<Indexes...>)
+    constexpr vector(vector<U, SizeR, ComponentsR> const& rhs,
+                     std::index_sequence<Indexes...>) noexcept
         : data_({value_policy<Indexes>::apply(rhs.template at<Indexes>())...})
     {}
     template <typename Expr, std::size_t... Indexes>
-    constexpr vector(Expr&& rhs, std::index_sequence<Indexes...>)
+    constexpr vector(Expr&& rhs, std::index_sequence<Indexes...>) noexcept
         : data_({value_policy<Indexes>::apply(expr::get<Indexes>(std::forward<Expr>(rhs)))...})
     {}
 

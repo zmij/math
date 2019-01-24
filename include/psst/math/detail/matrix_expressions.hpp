@@ -47,7 +47,7 @@ namespace detail {
 
 template <typename T>
 constexpr std::size_t
-matrix_row_count()
+matrix_row_count() noexcept
 {
     static_assert(traits::is_matrix_expression_v<T>, "The expression is not matrix type");
     return std::decay_t<T>::rows;
@@ -87,14 +87,14 @@ struct identity_matrix : matrix_expression<identity_matrix<Matrix>, Matrix> {
 
 template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-identity()
+identity() noexcept
 {
     return identity_matrix<std::decay_t<Matrix>>{};
 }
 
 template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-identity(Matrix&& m)
+identity(Matrix&& m) noexcept
 {
     return identity_matrix<std::decay_t<Matrix>>{};
 }
@@ -137,7 +137,7 @@ struct vector_as_row_matrix
 
 template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
 constexpr auto
-as_row_matrix(Vector&& vec)
+as_row_matrix(Vector&& vec) noexcept
 {
     return make_unary_expression<vector_as_row_matrix>(std::forward<Vector>(vec));
 }
@@ -180,7 +180,7 @@ struct vector_as_col_matrix
 
 template <typename Vector, typename = traits::enable_if_vector_expression<Vector>>
 constexpr auto
-as_col_matrix(Vector&& vec)
+as_col_matrix(Vector&& vec) noexcept
 {
     return make_unary_expression<vector_as_col_matrix>(std::forward<Vector>(vec));
 }
@@ -212,7 +212,7 @@ struct nth_row : vector_expression<nth_row<Matrix, RN>, typename std::decay_t<Ma
 
 template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-row(Matrix&& mtx)
+row(Matrix&& mtx) noexcept
 {
     return make_unary_expression<nth_row, R>(std::forward<Matrix>(mtx));
 }
@@ -243,7 +243,7 @@ struct nth_col : vector_expression<nth_col<Matrix, CN>, typename std::decay_t<Ma
 
 template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-col(Matrix&& mtx)
+col(Matrix&& mtx) noexcept
 {
     return make_unary_expression<nth_col, C>(std::forward<Matrix>(mtx));
 }
@@ -281,7 +281,7 @@ struct matrix_as_row : vector_expression<matrix_as_row<Expr>, matrix_as_row_resu
 
 template <typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-as_vector(Matrix&& mtx)
+as_vector(Matrix&& mtx) noexcept
 {
     using matrix_type = std::decay_t<Matrix>;
     if constexpr (matrix_type::rows == 1) {
@@ -335,7 +335,7 @@ struct remove_nth_row : matrix_expression<remove_nth_row<Matrix, RN>, remove_row
 
 template <std::size_t R, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-remove_row(Matrix&& mtx)
+remove_row(Matrix&& mtx) noexcept
 {
     return make_unary_expression<remove_nth_row, R>(std::forward<Matrix>(mtx));
 }
@@ -382,7 +382,7 @@ struct remove_nth_col : matrix_expression<remove_nth_col<Matrix, CN>, remove_col
 
 template <std::size_t C, typename Matrix, typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-remove_col(Matrix&& mtx)
+remove_col(Matrix&& mtx) noexcept
 {
     return make_unary_expression<remove_nth_col, C>(std::forward<Matrix>(mtx));
 }
@@ -415,7 +415,7 @@ struct matrix_minor : matrix_expression<matrix_minor<Matrix, RN, CN>,
 template <std::size_t R, std::size_t C, typename Matrix,
           typename = traits::enable_if_matrix_expression<Matrix>>
 constexpr auto
-minor(Matrix&& mtx)
+minor(Matrix&& mtx) noexcept
 {
     return make_unary_expression<matrix_minor, R, C>(std::forward<Matrix>(mtx));
 }
@@ -486,7 +486,7 @@ template <typename LHS, typename RHS,
           typename = std::enable_if_t<
               traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>>>
 constexpr auto
-cmp(LHS&& lhs, RHS&& rhs)
+cmp(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_cmp>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -515,14 +515,14 @@ struct matrix_eq : binary_scalar_expression<matrix_eq, LHS, RHS, bool>,
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator==(LHS&& lhs, RHS&& rhs)
+operator==(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_eq>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator!=(LHS&& lhs, RHS&& rhs)
+operator!=(LHS&& lhs, RHS&& rhs) noexcept
 {
     return !(std::forward<LHS>(lhs) == std::forward<RHS>(rhs));
 }
@@ -551,28 +551,28 @@ struct matrix_less : binary_scalar_expression<matrix_less, LHS, RHS, bool>,
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator<(LHS&& lhs, RHS&& rhs)
+operator<(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_less>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator<=(LHS&& lhs, RHS&& rhs)
+operator<=(LHS&& lhs, RHS&& rhs) noexcept
 {
     return !(std::forward<RHS>(rhs) < std::forward<LHS>(lhs));
 }
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator>(LHS&& lhs, RHS&& rhs)
+operator>(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_less>(std::forward<RHS>(rhs), std::forward<LHS>(lhs));
 }
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator>=(LHS&& lhs, RHS&& rhs)
+operator>=(LHS&& lhs, RHS&& rhs) noexcept
 {
     return !(std::forward<LHS>(lhs) < std::forward<RHS>(rhs));
 }
@@ -597,7 +597,7 @@ struct matrix_transpose
 
     template <std::size_t R, std::size_t C>
     constexpr value_type
-    element() const
+    element() const noexcept
     {
         static_assert(R < base_type::rows, "Invalid matrix expression row index");
         static_assert(C < base_type::cols, "Invalid matrix expression col index");
@@ -607,7 +607,7 @@ struct matrix_transpose
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-transpose(Expr&& expr)
+transpose(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_transpose>(std::forward<Expr>(expr));
 }
@@ -637,7 +637,7 @@ struct matrix_secondary_flip
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-flip_secondary(Expr&& expr)
+flip_secondary(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_secondary_flip>(std::forward<Expr>(expr));
 }
@@ -667,7 +667,7 @@ struct matrix_horizontal_flip
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-flip_horizontally(Expr&& expr)
+flip_horizontally(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_horizontal_flip>(std::forward<Expr>(expr));
 }
@@ -697,7 +697,7 @@ struct matrix_vertical_flip
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-flip_vertically(Expr&& expr)
+flip_vertically(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_vertical_flip>(std::forward<Expr>(expr));
 }
@@ -727,7 +727,7 @@ struct matrix_cw_rotation
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-rotate_cw(Expr&& expr)
+rotate_cw(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_cw_rotation>(std::forward<Expr>(expr));
 }
@@ -757,7 +757,7 @@ struct matrix_ccw_rotation
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-rotate_ccw(Expr&& expr)
+rotate_ccw(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_ccw_rotation>(std::forward<Expr>(expr));
 }
@@ -787,7 +787,7 @@ struct matrix_180_rotate
 
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-rotate_180(Expr&& expr)
+rotate_180(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_180_rotate>(std::forward<Expr>(expr));
 }
@@ -834,7 +834,7 @@ struct matrix_sum : matrix_expression<matrix_sum<LHS, RHS>, matrix_sum_result_t<
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator+(LHS&& lhs, RHS&& rhs)
+operator+(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_sum>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -864,7 +864,7 @@ struct matrix_diff : matrix_expression<matrix_diff<LHS, RHS>, matrix_sum_result_
 
 template <typename LHS, typename RHS, typename = traits::enable_if_matrix_expressions<LHS, RHS>>
 constexpr auto
-operator-(LHS&& lhs, RHS&& rhs)
+operator-(LHS&& lhs, RHS&& rhs) noexcept
 {
     return make_binary_expression<matrix_diff>(std::forward<LHS>(lhs), std::forward<RHS>(rhs));
 }
@@ -938,7 +938,7 @@ template <typename LHS, typename RHS,
           typename
           = std::enable_if_t<traits::is_matrix_expression_v<LHS> && traits::is_scalar_v<RHS>>>
 constexpr auto
-operator/(LHS&& lhs, RHS&& rhs)
+operator/(LHS&& lhs, RHS&& rhs) noexcept
 {
     return s::detail::wrap_non_expression_args<matrix_scalar_divide>(std::forward<LHS>(lhs),
                                                                      std::forward<RHS>(rhs));
@@ -995,7 +995,7 @@ template <typename LHS, typename RHS,
               || (traits::is_matrix_expression_v<LHS> && traits::is_matrix_expression_v<RHS>)
               || (traits::is_matrix_expression_v<LHS> && traits::is_vector_expression_v<RHS>)
               || (traits::is_vector_expression_v<LHS> && traits::is_matrix_expression_v<RHS>)>>
-constexpr auto operator*(LHS&& lhs, RHS&& rhs)
+constexpr auto operator*(LHS&& lhs, RHS&& rhs) noexcept
 {
     if constexpr (traits::is_matrix_expression_v<LHS> && traits::is_scalar_v<RHS>) {
         return s::detail::wrap_non_expression_args<matrix_scalar_multiply>(std::forward<LHS>(lhs),
@@ -1021,7 +1021,7 @@ constexpr auto operator*(LHS&& lhs, RHS&& rhs)
 /** @name Matrix determinant */
 template <typename Expr, typename = traits::enable_if_matrix_expression<Expr>>
 constexpr auto
-det(Expr&& mtx);
+det(Expr&& mtx) noexcept;
 
 template <typename Expr>
 struct matrix_determinant
@@ -1073,7 +1073,7 @@ private:
 
 template <typename Expr, typename>
 constexpr auto
-det(Expr&& expr)
+det(Expr&& expr) noexcept
 {
     return make_unary_expression<matrix_determinant>(std::forward<Expr>(expr));
 }

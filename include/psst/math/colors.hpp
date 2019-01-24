@@ -404,7 +404,7 @@ using grayscale_alpha = vector<T, 2, components::grayscale>;
 using rgb_hex  = vector<std::uint8_t, 3, components::rgba_hex>;
 using rgba_hex = vector<std::uint8_t, 4, components::rgba_hex>;
 
-inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
+inline constexpr rgba_hex operator"" _rgba(unsigned long long val) noexcept
 {
     // clang-format off
     rgba_hex res{
@@ -417,7 +417,7 @@ inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
     return res;
 }
 
-inline constexpr rgb_hex operator"" _rgb(unsigned long long val)
+inline constexpr rgb_hex operator"" _rgb(unsigned long long val) noexcept
 {
     // clang-format off
     rgb_hex res{
@@ -431,7 +431,7 @@ inline constexpr rgb_hex operator"" _rgb(unsigned long long val)
 
 template <typename T>
 T
-get_hex_color_component(std::uint8_t hex)
+get_hex_color_component(std::uint8_t hex) noexcept
 {
     return hex / T{255};
 }
@@ -478,7 +478,7 @@ struct color_chroma<components::hsva, Expr>
 template <typename Expr,
           typename = traits::enable_for_components<Expr, components::hsla, components::hsva>>
 constexpr auto
-chroma(Expr&& expr)
+chroma(Expr&& expr) noexcept
 {
     using component_names = traits::component_names_t<Expr>;
     return make_unary_expression<select_unary_impl<component_names, color_chroma>::template type>(
