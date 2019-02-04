@@ -676,6 +676,18 @@ dot_product(LHS&& lhs, RHS&& rhs)
     return make_binary_expression<vector_dot_product>(std::forward<LHS>(lhs),
                                                       std::forward<RHS>(rhs));
 }
+template <typename LHS, typename RHS, typename = traits::enable_if_vector_expressions<LHS, RHS>,
+          typename = traits::enable_for_compatible_components<LHS, RHS>,
+          typename = traits::disable_for_components<LHS, components::polar, components::spherical,
+                                                    components::cylindrical>,
+          typename = traits::disable_for_components<RHS, components::polar, components::spherical,
+                                                    components::cylindrical>>
+constexpr auto
+dot(LHS&& lhs, RHS&& rhs) noexcept
+{
+    return make_binary_expression<vector_dot_product>(std::forward<LHS>(lhs),
+                                                      std::forward<RHS>(rhs));
+}
 //@}
 
 //----------------------------------------------------------------------------
