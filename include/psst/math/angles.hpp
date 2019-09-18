@@ -57,6 +57,24 @@ minus_plus_half_pi(T const& angle)
 
 template <typename T>
 constexpr T
+minus_plus_pi(T const& val)
+{
+    const auto pi        = math::pi<std::decay_t<T>>::value * 2;
+    const auto double_pi = pi * 2;
+
+    T angle = val;
+    while (angle > pi) {
+        angle -= double_pi;
+    }
+    while (angle < -pi) {
+        angle += double_pi;
+    }
+
+    return angle;
+}
+
+template <typename T>
+constexpr T
 degrees_to_radians(T degrees)
 {
     return degrees / 180 * pi<std::decay_t<T>>::value;

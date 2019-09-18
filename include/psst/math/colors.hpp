@@ -10,7 +10,6 @@
 #define PSST_MATH_COLORS_HPP_
 
 #include <psst/math/vector.hpp>
-#include <psst/math/vector_io.hpp>
 
 namespace psst {
 namespace math {
@@ -37,6 +36,19 @@ struct argb {
           >;
     // clang-format on
 };
+struct argb_hex {
+    static constexpr std::size_t min_components = 4;
+    static constexpr std::size_t max_components = 4;
+    static constexpr std::size_t a              = 0;
+    static constexpr std::size_t r              = 1;
+    static constexpr std::size_t g              = 2;
+    static constexpr std::size_t b              = 3;
+    static constexpr std::size_t alpha          = a;
+    static constexpr std::size_t red            = r;
+    static constexpr std::size_t green          = g;
+    static constexpr std::size_t blue           = b;
+};
+
 struct rgba {
     static constexpr std::size_t min_components = 3;
     static constexpr std::size_t max_components = 4;
@@ -149,6 +161,30 @@ struct component_access<4, components::argb, VectorType, T>
     : basic_component_access<VectorType, T, components::argb> {
 
     using base_type = basic_component_access<VectorType, T, components::argb>;
+
+    PSST_MATH_COMPONENT_ACCESS(a)
+    PSST_MATH_COMPONENT_ACCESS(alpha);
+    PSST_MATH_COMPONENT_ACCESS(r)
+    PSST_MATH_COMPONENT_ACCESS(red)
+    PSST_MATH_COMPONENT_ACCESS(g)
+    PSST_MATH_COMPONENT_ACCESS(green)
+    PSST_MATH_COMPONENT_ACCESS(b)
+    PSST_MATH_COMPONENT_ACCESS(blue)
+
+    constexpr vector<T, 4, components::rgba>
+    rgba() const
+    {
+        return {r(), g(), b(), a()};
+    }
+};
+//@}
+
+/** @name components::argb components names */
+template <typename VectorType, typename T>
+struct component_access<4, components::argb_hex, VectorType, T>
+    : basic_component_access<VectorType, T, components::argb_hex> {
+
+    using base_type = basic_component_access<VectorType, T, components::argb_hex>;
 
     PSST_MATH_COMPONENT_ACCESS(a)
     PSST_MATH_COMPONENT_ACCESS(alpha);
@@ -404,6 +440,8 @@ using grayscale_alpha = vector<T, 2, components::grayscale>;
 using rgb_hex  = vector<std::uint8_t, 3, components::rgba_hex>;
 using rgba_hex = vector<std::uint8_t, 4, components::rgba_hex>;
 
+using argb_hex = vector<std::uint8_t, 4, components::argb_hex>;
+
 inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
 {
     // clang-format off
@@ -421,6 +459,19 @@ inline constexpr rgb_hex operator"" _rgb(unsigned long long val)
 {
     // clang-format off
     rgb_hex res{
+        (std::uint8_t)((val & 0xff0000) >> 16),
+        (std::uint8_t)((val & 0xff00) >> 8),
+        (std::uint8_t)(val & 0xff)
+    };
+    // clang-format on
+    return res;
+}
+
+inline constexpr argb_hex operator"" _argb(unsigned long long val)
+{
+    // clang-format off
+    argb_hex res{
+        (std::uint8_t)((val & 0xff000000) >> 24),
         (std::uint8_t)((val & 0xff0000) >> 16),
         (std::uint8_t)((val & 0xff00) >> 8),
         (std::uint8_t)(val & 0xff)
@@ -485,6 +536,23 @@ chroma(Expr&& expr)
         std::forward<Expr>(expr));
 }
 
+//@{
+/** @name hex <-> double conversion */
+template <typename T, typename Expression>
+struct conversion<color::rgb_hex, color::rgb<T>, Expression> : unary_expression<Expression> {
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    result() const
+    {
+        using color::get_hex_color_component;
+        return color::rgb<T>{get_hex_color_component<T>(this->arg_.r()),
+                             get_hex_color_component<T>(this->arg_.g()),
+                             get_hex_color_component<T>(this->arg_.b())};
+    }
+};
+
 template <typename T, typename Expression>
 struct conversion<color::rgba_hex, color::rgba<T>, Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
@@ -501,6 +569,33 @@ struct conversion<color::rgba_hex, color::rgba<T>, Expression> : unary_expressio
 };
 
 template <typename T, typename Expression>
+struct conversion<color::argb_hex, color::argb<T>, Expression> : unary_expression<Expression> {
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    result() const
+    {
+        using color::get_hex_color_component;
+        return color::argb<T>{
+            get_hex_color_component<T>(this->arg_.r()), get_hex_color_component<T>(this->arg_.g()),
+            get_hex_color_component<T>(this->arg_.b()), get_hex_color_component<T>(this->arg_.a())};
+    }
+};
+
+template <typename T, typename Expression>
+struct conversion<color::rgb<T>, color::rgb_hex, Expression> : unary_expression<Expression> {
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    result() const
+    {
+        return color::rgba_hex{this->arg_.r() * 0xff, this->arg_.g() * 0xff, this->arg_.b() * 0xff};
+    }
+};
+
+template <typename T, typename Expression>
 struct conversion<color::rgba<T>, color::rgba_hex, Expression> : unary_expression<Expression> {
     using expression_base = unary_expression<Expression>;
     using expression_base::expression_base;
@@ -512,6 +607,20 @@ struct conversion<color::rgba<T>, color::rgba_hex, Expression> : unary_expressio
                                this->arg_.a() * 0xff};
     }
 };
+
+template <typename T, typename Expression>
+struct conversion<color::argb<T>, color::argb_hex, Expression> : unary_expression<Expression> {
+    using expression_base = unary_expression<Expression>;
+    using expression_base::expression_base;
+
+    constexpr auto
+    result() const
+    {
+        return color::argb_hex{this->arg_.r() * 0xff, this->arg_.g() * 0xff, this->arg_.b() * 0xff,
+                               this->arg_.a() * 0xff};
+    }
+};
+//@}
 
 //@{
 /** @name HSL -> RGB conversion */
@@ -534,17 +643,41 @@ struct conversion<vector<T, Size, components::hsla>, vector<U, Size, components:
         value_type x       = c * (1 - abs(fmod(segment, 2) - 1));
         value_type m       = this->arg_.l() - c / 2;
         if (0 <= segment && segment < 1) {
-            return result_type{c + m, x + m, m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{c + m, x + m, m, this->arg_.a()};
+            } else {
+                return result_type{c + m, x + m, m};
+            }
         } else if (1 <= segment && segment < 2) {
-            return result_type{x + m, c + m, m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{x + m, c + m, m, this->arg_.a()};
+            } else {
+                return result_type{x + m, c + m, m};
+            }
         } else if (2 <= segment && segment < 3) {
-            return result_type{m, c + m, x + m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{m, c + m, x + m, this->arg_.a()};
+            } else {
+                return result_type{m, c + m, x + m};
+            }
         } else if (3 <= segment && segment < 4) {
-            return result_type{m, x + m, c + m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{m, x + m, c + m, this->arg_.a()};
+            } else {
+                return result_type{m, x + m, c + m};
+            }
         } else if (4 <= segment && segment < 5) {
-            return result_type{x + m, m, c + m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{x + m, m, c + m, this->arg_.a()};
+            } else {
+                return result_type{x + m, m, c + m};
+            }
         } else if (5 <= segment && segment < 6) {
-            return result_type{c + m, m, x + m, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{c + m, m, x + m, this->arg_.a()};
+            } else {
+                return result_type{c + m, m, x + m};
+            }
         }
         return result_type{};
     }
@@ -574,26 +707,50 @@ struct conversion<vector<T, Size, components::rgba>, vector<U, Size, components:
         value_type d    = cmax - cmin;
         value_type l    = (cmax + cmin) / 2;
         value_type s    = 0;
-        if (l != 0) {
+        if (l != 0 && l != 1) {
             s = d / (1 - abs(2 * l - 1));
         }
         if (d == 0) {
-            return result_type{0, s, l, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{0, s, l, this->arg_.a()};
+            } else {
+                return result_type{0, s, l};
+            }
         } else if (cmax == this->arg_.r()) {
-            return result_type{pi<value_type>::value / 3
-                                   * (value_type)fmod((this->arg_.g() - this->arg_.b()) / d, 6),
-                               s, l, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{pi<value_type>::value / 3
+                                       * (value_type)fmod((this->arg_.g() - this->arg_.b()) / d, 6),
+                                   s, l, this->arg_.a()};
+            } else {
+                return result_type{pi<value_type>::value / 3
+                                       * (value_type)fmod((this->arg_.g() - this->arg_.b()) / d, 6),
+                                   s, l};
+            }
         } else if (cmax == this->arg_.g()) {
-            return result_type{pi<value_type>::value / 3
-                                   * ((this->arg_.b() - this->arg_.r()) / d + 2),
-                               s, l, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{pi<value_type>::value / 3
+                                       * ((this->arg_.b() - this->arg_.r()) / d + 2),
+                                   s, l, this->arg_.a()};
+            } else {
+                return result_type{
+                    pi<value_type>::value / 3 * ((this->arg_.b() - this->arg_.r()) / d + 2), s, l};
+            }
         } else if (cmax == this->arg_.b()) {
-            return result_type{pi<value_type>::value / 3
-                                   * ((this->arg_.r() - this->arg_.g()) / d + 4),
-                               s, l, this->arg_.a()};
+            if constexpr (Size >= 4) {
+                return result_type{pi<value_type>::value / 3
+                                       * ((this->arg_.r() - this->arg_.g()) / d + 4),
+                                   s, l, this->arg_.a()};
+            } else {
+                return result_type{
+                    pi<value_type>::value / 3 * ((this->arg_.r() - this->arg_.g()) / d + 4), s, l};
+            }
         }
 
-        return result_type{0, s, l, this->arg_.a()};
+        if constexpr (Size >= 4) {
+            return result_type{0, s, l, this->arg_.a()};
+        } else {
+            return result_type{0, s, l};
+        }
     }
 };
 //@}
@@ -686,19 +843,6 @@ struct conversion<vector<T, Size, components::rgba>, vector<U, Size, components:
 }    // namespace v
 
 }    // namespace expr
-
-inline std::ostream&
-operator<<(std::ostream& os, color::rgba_hex const& val)
-{
-    // clang-format off
-    os << '#' << std::hex << std::setfill('0')
-       << std::setw(2) << (unsigned int)val.red()
-       << std::setw(2) << (unsigned int)val.green()
-       << std::setw(2) << (unsigned int)val.blue()
-       << std::setw(2) << (unsigned int)val.alpha();
-    // clang-format on
-    return os;
-}
 
 }    // namespace math
 }    // namespace psst
