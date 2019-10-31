@@ -447,10 +447,10 @@ private:
 };
 
 //----------------------------------------------------------------------------
-template <typename T, typename U, component_order Order = component_order::forward,
+template <typename U, typename T, component_order Order = component_order::forward,
           typename = traits::enable_if_vector<T>>
 constexpr auto
-make_vector_view(U* buffer)
+make_vector_view_impl(U* buffer)
 {
     using value_type      = traits::scalar_expression_result_t<T>;
     using components_type = traits::component_names_t<T>;
@@ -465,7 +465,16 @@ constexpr auto
 make_vector_view(char* buffer)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_vector_view<T, Order>(reinterpret_cast<value_type*>(buffer));
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer));
+}
+
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_vector_view(unsigned char* buffer)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer));
 }
 
 template <typename T, component_order Order = component_order::forward,
@@ -474,7 +483,16 @@ constexpr auto
 make_vector_view(char const* buffer)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_vector_view<T, Order>(reinterpret_cast<value_type const*>(buffer));
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type const*>(buffer));
+}
+
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_vector_view(unsigned char const* buffer)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type const*>(buffer));
 }
 
 template <typename U, typename T, component_order Order = component_order::forward,
