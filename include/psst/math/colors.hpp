@@ -603,8 +603,8 @@ struct conversion<color::rgba<T>, color::rgba_hex, Expression> : unary_expressio
     constexpr auto
     result() const
     {
-        return color::rgba_hex{this->arg_.r() * 0xff, this->arg_.g() * 0xff, this->arg_.b() * 0xff,
-                               this->arg_.a() * 0xff};
+        return color::rgba_hex{static_cast<unsigned char>(this->arg_.r() * 0xff), static_cast<unsigned char>(this->arg_.g() * 0xff), static_cast<unsigned char>(this->arg_.b() * 0xff),
+            static_cast<unsigned char>(this->arg_.a() * 0xff)};
     }
 };
 
