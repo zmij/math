@@ -26,7 +26,7 @@ struct vector_ops {
     using magnitude_type = typename value_traits::magnitude_type;
 
     vector_type
-    operator-()
+    operator-() const
     {
         vector_type res{rebind()};
         res *= -1;

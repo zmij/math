@@ -19,13 +19,13 @@ namespace math {
 // TODO Deal with alignment stuff
 
 // Mutating vector_view
-template <typename T, std::size_t Size, typename Components>
-struct vector_view<T*, Size, Components>
-    : expr::vector_expression<vector_view<T*, Size, Components>, vector<T, Size, Components>> {
+template <typename T, std::size_t Size, typename Components, component_order Order>
+struct vector_view<T*, Size, Components, Order>
+    : expr::vector_expression<vector_view<T*, Size, Components, Order>,
+                              vector<T, Size, Components>> {
 
-    using this_type = vector_view<T*, Size, Components>;
-    using base_expression_type
-        = expr::vector_expression<vector_view<T*, Size, Components>, vector<T, Size, Components>>;
+    using this_type            = vector_view<T*, Size, Components, Order>;
+    using base_expression_type = expr::vector_expression<this_type, vector<T, Size, Components>>;
 
     using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
@@ -35,13 +35,15 @@ struct vector_view<T*, Size, Components>
     using pointer             = typename traits::pointer;
     using const_pointer       = typename traits::const_pointer;
     using index_sequence_type = typename traits::index_sequence_type;
-    using iterator            = typename traits::iterator;
-    using const_iterator      = typename traits::const_iterator;
     using component_access    = typename base_expression_type::component_access;
+    // TODO Reverse interators for reverse order
+    using iterator       = typename traits::iterator;
+    using const_iterator = typename traits::const_iterator;
     template <std::size_t N>
     using value_policy = typename component_access::template value_policy<N>;
 
-    static constexpr auto size = traits::size;
+    static constexpr auto size  = traits::size;
+    static constexpr auto order = Order;
 
     constexpr explicit vector_view(pointer p) : data_{p} {}
 
@@ -71,7 +73,11 @@ struct vector_view<T*, Size, Components>
     at()
     {
         static_assert(N < size, "Invalid component index in vector_view");
-        return data_[N];
+        if constexpr (order == component_order::forward) {
+            return data_[N];
+        } else {
+            return data_[size - N - 1];
+        }
     }
 
     template <std::size_t N>
@@ -79,7 +85,11 @@ struct vector_view<T*, Size, Components>
     at() const
     {
         static_assert(N < size, "Invalid component index in vector_view");
-        return data_[N];
+        if constexpr (order == component_order::forward) {
+            return data_[N];
+        } else {
+            return data_[size - N - 1];
+        }
     }
     iterator
     begin()
@@ -119,13 +129,21 @@ struct vector_view<T*, Size, Components>
     lvalue_reference operator[](std::size_t idx)
     {
         assert(idx < size);
-        return data_[idx];
+        if constexpr (order == component_order::forward) {
+            return data_[idx];
+        } else {
+            return data_[size - idx - 1];
+        }
     }
 
     constexpr const_reference operator[](std::size_t idx) const
     {
         assert(idx < size);
-        return data_[idx];
+        if constexpr (order == component_order::forward) {
+            return data_[idx];
+        } else {
+            return data_[size - idx - 1];
+        }
     }
     // TODO Make converter a CRTP base
     template <typename U>
@@ -157,14 +175,13 @@ private:
 };
 
 // Constant vector_view
-template <typename T, std::size_t Size, typename Components>
-struct vector_view<T const*, Size, Components>
-    : expr::vector_expression<vector_view<T const*, Size, Components>,
+template <typename T, std::size_t Size, typename Components, component_order Order>
+struct vector_view<T const*, Size, Components, Order>
+    : expr::vector_expression<vector_view<T const*, Size, Components, Order>,
                               vector<T, Size, Components>> {
 
-    using this_type            = vector_view<T const*, Size, Components>;
-    using base_expression_type = expr::vector_expression<vector_view<T const*, Size, Components>,
-                                                         vector<T, Size, Components>>;
+    using this_type            = vector_view<T const*, Size, Components, Order>;
+    using base_expression_type = expr::vector_expression<this_type, vector<T, Size, Components>>;
 
     using traits              = traits::vector_traits<typename base_expression_type::result_type>;
     using value_type          = typename traits::value_type;
@@ -174,18 +191,20 @@ struct vector_view<T const*, Size, Components>
     using pointer             = typename traits::pointer;
     using const_pointer       = typename traits::const_pointer;
     using index_sequence_type = typename traits::index_sequence_type;
-    using iterator            = typename traits::iterator;
-    using const_iterator      = typename traits::const_iterator;
     using component_access    = typename base_expression_type::component_access;
+    // TODO Reverse iterators for reverse order
+    using iterator       = typename traits::iterator;
+    using const_iterator = typename traits::const_iterator;
     template <std::size_t N>
     using value_policy = typename component_access::template value_policy<N>;
 
-    static constexpr auto size = traits::size;
+    static constexpr auto size  = traits::size;
+    static constexpr auto order = Order;
 
     constexpr explicit vector_view(pointer p) : data_{p} {}
     constexpr explicit vector_view(const_pointer p) : data_{p} {}
 
-    constexpr const_pointer
+    const_pointer
     data() const
     {
         return data_;
@@ -196,7 +215,11 @@ struct vector_view<T const*, Size, Components>
     at() const
     {
         static_assert(N < size, "Invalid component index in vector_view");
-        return data_[N];
+        if constexpr (order == component_order::forward) {
+            return data_[N];
+        } else {
+            return data_[size - N - 1];
+        }
     }
 
     constexpr const_iterator
@@ -224,7 +247,11 @@ struct vector_view<T const*, Size, Components>
     constexpr const_reference operator[](std::size_t idx) const
     {
         assert(idx < size);
-        return data_[idx];
+        if constexpr (order == component_order::forward) {
+            return data_[idx];
+        } else {
+            return data_[size - idx - 1];
+        }
     }
     // TODO Make converter a CRTP base
     template <typename U>
@@ -246,14 +273,15 @@ private:
  * Utility to treat a region of memory as a 'container' of vectors of certain type
  */
 template <typename T, std::size_t Size,
-          typename Components = components::default_components_t<Size>>
+          typename Components   = components::default_components_t<Size>,
+          component_order Order = component_order::forward>
 struct memory_vector_view;
 
-template <typename T, std::size_t Size, typename Components>
-struct memory_vector_view<T*, Size, Components> {
+template <typename T, std::size_t Size, typename Components, component_order Order>
+struct memory_vector_view<T*, Size, Components, Order> {
     using pointer_type       = T*;
     using const_pointer_type = T const*;
-    using view_type          = vector_view<T*, Size, Components>;
+    using view_type          = vector_view<T*, Size, Components, Order>;
 
     static constexpr std::size_t component_count = Size;
     static constexpr std::size_t element_size    = sizeof(T) * component_count;
@@ -419,60 +447,104 @@ private:
 };
 
 //----------------------------------------------------------------------------
-template <typename T, typename U, typename = traits::enable_if_vector<T>>
+template <typename U, typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
-make_vector_view(U* buffer)
+make_vector_view_impl(U* buffer)
 {
     using value_type      = traits::scalar_expression_result_t<T>;
     using components_type = traits::component_names_t<T>;
     constexpr auto size   = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
-    return vector_view<U*, size, components_type>(buffer);
+    return vector_view<U*, size, components_type, Order>(buffer);
 }
 
-template <typename T, typename = traits::enable_if_vector<T>>
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(char* buffer)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_vector_view<T>(reinterpret_cast<value_type*>(buffer));
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer));
 }
 
-template <typename T, typename = traits::enable_if_vector<T>>
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_vector_view(unsigned char* buffer)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer));
+}
+
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
 make_vector_view(char const* buffer)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_vector_view<T>(reinterpret_cast<value_type const*>(buffer));
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type const*>(buffer));
 }
 
-template <typename T, typename U, typename = traits::enable_if_vector<T>>
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
-make_memory_vector_view(U* val, std::size_t buffer_size)
+make_vector_view(unsigned char const* buffer)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type const*>(buffer));
+}
+
+template <typename U, typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_memory_vector_view_impl(U* val, std::size_t buffer_size)
 {
     using value_type      = traits::scalar_expression_result_t<T>;
     using components_type = traits::component_names_t<T>;
     constexpr auto size   = traits::vector_expression_size_v<T>;
     static_assert((std::is_same<std::decay_t<U>, value_type>{}), "Incompatible pointer type");
-    return memory_vector_view<U*, size, components_type>(val, buffer_size);
+    return memory_vector_view<U*, size, components_type, Order>(val, buffer_size);
 }
 
-template <typename T, typename = traits::enable_if_vector<T>>
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(char* buffer, std::size_t buffer_size)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_memory_vector_view<T>(reinterpret_cast<value_type*>(buffer),
-                                      buffer_size / sizeof(value_type));
+    return make_memory_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer),
+                                                              buffer_size / sizeof(value_type));
 }
 
-template <typename T, typename = traits::enable_if_vector<T>>
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
 constexpr auto
 make_memory_vector_view(char const* buffer, std::size_t buffer_size)
 {
     using value_type = traits::scalar_expression_result_t<T>;
-    return make_memory_vector_view<T>(reinterpret_cast<value_type const*>(buffer),
-                                      buffer_size / sizeof(value_type));
+    return make_memory_vector_view_impl<value_type const, T, Order>(
+        reinterpret_cast<value_type const*>(buffer), buffer_size / sizeof(value_type));
+}
+
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_memory_vector_view(unsigned char* buffer, std::size_t buffer_size)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_memory_vector_view_impl<value_type, T, Order>(reinterpret_cast<value_type*>(buffer),
+                                                              buffer_size / sizeof(value_type));
+}
+
+template <typename T, component_order Order = component_order::forward,
+          typename = traits::enable_if_vector<T>>
+constexpr auto
+make_memory_vector_view(unsigned char const* buffer, std::size_t buffer_size)
+{
+    using value_type = traits::scalar_expression_result_t<T>;
+    return make_memory_vector_view_impl<value_type const, T, Order>(
+        reinterpret_cast<value_type const*>(buffer), buffer_size / sizeof(value_type));
 }
 
 }    // namespace math

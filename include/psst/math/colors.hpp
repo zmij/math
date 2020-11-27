@@ -195,7 +195,7 @@ struct component_access<4, components::argb_hex, VectorType, T>
     PSST_MATH_COMPONENT_ACCESS(b)
     PSST_MATH_COMPONENT_ACCESS(blue)
 
-    constexpr vector<T, 4, components::rgba>
+    constexpr vector<T, 4, components::rgba_hex>
     rgba() const
     {
         return {r(), g(), b(), a()};
@@ -442,6 +442,13 @@ using rgba_hex = vector<std::uint8_t, 4, components::rgba_hex>;
 
 using argb_hex = vector<std::uint8_t, 4, components::argb_hex>;
 
+template <typename T>
+constexpr T
+get_hex_color_component(std::uint8_t hex)
+{
+    return hex / T{255};
+}
+
 inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
 {
     // clang-format off
@@ -450,6 +457,19 @@ inline constexpr rgba_hex operator"" _rgba(unsigned long long val)
         (std::uint8_t)((val & 0xff0000) >> 16),
         (std::uint8_t)((val & 0xff00) >> 8),
         (std::uint8_t)(val & 0xff)
+    };
+    // clang-format on
+    return res;
+}
+
+inline constexpr rgba<double> operator"" _rgba_d(unsigned long long val)
+{
+    // clang-format off
+    rgba<double> res{
+        get_hex_color_component<double>((std::uint8_t)((val & 0xff000000) >> 24)),
+        get_hex_color_component<double>((std::uint8_t)((val & 0xff0000) >> 16)),
+        get_hex_color_component<double>((std::uint8_t)((val & 0xff00) >> 8)),
+        get_hex_color_component<double>((std::uint8_t)(val & 0xff))
     };
     // clang-format on
     return res;
@@ -467,6 +487,18 @@ inline constexpr rgb_hex operator"" _rgb(unsigned long long val)
     return res;
 }
 
+inline constexpr rgba<double> operator"" _rgb_d(unsigned long long val)
+{
+    // clang-format off
+    rgba<double> res{
+        get_hex_color_component<double>((std::uint8_t)((val & 0xff0000) >> 16)),
+        get_hex_color_component<double>((std::uint8_t)((val & 0xff00) >> 8)),
+        get_hex_color_component<double>((std::uint8_t)(val & 0xff))
+    };
+    // clang-format on
+    return res;
+}
+
 inline constexpr argb_hex operator"" _argb(unsigned long long val)
 {
     // clang-format off
@@ -478,13 +510,6 @@ inline constexpr argb_hex operator"" _argb(unsigned long long val)
     };
     // clang-format on
     return res;
-}
-
-template <typename T>
-T
-get_hex_color_component(std::uint8_t hex)
-{
-    return hex / T{255};
 }
 
 }    // namespace color

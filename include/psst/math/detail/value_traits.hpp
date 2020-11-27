@@ -78,11 +78,11 @@ struct iota<float> {
 };
 template <>
 struct iota<double> {
-    static constexpr float value = 1e-15;
+    static constexpr double value = 1e-15;
 };
 template <>
 struct iota<long double> {
-    static constexpr float value = 1e-30;
+    static constexpr long double value = 1e-30;
 };
 
 /**
@@ -283,10 +283,10 @@ constexpr bool is_mutable_vector_v = is_mutable_vector_t<T>::value;
 
 template <typename T, std::size_t S, typename Components>
 struct is_mutable_vector<vector<T, S, Components>> : std::true_type {};
-template <typename T, std::size_t S, typename Components>
-struct is_mutable_vector<vector_view<T*, S, Components>> : std::true_type {};
-template <typename T, std::size_t S, typename Components>
-struct is_mutable_vector<vector_view<T const*, S, Components>> : std::false_type {};
+template <typename T, std::size_t S, typename Components, component_order Order>
+struct is_mutable_vector<vector_view<T*, S, Components, Order>> : std::true_type {};
+template <typename T, std::size_t S, typename Components, component_order Order>
+struct is_mutable_vector<vector_view<T const*, S, Components, Order>> : std::false_type {};
 
 template <typename T>
 struct is_mutable_vector<T&> : is_mutable_vector<T> {};

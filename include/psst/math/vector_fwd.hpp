@@ -18,6 +18,11 @@ template <typename T, std::size_t Size,
 struct vector;
 
 /**
+ * Ordering of components in a vector view
+ */
+enum class component_order { forward, reverse };
+
+/**
  * The primary template for a vector_view.
  *
  * vector_view is an utility to read memory regions as vectors, use them in expressions, etc.
@@ -26,7 +31,8 @@ struct vector;
  * used to modify the underlying data.
  */
 template <typename T, std::size_t Size,
-          typename Components = components::default_components_t<Size>>
+          typename Components = components::default_components_t<Size>,
+          component_order     = component_order::forward>
 struct vector_view;
 
 } /* namespace math */
