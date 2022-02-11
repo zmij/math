@@ -37,6 +37,15 @@ struct xyzw {
     static constexpr std::size_t z              = 2;
     static constexpr std::size_t w              = 3;
 };
+
+struct xyw {
+    static constexpr std::size_t min_components = 1;
+    static constexpr std::size_t max_components = 3;
+    static constexpr std::size_t x              = 0;
+    static constexpr std::size_t y              = 1;
+    static constexpr std::size_t w              = 2;
+};
+
 struct wxyz;    // Quaternion
 
 struct polar;
