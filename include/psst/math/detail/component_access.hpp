@@ -132,6 +132,55 @@ struct component_access<4, components::xyzw, VectorType, T>
 };
 //@}
 
+//@{
+/** @name xyw components names */
+template <typename VectorType, typename T>
+struct component_access<1, components::xyw, VectorType, T>
+    : basic_component_access<VectorType, T, components::xyw> {
+
+    using base_type = basic_component_access<VectorType, T, components::xyw>;
+
+    PSST_MATH_COMPONENT_ACCESS(x)
+};
+
+template <typename VectorType, typename T>
+struct component_access<2, components::xyw, VectorType, T>
+    : component_access<1, components::xyw, VectorType, T> {
+
+    using base_type  = component_access<1, components::xyw, VectorType, T>;
+    using value_type = typename base_type::value_type;
+
+    using base_type::x;
+
+    PSST_MATH_COMPONENT_ACCESS(y)
+
+    //@{
+    /** @name Coordinate permutations */
+    PSST_MATH_COMPONENT_PERMUTATION2(components::xyw, x, y);
+    //@}
+};
+
+template <typename VectorType, typename T>
+struct component_access<3, components::xyw, VectorType, T>
+    : component_access<2, components::xyw, VectorType, T> {
+
+    using base_type  = component_access<2, components::xyw, VectorType, T>;
+    using value_type = typename base_type::value_type;
+
+    using base_type::x;
+    using base_type::y;
+
+    PSST_MATH_COMPONENT_ACCESS(w)
+
+    //@{
+    /** @name Coordinate permutations */
+    PSST_MATH_COMPONENT_PERMUTATION2(components::xyw, x, w)
+    PSST_MATH_COMPONENT_PERM2(components::xyw, y, w)
+    PSST_MATH_COMPONENT_PERMUTATIONS3(components::xyw, x, y, w)
+    //@}
+};
+//@}
+
 }    // namespace component_access
 
 namespace detail {
@@ -151,9 +200,9 @@ struct component_names<components::none> {
 template <std::size_t Size, typename Components, typename VectorType, typename T>
 using component_names_t = typename component_names<Components>::template type<Size, VectorType, T>;
 
-} /* namespace detail */
+}    // namespace detail
 
-} /* namespace math */
-} /* namespace psst */
+}    // namespace math */
+}    // namespace psst */
 
 #endif /* PSST_MATH_DETAIL_COMPONENT_ACCESS_HPP_ */
